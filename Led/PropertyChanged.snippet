@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets
+    xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>PropertyChanged</Title>
+      <Author>bl4ckl</Author>
+      <Description>Inserts Property with RaisePropertyChangedEvent.</Description>
+      <Shortcut>propchanged</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Object>
+          <ID>Type</ID>
+          <Default>int</Default>
+        </Object>
+        <Literal>
+          <ID>PrivatePropertyName</ID>
+          <Default>_privatePropertyName</Default>
+        </Literal>
+        <Literal>
+          <ID>PublicPropertyName</ID>
+          <Default>PublicPropertyName</Default>
+        </Literal>
+      </Declarations>
+      <Code Language="CSharp">
+        <![CDATA[private $Type$ $PrivatePropertyName$;
+        public $Type$ $PublicPropertyName$
+        {
+            get => $PrivatePropertyName$;
+            set
+            {
+                if ($PrivatePropertyName$ != value)
+                {
+                    $PrivatePropertyName$ = value;
+                    RaisePropertyChanged("$PublicPropertyName$");
+                }
+            }
+        }]]>
+      </Code>
+    </Snippet>
+
+  </CodeSnippet>
+</CodeSnippets>

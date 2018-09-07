@@ -1,0 +1,33 @@
+Musik ist im Nachhinein änderbar
+	-> Warnung wenn Musik kürzer
+
+IDController -> Wird zur Runtime aus den Dictionaries als Service generiert
+		-> Nichts abspeichern
+
+Model	-> Daten / Properties
+	-> Validierungsschicht
+		-> get/set
+
+
+Wäre echt nice:
+
+Live-Vorschau, Vorschau des Effektes während man an den Einstellungen herumschraubt.
+Auch im Verbund mit anderen Effekten um den, den man gerade bearbeitet herum.
+
+Video/Bilder einzulesen als Effekt und das auf dem Anzug darzustellen -> Anzüge im Verbund.
+Alle stellen sich nebeneinander als Widescreen xd
+
+
+Wie werden Frequenzen bzw. Wiederholungszahlen angegeben?
+Beispiel:
+Ein Blinken kann nur einmal oder mehrmals stattfinden (Anzahl)
+Es kann bei mehrmaligem Blinken langsam oder schnell blinken (Geschwindigkeit)
+Es kann eine unterschiedlich lange Gesamtdauer (Dauer) haben.
+Genauso beim Faden.
+
+Wie sind diese Parameter einzugeben?
+Beispiel:
+Man verändert die Gesamtdauer. Verändert das Programm die Anzahl oder die Geschwindigkeit?
+Genauso mit den anderen beiden Größen.
+
+Was würdest du da vorschlagen?

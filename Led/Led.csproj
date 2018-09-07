@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{47CEA16A-084B-4BC8-BAA4-B5691225DEDD}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Led</RootNamespace>
+    <AssemblyName>Led</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="NAudio, Version=1.8.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NAudio.1.8.4\lib\net35\NAudio.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WaveFormRendererLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\WaveFormRendererLib.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Aero, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Aero.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.Metro, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2010, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.Themes.VS2010.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.DataGrid, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.DataGrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.Toolkit, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Interfaces\IMediator.cs" />
+    <Compile Include="Interfaces\IParticipant.cs" />
+    <Compile Include="Services\MediatorService.cs" />
+    <Compile Include="Utility\AudioPlayer.cs" />
+    <Compile Include="Controllers\EffectController.cs" />
+    <Compile Include="Controllers\ModelController.cs" />
+    <Compile Include="Controllers\ObjectController.cs" />
+    <Compile Include="Controllers\TimeController.cs" />
+    <Compile Include="Model\Effect\EffectGroup.cs" />
+    <Compile Include="Model\ImageInfo.cs" />
+    <Compile Include="Services\IOService.cs" />
+    <Compile Include="Services\WindowService.cs" />
+    <Compile Include="Behaviours\DataPiping.cs" />
+    <Compile Include="Utility\EffectCache.cs" />
+    <Compile Include="Utility\EffectLogic.cs" />
+    <Compile Include="Utility\ImageUtil.cs" />
+    <Compile Include="Utility\LedModelID.cs" />
+    <Compile Include="Utility\Logger.cs" />
+    <Compile Include="Model\Effect\EffectBlinkColor.cs" />
+    <Compile Include="Model\Effect\EffectFadeColor.cs" />
+    <Compile Include="Model\Effect\EffectBase.cs" />
+    <Compile Include="Model\Effect\EffectSetColor.cs" />
+    <Compile Include="Model\Frame.cs" />
+    <Compile Include="Model\LedGroupViewProperty.cs" />
+    <Compile Include="Model\LedBus.cs" />
+    <Compile Include="Model\LedChangeData.cs" />
+    <Compile Include="Model\LedEntity.cs" />
+    <Compile Include="Model\LedGroup.cs" />
+    <Compile Include="Model\LedStatus.cs" />
+    <Compile Include="Model\LedGridCell.cs" />
+    <Compile Include="Model\Second.cs" />
+    <Compile Include="Behaviours\MouseBehaviour.cs" />
+    <Compile Include="Utility\Rectangle.cs" />
+    <Compile Include="Utility\SaveLoad.cs" />
+    <Compile Include="Utility\TimeSpanHelper.cs" />
+    <Compile Include="ViewModels\AudioUserControlVM.cs" />
+    <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
+      <DependentUpon>AudioUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\ImageTrackBar.xaml.cs">
+      <DependentUpon>ImageTrackBar.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Behaviours\WindowClosingBehaviour.cs" />
+    <Compile Include="ViewModels\DialogVM.cs" />
+    <Compile Include="ViewModels\EffectBaseVM.cs" />
+    <Compile Include="ViewModels\LedEntityCRUDVM.cs" />
+    <Compile Include="ViewModels\LedEntitySelectVM.cs" />
+    <Compile Include="ViewModels\LedGroupPropertiesVM.cs" />
+    <Compile Include="ViewModels\LedVM.cs" />
+    <Compile Include="ViewModels\LedGridCellVM.cs" />
+    <Compile Include="ViewModels\NewProjectDialogVM.cs" />
+    <Compile Include="ViewModels\MainWindowVM.cs" />
+    <Compile Include="Defines.cs" />
+    <Compile Include="ViewModels\LedEntityBaseVM.cs" />
+    <Compile Include="Views\Controls\EffectProperties\BlinkProperties.xaml.cs">
+      <DependentUpon>BlinkProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\EffectProperties\FadeProperties.xaml.cs">
+      <DependentUpon>FadeProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\EffectProperties\SetColorProperties.xaml.cs">
+      <DependentUpon>SetColorProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\EffectProperties.xaml.cs">
+      <DependentUpon>EffectProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\LedEntityOverview.xaml.cs">
+      <DependentUpon>LedEntityOverview.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\LedEntityButtons.xaml.cs">
+      <DependentUpon>LedEntityButtons.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CRUDs\LedEntityCRUD.xaml.cs">
+      <DependentUpon>LedEntityCRUD.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CRUDs\LedGroupCRUD.xaml.cs">
+      <DependentUpon>LedGroupCRUD.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\CRUDs\LedEntityGroupProperties.xaml.cs">
+      <DependentUpon>LedEntityGroupProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Dialogs\SingleTextDialog.xaml.cs">
+      <DependentUpon>SingleTextDialog.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="App.cs" />
+    <Compile Include="Model\AudioProperty.cs" />
+    <Compile Include="Model\Project.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="PropertyChanged.snippet" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Views\Controls\EffectProperties\BlinkProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\EffectProperties\FadeProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\EffectProperties\SetColorProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\EffectProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\AudioUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\ImageTrackBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\Controls\LedEntityOverview.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\LedEntityButtons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CRUDs\LedEntityCRUD.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CRUDs\LedGroupCRUD.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\CRUDs\LedEntityGroupProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Dialogs\SingleTextDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="lib\WaveFormRendererLib.dll" />
+    <None Include="Resources\if_icon-play_211876.png" />
+    <None Include="Resources\if_icon-pause_211871.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ViewModels\EffectProperties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

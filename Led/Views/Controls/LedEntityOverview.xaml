@@ -1,0 +1,101 @@
+﻿<UserControl x:Class="Led.Views.Controls.LedEntityOverview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Led.View"
+             xmlns:Utility="clr-namespace:Led.Utility"
+             xmlns:ViewModels="clr-namespace:Led.ViewModels"
+             xmlns:Behaviours="clr-namespace:Led.Behaviours"             
+             mc:Ignorable="d"             
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <CollectionViewSource x:Key="Owners" Source="{Binding Owners}"/>
+
+        <DataTemplate DataType="{x:Type Utility:Rectangle}">
+            <Rectangle
+                    Width="{Binding Width}"
+                    Height="{Binding Height}"
+                    Stroke="{Binding Stroke}">
+                    <Rectangle.RenderTransform>
+                        <!-- Name test, da sonst Errors auftauchen, istn Bug, wird nicht gefixt -->
+                    <TranslateTransform x:Name="test"
+                                        X="{Binding X}"
+                                        Y="{Binding Y}"/>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type ViewModels:LedVM}">
+            <Ellipse
+                    Width="5"
+                    Height="5"
+                    Fill="{Binding Brush}">
+                <Ellipse.RenderTransform>
+                    <TranslateTransform x:Name="test" X="{Binding Position.X}" Y="{Binding Position.Y}" />
+                </Ellipse.RenderTransform>
+            </Ellipse>
+        </DataTemplate>
+
+        <ItemsPanelTemplate x:Key="ItemsPanelTemplate">
+            <Canvas />
+        </ItemsPanelTemplate>
+    </UserControl.Resources>
+    
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- FRONT IMAGE -->
+        <Image Source="{Binding FrontImagePath}"
+               Cursor="{Binding FrontCursor}"
+               Grid.Column="0"
+               Behaviours:MouseBehaviour.MouseDownCommand="{Binding FrontImageMouseDownCommand}"
+               Behaviours:MouseBehaviour.MouseUpCommand="{Binding ImageMouseUpCommand}"
+               Behaviours:MouseBehaviour.MouseMoveCommand="{Binding FrontImageMouseMoveCommand}" >
+        </Image>
+        
+        <!-- Anscheinend ist man in dem ItemsControl wenn man ein Rechteck aufzieht, daher hier nochmal alle MouseCommands -->
+        <!-- Rectangles (LedGroups) -->
+        <ItemsControl ItemsPanel="{StaticResource ItemsPanelTemplate}"                      
+                      ItemsSource="{Binding FrontLedGroups}"                      
+                      Cursor="{Binding FrontCursor}"
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Behaviours:MouseBehaviour.MouseDownCommand="{Binding FrontImageMouseDownCommand}"
+                      Behaviours:MouseBehaviour.MouseUpCommand="{Binding ImageMouseUpCommand}"
+                      Behaviours:MouseBehaviour.MouseMoveCommand="{Binding FrontImageMouseMoveCommand}" />
+        <!-- Ellipses (Leds) -->
+        <ItemsControl ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                      ItemsSource="{Binding FrontLeds}"
+                      Cursor="{Binding FrontCursor}"
+                      Grid.Row="0"
+                      Grid.Column="0" />
+        <!-- FRONT IMAGE -->
+        
+        <!-- BACK IMAGE -->
+        <Image Source="{Binding BackImagePath}"
+               Behaviours:MouseBehaviour.MouseDownCommand="{Binding BackImageMouseDownCommand}"
+               Behaviours:MouseBehaviour.MouseUpCommand="{Binding ImageMouseUpCommand}"
+               Behaviours:MouseBehaviour.MouseMoveCommand="{Binding BackImageMouseMoveCommand}"
+               Cursor="{Binding BackCursor}"
+               Grid.Column="1">
+        </Image>
+        <!-- Anscheinend ist man in dem ItemsControl wenn man ein Rechteck aufzieht, daher hier nochmal alle MouseCommands -->
+        <ItemsControl ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                      ItemsSource="{Binding BackLedGroups}"                      
+                      Behaviours:MouseBehaviour.MouseDownCommand="{Binding BackImageMouseDownCommand}"
+                      Behaviours:MouseBehaviour.MouseUpCommand="{Binding ImageMouseUpCommand}"
+                      Behaviours:MouseBehaviour.MouseMoveCommand="{Binding BackImageMouseMoveCommand}"
+                      Cursor="{Binding BackCursor}"
+                      Grid.Row="0"
+                      Grid.Column="1"/>
+        <ItemsControl ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                      ItemsSource="{Binding BackLeds}"                      
+                      Cursor="{Binding BackCursor}"
+                      Grid.Row="0"
+                      Grid.Column="1"/>
+    </Grid>
+</UserControl>
