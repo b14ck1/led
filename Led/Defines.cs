@@ -187,8 +187,9 @@ namespace Led
 
     public static class Defines
     {
-        public static Brush LedGroupColor = Brushes.Red;
-        public static Brush LedSelectRectangleColor = Brushes.DarkSlateGray;
+        public static Brush LedGroupColor = Brushes.DarkSlateGray;
+        public static Brush LedGroupColorWrong = Brushes.Red;
+        public static Brush LedSelectRectangleColor = Brushes.Red;
 
         public static Brush LedColor = Brushes.LimeGreen;
         public static Brush LedSelectedColor = Brushes.Blue;
