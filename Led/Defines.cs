@@ -186,6 +186,31 @@ namespace Led
         PhysicalGroupDefinitionChanged
     }
 
+    public class MediatorMessageData
+    {
+        public class EditSelecteLeds
+        {
+            public bool Edit { get; }
+            public List<Utility.LedModelID> SelectedLeds { get; }
+
+            public EditSelecteLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
+            {
+                this.Edit = Edit;
+                this.SelectedLeds = SelectedLeds;
+            }
+        }
+
+        public class PhysicalGroupDefinitionChanged
+        {
+            public bool NeedCorrection { get; }
+            
+            public PhysicalGroupDefinitionChanged(bool needCorrection)
+            {
+                NeedCorrection = needCorrection;
+            }
+        }
+    }
+
     public static class Defines
     {
         public static Brush LedGroupColor = Brushes.DarkSlateGray;

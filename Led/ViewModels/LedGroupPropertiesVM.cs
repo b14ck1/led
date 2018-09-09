@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Led.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,7 +12,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels
 {
-    class LedGroupPropertiesVM : INPC
+    class LedGroupPropertiesVM : INPC, IParticipant
     {
         private Model.LedGroup _ledGroup;
         public Model.LedGroup LedGroup
@@ -27,6 +28,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// On which view is this group located.
+        /// </summary>
         public LedEntityView View
         {
             get => _ledGroup.View.View;
@@ -40,6 +44,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// On which bus is this group located.
+        /// </summary>
         public byte BusID
         {
             get => _ledGroup.BusID;
@@ -52,6 +59,9 @@ namespace Led.ViewModels
                 }
             }
         }
+        /// <summary>
+        /// Which position has the group on the bus.
+        /// </summary>
         public byte PositionInBus
         {
             get => _ledGroup.PositionInBus;
@@ -65,6 +75,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// Which x-y-position does this group have in the whole entity
+        /// /// </summary>
         public int PositionInEntityX
         {
             get => (int)_ledGroup.PositionInEntity.X;
@@ -74,6 +87,9 @@ namespace Led.ViewModels
                 RaisePropertyChanged(nameof(PositionInEntityX));
             }
         }
+        /// <summary>
+        /// Which x-y-position does this group have in the whole entity
+        /// /// </summary>
         public int PositionInEntityY
         {
             get => (int)_ledGroup.PositionInEntity.Y;
@@ -84,6 +100,10 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// A list with all possible Positions of the Group.
+        /// Its filled X-first.
+        /// </summary>
         public List<LedGridCellVM> LedGrid
         {
             get
@@ -100,6 +120,9 @@ namespace Led.ViewModels
                 return res;
             }
         }
+        /// <summary>
+        /// A list of the physical wiring of the group.
+        /// </summary>
         public PointCollection WiringLine
         {
             get
@@ -143,6 +166,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// How many positions do we got in X-direction.
+        /// </summary>
         public int GridRangeX
         {
             get => _ledGroup.View.LedGrid.GetLength(0);
@@ -163,6 +189,9 @@ namespace Led.ViewModels
                 }
             }
         }
+        /// <summary>
+        /// How many positions do we got in Y-direction.
+        /// </summary>
         public int GridRangeY
         {
             get => _ledGroup.View.LedGrid.GetLength(1);
@@ -184,6 +213,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// Where does the wiring of the physical group start.
+        /// </summary>
         public int StartPositionWiringX
         {
             get => (int)_ledGroup.View.StartPositionWiring.X;
@@ -197,6 +229,9 @@ namespace Led.ViewModels
                 }
             }
         }
+        /// <summary>
+        /// Where does the wiring of the physical group start.
+        /// </summary>
         public int StartPositionWiringY
         {
             get => (int)_ledGroup.View.StartPositionWiring.Y;
@@ -211,6 +246,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// Where does the group start on the Image.
+        /// </summary>
         public Point StartPositionOnImage
         {
             get => _ledGroup.View.StartPositionOnImage;
@@ -223,6 +261,9 @@ namespace Led.ViewModels
                 }
             }
         }
+        /// <summary>
+        /// Where does the group start on the Image on the home screen (scaled).
+        /// </summary>
         public Point StartPositionOnImageScaled {
             set
             {
@@ -234,6 +275,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// How big is the group on the picture.
+        /// </summary>
         public Size SizeOnImage
         {
             get => _ledGroup.View.SizeOnImage;
@@ -246,6 +290,9 @@ namespace Led.ViewModels
                 }
             }
         }
+        /// <summary>
+        /// How big is the group on the on the picture on the home screen (scaled).
+        /// </summary>
         public Size SizeOnImageScaled
         {            
             set
@@ -257,8 +304,11 @@ namespace Led.ViewModels
                 }
             }
         }
-
+        
         private Utility.Rectangle _Rectangle;
+        /// <summary>
+        /// Dimensions of the group on the picture.
+        /// </summary>
         public Utility.Rectangle Rectangle
         {
             get => _Rectangle;
@@ -272,6 +322,9 @@ namespace Led.ViewModels
             }
         }
 
+        /// <summary>
+        /// Which color to draw the group.
+        /// </summary>
         public Brush Stroke { get => Defines.LedGroupColor; }
 
         private Point _minLedPosition
@@ -381,6 +434,18 @@ namespace Led.ViewModels
         {
             if (e.PropertyName.Equals(nameof(LedGridCellVM.Arrow)))
                 RaisePropertyChanged(nameof(WiringLine));
+        }
+
+        public void RecieveMessage(MediatorMessages message, object sender, object data)
+        {
+            switch (message)
+            {
+                case MediatorMessages.PhysicalGroupDefinitionChanged:
+
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

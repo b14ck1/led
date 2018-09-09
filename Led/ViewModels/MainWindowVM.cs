@@ -148,7 +148,7 @@ namespace Led.ViewModels
         //    _ledEntityView.DataContext = (LedEntityBaseVM)sender;         
         //}
 
-        private void OnEditSelectedLeds(EditLedArgs e)
+        private void OnEditSelectedLeds(MediatorMessageData.EditSelecteLeds e)
         {
             if (e.Edit)
             {
@@ -192,7 +192,7 @@ namespace Led.ViewModels
                     _ledEntityView.DataContext = (sender as LedEntityBaseVM);
                     break;
                 case MediatorMessages.EditedSelectedLeds:
-                    OnEditSelectedLeds(data as EditLedArgs);
+                    OnEditSelectedLeds(data as MediatorMessageData.EditSelecteLeds);
                     break;
                 default:
                     break;
