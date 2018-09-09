@@ -182,7 +182,8 @@ namespace Led
     public enum MediatorMessages
     {
         LedEntitySelected,
-        EditedSelectedLeds
+        EditedSelectedLeds,
+        PhysicalGroupDefinitionChanged
     }
 
     public static class Defines
