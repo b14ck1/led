@@ -3,7 +3,7 @@
 namespace Led.Model
 {
     [JsonObject]
-    class LedGridCell : INPC
+    public class LedGridCell : INPC
     {
         [JsonProperty]
         public bool Status;

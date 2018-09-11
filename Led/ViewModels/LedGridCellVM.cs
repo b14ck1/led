@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels
 {
-    class LedGridCellVM : INPC
+    public class LedGridCellVM : INPC
     {
         private Model.LedGridCell _ledView;
         public Model.LedGridCell LedView
