@@ -12,8 +12,10 @@ using System.Windows.Media;
 
 namespace Led.ViewModels
 {
-    class LedGroupPropertiesVM : INPC, IParticipant
+    public class LedGroupPropertiesVM : INPC, IParticipant
     {
+        private Services.MediatorService _Mediator;
+
         private Model.LedGroup _ledGroup;
         public Model.LedGroup LedGroup
         {
@@ -56,6 +58,7 @@ namespace Led.ViewModels
                 {
                     _ledGroup.BusID = value;
                     RaisePropertyChanged(nameof(BusID));
+                    _SendMessage(MediatorMessages.GroupBusDefinitionsChanged, null);
                 }
             }
         }
@@ -71,9 +74,13 @@ namespace Led.ViewModels
                 {
                     _ledGroup.PositionInBus = value;
                     RaisePropertyChanged(nameof(PositionInBus));
+                    _SendMessage(MediatorMessages.GroupBusDefinitionsChanged, null);
                 }
+
             }
         }
+        private bool _NeedCorrection;
+        public Brush BusBorder => _NeedCorrection ? Defines.LedGroupColorWrong : SystemColors.ControlDarkBrush;        
 
         /// <summary>
         /// Which x-y-position does this group have in the whole entity
@@ -264,7 +271,8 @@ namespace Led.ViewModels
         /// <summary>
         /// Where does the group start on the Image on the home screen (scaled).
         /// </summary>
-        public Point StartPositionOnImageScaled {
+        public Point StartPositionOnImageScaled
+        {
             set
             {
                 if (_Rectangle.X != value.X || _Rectangle.Y != value.Y)
@@ -294,17 +302,17 @@ namespace Led.ViewModels
         /// How big is the group on the on the picture on the home screen (scaled).
         /// </summary>
         public Size SizeOnImageScaled
-        {            
+        {
             set
             {
                 if (_Rectangle.Width != value.Width || _Rectangle.Height != value.Height)
                 {
                     _Rectangle.Width = (int)value.Width;
-                    _Rectangle.Height = (int)value.Height;                    
+                    _Rectangle.Height = (int)value.Height;
                 }
             }
         }
-        
+
         private Utility.Rectangle _Rectangle;
         /// <summary>
         /// Dimensions of the group on the picture.
@@ -321,11 +329,6 @@ namespace Led.ViewModels
                 }
             }
         }
-
-        /// <summary>
-        /// Which color to draw the group.
-        /// </summary>
-        public Brush Stroke { get => Defines.LedGroupColor; }
 
         private Point _minLedPosition
         {
@@ -379,6 +382,9 @@ namespace Led.ViewModels
             LedGroup = ledGroup ?? (LedGroup = new Model.LedGroup());
             Rectangle = new Utility.Rectangle(0, 0, Defines.LedGroupColor);
             CloseWindowCommand = new Command(OnCloseWindowCommand);
+
+            _Mediator = App.Instance.MediatorService;
+            _Mediator.Register(this);            
         }
 
         private void OnCloseWindowCommand()
@@ -436,12 +442,25 @@ namespace Led.ViewModels
                 RaisePropertyChanged(nameof(WiringLine));
         }
 
+        private void _SendMessage(MediatorMessages message, object data)
+        {
+            _Mediator.BroadcastMessage(message, this, data);
+        }
+
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
             switch (message)
             {
-                case MediatorMessages.PhysicalGroupDefinitionChanged:
-
+                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
+                    if ((data as MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection.ContainsKey(this))
+                    {
+                        _NeedCorrection = (data as MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection[this];
+                        if (_NeedCorrection)
+                            Rectangle.Stroke = Defines.LedGroupColorWrong;
+                        else
+                            Rectangle.Stroke = Defines.LedGroupColor;
+                        RaisePropertyChanged(nameof(BusBorder));
+                    }                    
                     break;
                 default:
                     break;
