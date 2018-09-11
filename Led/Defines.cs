@@ -181,30 +181,33 @@ namespace Led
 
     public enum MediatorMessages
     {
-        LedEntitySelected,
-        EditedSelectedLeds,
-        PhysicalGroupDefinitionChanged
+        LedEntitySelectButtonClicked,
+        EffectVMEditSelectedLedsClicked,
+        EffectVMEditSelectedLedsFinished,
+        EffectVMEditSelectedLedsClear,
+        GroupBusDefinitionsChanged,
+        GroupBusDefinitionsNeedCorrectionChanged
     }
 
     public class MediatorMessageData
     {
-        public class EditSelecteLeds
+        public class EffectVMEditSelectedLeds
         {
             public bool Edit { get; }
             public List<Utility.LedModelID> SelectedLeds { get; }
 
-            public EditSelecteLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
+            public EffectVMEditSelectedLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
             {
                 this.Edit = Edit;
                 this.SelectedLeds = SelectedLeds;
             }
         }
 
-        public class PhysicalGroupDefinitionChanged
+        public class GroupBusDefinitionsNeedCorrectionChanged
         {
-            public bool NeedCorrection { get; }
+            public Dictionary<ViewModels.LedGroupPropertiesVM, bool> NeedCorrection { get; }
             
-            public PhysicalGroupDefinitionChanged(bool needCorrection)
+            public GroupBusDefinitionsNeedCorrectionChanged(Dictionary<ViewModels.LedGroupPropertiesVM, bool> needCorrection)
             {
                 NeedCorrection = needCorrection;
             }
