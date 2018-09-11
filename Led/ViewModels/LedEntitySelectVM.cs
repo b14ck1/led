@@ -13,7 +13,8 @@ namespace Led.ViewModels
 {
     class LedEntitySelectVM : LedEntityBaseVM
     {
-        private bool _selectLeds;
+        private bool _allowSelectLeds;
+        private bool _selectingLeds;
         private LedEntityView _selectGroupView;
 
         private Utility.Rectangle _selection;
@@ -31,7 +32,7 @@ namespace Led.ViewModels
         {
             get
             {
-                List<Rectangle> res = new List<Rectangle>(base.FrontLedGroups);
+                List<Rectangle> res = new List<Rectangle>(base.BackLedGroups);
                 if (_selectGroupView == LedEntityView.Back)
                     res.Add(_selection);
                 return res;
@@ -53,18 +54,10 @@ namespace Led.ViewModels
             }
         }
 
-        public LedEntitySelectVM(Model.LedEntity LedEntity, List<Utility.LedModelID> SelectedLeds = null)
+        public LedEntitySelectVM(Model.LedEntity LedEntity)
             : base(LedEntity)
         {
             _selectedLeds = new List<int>();
-            if (SelectedLeds != null)
-            {
-                foreach (var ID in SelectedLeds)
-                {
-                    _selectedLeds.Add(ID.Led + LedOffsets[LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset);
-                    Leds[ID.Led + LedOffsets[LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset].Brush = Defines.LedSelectedColor;
-                }
-            }
 
             FrontImageMouseDownCommand = new Command<MouseEventArgs>(OnFrontImageMouseDownCommand);
             FrontImageMouseMoveCommand = new Command<MouseEventArgs>(OnFrontImageMouseMoveCommand);
@@ -79,31 +72,43 @@ namespace Led.ViewModels
 
         private void OnFrontImageMouseDownCommand(MouseEventArgs e)
         {
-            _CreateSelectGroup(e, LedEntityView.Front);
-            RaisePropertyChanged(nameof(FrontLedGroups));
+            if (_allowSelectLeds)
+            {
+                _CreateSelectGroup(e, LedEntityView.Front);
+                RaisePropertyChanged(nameof(FrontLedGroups));
+            }
         }
         private void OnBackImageMouseDownCommand(MouseEventArgs e)
         {
-            _CreateSelectGroup(e, LedEntityView.Back);
-            RaisePropertyChanged(nameof(BackLedGroups));
+            if (_allowSelectLeds)
+            {
+                _CreateSelectGroup(e, LedEntityView.Back);
+                RaisePropertyChanged(nameof(BackLedGroups));
+            }
         }
 
         private void OnFrontImageMouseMoveCommand(MouseEventArgs e)
         {
-            if (_selectLeds)
+            if (_selectingLeds)
                 _ResizeGroup(e);
         }
         private void OnBackImageMouseMoveCommand(MouseEventArgs e)
         {
-            if (_selectLeds)
+            if (_selectingLeds)
                 _ResizeGroup(e);
         }
 
         private void OnImageMouseUpCommand(MouseEventArgs e)
         {
-            _selectLeds = false;
+            _selectingLeds = false;
             if (_selection != null)
-                _selectedLeds.AddRange(_ScanForLeds());
+            {
+                foreach(var ID in _ScanForLeds())
+                {
+                    if (!_selectedLeds.Contains(ID))
+                        _selectedLeds.Add(ID);
+                }
+            }
 
             _selection = null;
             RaisePropertyChanged(nameof(FrontLedGroups));
@@ -111,23 +116,24 @@ namespace Led.ViewModels
         }
 
         private void _CreateSelectGroup(MouseEventArgs e, LedEntityView View)
-        {
-            //Vielleicht scaling mit einberechnen
+        {                        
             Point MousePosition = e.GetPosition((IInputElement)e.Source);
+            MousePosition = _ScalePoint(MousePosition);
+
             _selection = new Utility.Rectangle((int)MousePosition.X, (int)MousePosition.Y, Defines.LedSelectRectangleColor);
 
             _selectGroupView = View;
-            _selectLeds = true;
+            _selectingLeds = true;
         }
 
         private void _ResizeGroup(MouseEventArgs e)
         {
-            if (!_selectLeds)
+            if (!_selectingLeds)
                 return;
 
-            Point MousePosition = e.GetPosition((IInputElement)e.Source);
+            Point MousePosition = e.GetPosition((IInputElement)e.Source);            
+            MousePosition = _ScalePoint(MousePosition);
 
-            
             double deltaX = MousePosition.X - _selection.X;
             double deltaY = MousePosition.Y - _selection.Y;
 
@@ -140,11 +146,6 @@ namespace Led.ViewModels
             _selection.Height = (int)deltaY;
 
             _ScanForLeds();
-
-            //Debug.WriteLine("GridWidth: " + GridWidth + " ImageWidth: " + FrontImageWidth);
-            //Debug.WriteLine("Start: X: " + _selectGroup.Start.X + " Y: " + _selectGroup.Start.Y);
-            //Debug.WriteLine("End:   X: " + (_selectGroup.Start.X + _selectGroup.Size.Width) + " Y: " + (_selectGroup.Start.Y + _selectGroup.Size.Height));
-            //Debug.WriteLine("Mouse: X: " + MousePosition.X + " Y: " + MousePosition.Y);
         }
         
         private List<int> _ScanForLeds()
@@ -170,18 +171,55 @@ namespace Led.ViewModels
 
         private Utility.LedModelID _IndexToLedID(int index)
         {
-            int i, start = 0;
-
-            for (i = 0; i < LedOffsets.Values.Count; i++)
+            foreach (var KVP in LedOffsets)
             {
-                if (start + LedOffsets.Values.ElementAt(i).Length > index)
-                    break;
-                else
-                    start += LedOffsets.Values.ElementAt(i).Length;
+                if (index < KVP.Value.Offset + KVP.Value.Length)
+                    return new Utility.LedModelID(KVP.Key.BusID, KVP.Key.PositionInBus, (ushort)(index - KVP.Value.Offset));
             }
-
-            return new Utility.LedModelID(LedOffsets.Keys.ElementAt(i).BusID, LedOffsets.Keys.ElementAt(i).PositionInBus, (ushort)(index - start));
+            return null;
         }
 
+        private int _LedIDToIndex(LedModelID ID)
+        {
+            return ID.Led + LedOffsets[LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset;
+        }
+
+        public override void RecieveMessage(MediatorMessages message, object sender, object data)
+        {
+            switch (message)
+            {
+                case MediatorMessages.EffectVMEditSelectedLedsClicked:
+                    MediatorMessageData.EffectVMEditSelectedLeds effectVMEditSelectedLedsClicked = (data as MediatorMessageData.EffectVMEditSelectedLeds);
+                    if (effectVMEditSelectedLedsClicked.Edit)
+                    {
+                        if (effectVMEditSelectedLedsClicked.SelectedLeds != null)
+                        {
+                            foreach (var ID in effectVMEditSelectedLedsClicked.SelectedLeds)
+                            {
+                                if (!_selectedLeds.Contains(_LedIDToIndex(ID)))
+                                {
+                                    _selectedLeds.Add(_LedIDToIndex(ID));                                                                        
+                                }
+                            }
+                            SetLedColor(_selectedLeds, Colors.Blue);
+                        }
+                        _allowSelectLeds = true;
+                    }
+                    else
+                    {
+                        _allowSelectLeds = false;
+                        _selectingLeds = false;
+                        _SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, new MediatorMessageData.EffectVMEditSelectedLeds(false, SelectedLeds));
+                        SetLedColor(_selectedLeds, System.Windows.Media.Colors.Red);
+                    }
+                    break;
+                case MediatorMessages.EffectVMEditSelectedLedsFinished:
+                    SetLedColor(_selectedLeds, Colors.LimeGreen);
+                    _selectedLeds.Clear();
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 }
