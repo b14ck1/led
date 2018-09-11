@@ -74,7 +74,7 @@ namespace Led.ViewModels
 
             ImageMouseUpCommand = new Command<MouseEventArgs>(OnImageMouseUpCommand);
 
-            CloseWindowCommand = new Command(OnCloseWindowCommand);
+            CloseWindowCommand = new Command(_OnCloseWindowCommand, _CanExecuteClosing);
         }
 
         private void OnNewFrontImmage()
@@ -96,7 +96,7 @@ namespace Led.ViewModels
             if (Path != "")
             { 
                 BackImagePath = Path;
-                BitmapImage Image = new BitmapImage(new Uri(FrontImagePath));
+                BitmapImage Image = new BitmapImage(new Uri(BackImagePath));
                 LedEntity.ImageInfos[LedEntityView.Back].Size.Width = Image.PixelWidth;
                 LedEntity.ImageInfos[LedEntityView.Back].Size.Height = Image.PixelHeight;
             }
@@ -200,7 +200,18 @@ namespace Led.ViewModels
             _ResetFlags();
         }
 
-        private void OnCloseWindowCommand()
+        private bool _CanExecuteClosing()
+        {
+            //Returns true if there are no groups left which need a correction
+            if (_CheckBusDefinitions().NeedCorrection.Values.Any(x => x))
+            {
+                MessageBox.Show("They are some groups which bus definitions are overlapping.");
+                return false;
+            }
+            return true;
+        }
+
+        private void _OnCloseWindowCommand()
         {
             LedEntity.LedBuses = new Dictionary<byte, Model.LedBus>();
 
@@ -229,6 +240,7 @@ namespace Led.ViewModels
                 View = view
             });
             CurrentLedGroup = LedGroups.Last();
+            _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
             _creatingGroup = true;            
         }
 
@@ -327,6 +339,47 @@ namespace Led.ViewModels
             _movingGroup = false;
             _resizingGroup = false;
             AddLedGroupCommand.RaiseCanExecuteChanged();
+        }
+
+        public override void RecieveMessage(MediatorMessages message, object sender, object data)
+        {
+            switch (message)
+            {
+                case MediatorMessages.LedEntitySelectButtonClicked:
+                    break;
+                case MediatorMessages.EffectVMEditSelectedLedsClicked:
+                    break;
+                case MediatorMessages.GroupBusDefinitionsChanged:
+                    _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
+                    break;
+                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged _CheckBusDefinitions()
+        {
+            List<LedGroupPropertiesVM> temp = new List<LedGroupPropertiesVM>();
+            foreach (var Group in LedGroups)
+            {
+                if ((LedGroups.FindAll(x => x.BusID == Group.BusID && x.PositionInBus == Group.PositionInBus).Count > 1))
+                {
+                    temp.AddRange(LedGroups.FindAll(x => x.BusID == Group.BusID && x.PositionInBus == Group.PositionInBus));
+                }
+            }
+            temp = temp.Distinct().ToList();
+
+            Dictionary<LedGroupPropertiesVM, bool> res = new Dictionary<LedGroupPropertiesVM, bool>();
+            foreach (var Group in LedGroups)
+            {
+                if (temp.Contains(Group))
+                    res.Add(Group, true);
+                else
+                    res.Add(Group, false);
+            }
+            return new MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged(res);            
         }
     }
 }
