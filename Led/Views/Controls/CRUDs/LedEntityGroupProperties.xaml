@@ -61,10 +61,12 @@
             </Grid.ColumnDefinitions>
 
             <Label Content="Bus ID:" Grid.Row="0" Grid.Column="0" Margin="3,3,3,3" />
-            <TextBox Text="{Binding CurrentLedGroup.BusID, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" Margin="3,3,3,3" />
+            <TextBox Text="{Binding CurrentLedGroup.BusID, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" Margin="3,3,3,3" 
+                     BorderBrush="{Binding CurrentLedGroup.BusBorder}" />
 
             <Label Content="Position in Bus:" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3" />
-            <TextBox Text="{Binding CurrentLedGroup.PositionInBus, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3" />
+            <TextBox Text="{Binding CurrentLedGroup.PositionInBus, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3"
+                     BorderBrush="{Binding CurrentLedGroup.BusBorder}" />
 
         </Grid>
 
