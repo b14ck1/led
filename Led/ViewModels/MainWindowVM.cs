@@ -148,32 +148,6 @@ namespace Led.ViewModels
         //    _ledEntityView.DataContext = (LedEntityBaseVM)sender;         
         //}
 
-        private void OnEditSelectedLeds(EditLedArgs e)
-        {
-            if (e.Edit)
-            {
-                LedEntitySelectVM temp = new LedEntitySelectVM(((LedEntityBaseVM)_ledEntityView.DataContext).LedEntity, e.SelectedLeds);
-                _ledEntityView.DataContext = temp;
-            }
-            else
-            {
-                EffectViewModel.Leds = ((LedEntitySelectVM)_ledEntityView.DataContext).SelectedLeds;
-
-                Model.LedChangeData test = new Model.LedChangeData(EffectViewModel.Leds, System.Windows.Media.Colors.Red, 0);
-                _currentLedEntity.SetLedColor(test);
-
-                //MouseCommandsBindings resetten
-                //Unbedingt irgendwie reworken                
-                //_mainWindow.Grid.Children.Remove(_ledEntityView);
-                //_ledEntityView = new View.LedEntity();
-                //System.Windows.Controls.Grid.SetColumn(_ledEntityView, 1);
-                //System.Windows.Controls.Grid.SetRow(_ledEntityView, 1);
-                //_mainWindow.Grid.Children.Add(_ledEntityView);
-                
-                _ledEntityView.DataContext = _currentLedEntity;
-            }
-        }
-
         private void OnAddAudio()
         {
             var fileFilter = "*.mp3;*.m4a;*.wav;*.flac";
@@ -187,12 +161,9 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.LedEntitySelected:
+                case MediatorMessages.LedEntitySelectButtonClicked:
                     _currentLedEntity = (sender as LedEntityBaseVM);
                     _ledEntityView.DataContext = (sender as LedEntityBaseVM);
-                    break;
-                case MediatorMessages.EditedSelectedLeds:
-                    OnEditSelectedLeds(data as EditLedArgs);
                     break;
                 default:
                     break;

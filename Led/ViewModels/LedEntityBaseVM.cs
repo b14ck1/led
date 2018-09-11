@@ -204,7 +204,10 @@ namespace Led.ViewModels
             {
                 if (LedOffsets.Count != 0)
                     offset = LedOffsets.Last().Value.Offset + LedOffsets.Last().Value.Length;
-                LedOffsets.Add(ledGroupVM, new LedOffset(offset, ledGroupVM.LedGroup.Leds.Count - 1, ledGroupVM.View));
+                if (ledGroupVM.LedGroup.Leds.Count > 0)
+                    LedOffsets.Add(ledGroupVM, new LedOffset(offset, ledGroupVM.LedGroup.Leds.Count, ledGroupVM.View));
+                else
+                    Console.WriteLine("LedGroup with BusID: {0} and Position: {1} got no Leds. No indexing required.", ledGroupVM.BusID, ledGroupVM.PositionInBus);
             }
         }
         
@@ -226,40 +229,38 @@ namespace Led.ViewModels
         /// <param name="scale">Scale them to main window size or not. Default = false.</param>
         protected void UpdateLedPositions(LedGroupPropertiesVM ledGroupViewModel, bool scale = false)
         {
-            double scaleX = 1;
-            double scaleY = 1;
-            double offsetX = 0;
-            double offsetY = 0;
-
-            if (scale)
-            {
-                scaleX = 1.01669877970456;
-                scaleY = 1.01669877970456;
-                offsetX = 0.16666666666668561;
-                offsetY = 15.90170657858522;
-            }
-
             double deltaX = ledGroupViewModel.SizeOnImage.Width / (ledGroupViewModel.GridRangeX + 1);
             double deltaY = ledGroupViewModel.SizeOnImage.Height / (ledGroupViewModel.GridRangeY + 1);
 
-            if (offsetY < 0)
-                offsetY = 0;
-
             for (int i = 0; i < ledGroupViewModel.LedGroup.Leds.Count; i++)
             {
-                double x = ledGroupViewModel.StartPositionOnImage.X + (ledGroupViewModel.LedGroup.Leds[i].X + ledGroupViewModel.LedGroup.View.GridLedStartOffset.X + 1) * deltaX;
-                double y = ledGroupViewModel.StartPositionOnImage.Y + (ledGroupViewModel.LedGroup.Leds[i].Y + ledGroupViewModel.LedGroup.View.GridLedStartOffset.Y + 1) * deltaY;
+                Point newPosition = new Point
+                {
+                    X = ledGroupViewModel.StartPositionOnImage.X + (ledGroupViewModel.LedGroup.Leds[i].X + ledGroupViewModel.LedGroup.View.GridLedStartOffset.X + 1) * deltaX,
+                    Y = ledGroupViewModel.StartPositionOnImage.Y + (ledGroupViewModel.LedGroup.Leds[i].Y + ledGroupViewModel.LedGroup.View.GridLedStartOffset.Y + 1) * deltaY
+                };
 
-                Leds[i + LedOffsets[ledGroupViewModel].Offset].Position = new Point(x * scaleX + offsetX, y * scaleY + offsetY);
+                if (scale)
+                    Leds[i + LedOffsets[ledGroupViewModel].Offset].Position = _ScalePoint(newPosition);
+                else
+                    Leds[i + LedOffsets[ledGroupViewModel].Offset].Position = newPosition;
             }
             
-            ledGroupViewModel.StartPositionOnImageScaled = new Point(ledGroupViewModel.StartPositionOnImage.X * scaleX + offsetX, ledGroupViewModel.StartPositionOnImage.Y * scaleY + offsetY);
-            ledGroupViewModel.SizeOnImageScaled = new Size(ledGroupViewModel.SizeOnImage.Width * scaleX, ledGroupViewModel.SizeOnImage.Height * scaleY);
+            if (scale)
+            {
+                ledGroupViewModel.StartPositionOnImageScaled = _ScalePoint(ledGroupViewModel.StartPositionOnImage);
+                ledGroupViewModel.SizeOnImageScaled = _ScaleSize(ledGroupViewModel.SizeOnImage);
+            }
+            else
+            {
+                ledGroupViewModel.StartPositionOnImageScaled = new Point(ledGroupViewModel.StartPositionOnImage.X, ledGroupViewModel.StartPositionOnImage.Y);
+                ledGroupViewModel.SizeOnImageScaled = new Size(ledGroupViewModel.SizeOnImage.Width, ledGroupViewModel.SizeOnImage.Height);
+            }            
         }
 
         private void OnSelectLedEntityCommand()
         {
-            SendMessage(MediatorMessages.LedEntitySelected, null);
+            _SendMessage(MediatorMessages.LedEntitySelectButtonClicked, null);
         }
 
         /// <summary>
@@ -271,7 +272,16 @@ namespace Led.ViewModels
             foreach (LedGroupPropertiesVM LedGroupViewModel in LedGroups)
             {
                 //NEED: Every added group needs to have a different identifier (BusID, PositionInBus)
-                //LedIDToGroupVM.Add(new LedGroupIdentifier(LedGroupViewModel.LedGroup.BusID, LedGroupViewModel.LedGroup.PositionInBus), LedGroupViewModel);
+                LedIDToGroupVM.Add(new LedGroupIdentifier(LedGroupViewModel.LedGroup.BusID, LedGroupViewModel.LedGroup.PositionInBus), LedGroupViewModel);
+            }
+        }
+
+        protected void SetLedColor(List<int> leds, Color color)
+        {
+            foreach (int ID in leds)
+            {
+                if (Leds.Count > ID && ID >= 0)
+                    Leds[ID].Brush = new SolidColorBrush(color);
             }
         }
 
@@ -283,7 +293,11 @@ namespace Led.ViewModels
         {
             foreach (Utility.LedModelID ID in LedChangeData.LedIDs)
             {
-                Leds[ID.Led + LedOffsets[LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset].Brush = new SolidColorBrush(LedChangeData.Color);
+                LedGroupIdentifier identifier = new LedGroupIdentifier(ID.BusID, ID.PositionInBus);
+                if (LedIDToGroupVM.ContainsKey(identifier))
+                    Leds[ID.Led + LedOffsets[LedIDToGroupVM[identifier]].Offset].Brush = new SolidColorBrush(LedChangeData.Color);
+                else
+                    Console.WriteLine("LedGroup with BusID: {0} and Position: {1} was not indexed.", identifier.BusID, identifier.PositionInBus);
             }
         }
 
@@ -299,15 +313,40 @@ namespace Led.ViewModels
             }
         }
 
-        protected void SendMessage(MediatorMessages message, object data)
+        protected Point _ScalePoint(Point point)
+        {
+            double scaleX = 1.01669877970456;
+            double scaleY = 1.01669877970456;
+            double offsetX = 0.16666666666668561;
+            double offsetY = 15.90170657858522;
+
+            return  new Point
+            {
+                X = point.X * scaleX + offsetX,
+                Y = point.Y * scaleY + offsetY
+            };
+        }
+
+        protected Size _ScaleSize(Size size)
+        {
+            double scaleX = 1.01669877970456;
+            double scaleY = 1.01669877970456;
+            double offsetX = 0.16666666666668561;
+            double offsetY = 15.90170657858522;
+
+            return new Size
+            {
+                Width = size.Width * scaleX + offsetX,
+                Height = size.Height * scaleY + offsetY
+            };
+        }
+
+        protected void _SendMessage(MediatorMessages message, object data)
         {
             _Mediator.BroadcastMessage(message, this, data);
         }
 
-        public virtual void RecieveMessage(MediatorMessages message, object sender, object data)
-        {
-            //throw new NotImplementedException();
-        }
+        public abstract void RecieveMessage(MediatorMessages message, object sender, object data);
     }
 
     class LedOffset

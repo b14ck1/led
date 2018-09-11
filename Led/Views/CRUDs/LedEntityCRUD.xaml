@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Led.View"
         xmlns:Behaviours="clr-namespace:Led.Behaviours"
         mc:Ignorable="d"
-        Title="LedEntityCreation"
+        Title="LedEntityCRUD"
         MinHeight="395" MinWidth="236"
         SizeToContent="WidthAndHeight"
         Behaviours:WindowClosingBehaviour.Closing="{Binding CloseWindowCommand}">

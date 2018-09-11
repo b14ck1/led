@@ -181,14 +181,44 @@ namespace Led
 
     public enum MediatorMessages
     {
-        LedEntitySelected,
-        EditedSelectedLeds
+        LedEntitySelectButtonClicked,
+        EffectVMEditSelectedLedsClicked,
+        EffectVMEditSelectedLedsFinished,
+        EffectVMEditSelectedLedsClear,
+        GroupBusDefinitionsChanged,
+        GroupBusDefinitionsNeedCorrectionChanged
+    }
+
+    public class MediatorMessageData
+    {
+        public class EffectVMEditSelectedLeds
+        {
+            public bool Edit { get; }
+            public List<Utility.LedModelID> SelectedLeds { get; }
+
+            public EffectVMEditSelectedLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
+            {
+                this.Edit = Edit;
+                this.SelectedLeds = SelectedLeds;
+            }
+        }
+
+        public class GroupBusDefinitionsNeedCorrectionChanged
+        {
+            public Dictionary<ViewModels.LedGroupPropertiesVM, bool> NeedCorrection { get; }
+            
+            public GroupBusDefinitionsNeedCorrectionChanged(Dictionary<ViewModels.LedGroupPropertiesVM, bool> needCorrection)
+            {
+                NeedCorrection = needCorrection;
+            }
+        }
     }
 
     public static class Defines
     {
-        public static Brush LedGroupColor = Brushes.Red;
-        public static Brush LedSelectRectangleColor = Brushes.DarkSlateGray;
+        public static Brush LedGroupColor = Brushes.DarkSlateGray;
+        public static Brush LedGroupColorWrong = Brushes.Red;
+        public static Brush LedSelectRectangleColor = Brushes.Red;
 
         public static Brush LedColor = Brushes.LimeGreen;
         public static Brush LedSelectedColor = Brushes.Blue;

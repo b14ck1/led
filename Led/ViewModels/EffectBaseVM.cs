@@ -142,6 +142,7 @@ namespace Led.ViewModels
             EffectBase = new Model.Effect.EffectSetColor();
 
             EditCommand = new Command(OnEditCommand);
+            ClearCommand = new Command(OnClearCommand);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
@@ -154,23 +155,16 @@ namespace Led.ViewModels
 
         public void OnEditCommand()
         {
-            if (_editingLeds)
-            {
-                _editingLeds = false;
-                RaisePropertyChanged(nameof(EditCommandContent));
-                SendMessage(MediatorMessages.EditedSelectedLeds, new EditLedArgs(false, _effectBase.Leds));                
-            }
-            else
-            {
-                _editingLeds = true;
-                RaisePropertyChanged(nameof(EditCommandContent));
-                SendMessage(MediatorMessages.EditedSelectedLeds, new EditLedArgs(true, _effectBase.Leds));                
-            }
+            _editingLeds = !_editingLeds;
+            RaisePropertyChanged(nameof(EditCommandContent));
+            SendMessage(MediatorMessages.EffectVMEditSelectedLedsClicked, new MediatorMessageData.EffectVMEditSelectedLeds(_editingLeds, _effectBase.Leds));
         }
 
         public void OnClearCommand()
         {
-            
+            Leds.Clear();
+            RaisePropertyChanged(nameof(NumLEDs));
+            SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, null);
         }
 
         public void OnPreviewCommand()
@@ -195,19 +189,18 @@ namespace Led.ViewModels
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
-            //throw new NotImplementedException();
-        }
-    }
-
-    public class EditLedArgs
-    {
-        public bool Edit;
-        public List<Utility.LedModelID> SelectedLeds;
-
-        public EditLedArgs(bool Edit, List<Utility.LedModelID> SelectedLeds)
-        {
-            this.Edit = Edit;
-            this.SelectedLeds = SelectedLeds;
+            switch (message)
+            {
+                case MediatorMessages.EffectVMEditSelectedLedsFinished:
+                    Leds = (data as MediatorMessageData.EffectVMEditSelectedLeds).SelectedLeds;
+                    break;
+                case MediatorMessages.GroupBusDefinitionsChanged:
+                    break;
+                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
