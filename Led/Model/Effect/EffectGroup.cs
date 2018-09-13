@@ -7,8 +7,8 @@ namespace Led.Model.Effect
     {
         public List<EffectBase> Effects { get; set; }
 
-        public EffectGroup()
-            : base(EffectType.Group)
+        public EffectGroup(ushort startFrame = 0, ushort endFrame = 0)
+            : base(EffectType.Group, startFrame, endFrame)
         {
             Effects = new List<EffectBase>();
         }

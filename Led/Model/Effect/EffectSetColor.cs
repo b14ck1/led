@@ -7,8 +7,8 @@ namespace Led.Model.Effect
     {
         public Color Color { get; set; }
 
-        public EffectSetColor()
-            : base(EffectType.SetColor)
+        public EffectSetColor(ushort startFrame = 0, ushort endFrame = 0)
+            : base(EffectType.SetColor, startFrame, endFrame)
         {
         }
     }

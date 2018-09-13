@@ -9,8 +9,8 @@ namespace Led.Model.Effect
         public short BlinkFrames { get; set; }
         public short CurrColor { get; set; }
 
-        public EffectBlinkColor()
-            : base(EffectType.Blink)
+        public EffectBlinkColor(ushort startFrame = 0, ushort endFrame = 0)
+            : base(EffectType.Blink, startFrame, endFrame)
         {
             Color = Color;
             BlinkFrames = BlinkFrames;

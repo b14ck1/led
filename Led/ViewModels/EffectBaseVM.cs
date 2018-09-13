@@ -27,53 +27,55 @@ namespace Led.ViewModels
 
         public bool EffectActive
         {
-            get => _effectBase.Active;
+            get => EffectBase.Active;
             set
             {
-                if (_effectBase.Active != value)
+                if (EffectBase.Active != value)
                 {
-                    _effectBase.Active = value;
+                    EffectBase.Active = value;
                     RaisePropertyChanged(nameof(EffectActive));
                 }
             }
         }
 
-        public short StartFrame
+        public ushort StartFrame
         {
-            get => _effectBase.StartFrame;
+            get => EffectBase.StartFrame;
             set
             {
-                if (_effectBase.StartFrame != value && value >= 0)
+                if (EffectBase.StartFrame != value)
                 {
-                    _effectBase.StartFrame = value;
-                    _effectBase.EndFrame = (short)(StartFrame + Dauer);
+                    EffectBase.EndFrame = (ushort)(value + Dauer);
+                    EffectBase.StartFrame = value;
+                    
                     RaisePropertyChanged(nameof(StartFrame));
-                    RaisePropertyChanged(nameof(Endframe));
+                    RaisePropertyChanged(nameof(EndFrame));
                 }
             }
         }
-        public short Dauer
+        public ushort Dauer
         {
-            get => (short)(_effectBase.EndFrame - _effectBase.StartFrame);
+            get => EffectBase.Dauer;
             set
             {
-                if (Dauer != value && value > 0)
+                if (Dauer != value)
                 {
-                    _effectBase.EndFrame = (short)(StartFrame + Dauer);
+                    EffectBase.EndFrame = (ushort)(StartFrame + value);
+
                     RaisePropertyChanged(nameof(Dauer));
-                    RaisePropertyChanged(nameof(Endframe));
+                    RaisePropertyChanged(nameof(EndFrame));
                 }
             }
         }
-        public short Endframe
+        public ushort EndFrame
         {
-            get => _effectBase.EndFrame;
+            get => EffectBase.EndFrame;
             set
             {
-                if (_effectBase.EndFrame != value && value > StartFrame)
+                if (EffectBase.EndFrame != value && value >= StartFrame)
                 {
-                    _effectBase.EndFrame = value;                    
-                    RaisePropertyChanged(nameof(Endframe));
+                    EffectBase.EndFrame = value;                    
+                    RaisePropertyChanged(nameof(EndFrame));
                     RaisePropertyChanged(nameof(Dauer));
                 }
             }
@@ -81,24 +83,24 @@ namespace Led.ViewModels
 
         public EffectType EffectType
         {
-            get => _effectBase.EffectType;
+            get => EffectBase.EffectType;
             set
             {
-                    if (_effectBase.EffectType != value)
+                    if (EffectBase.EffectType != value)
                 {
                     switch (value)
                     {
                         case EffectType.SetColor:
-                            _effectBase = new Model.Effect.EffectSetColor();
+                            EffectBase = new Model.Effect.EffectSetColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Blink:
-                            _effectBase = new Model.Effect.EffectBlinkColor();
+                            EffectBase = new Model.Effect.EffectBlinkColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Fade:
-                            _effectBase = new Model.Effect.EffectFadeColor();
+                            EffectBase = new Model.Effect.EffectFadeColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Group:
-                            _effectBase = new Model.Effect.EffectGroup();
+                            EffectBase = new Model.Effect.EffectGroup(StartFrame, EndFrame);
                             break;
                         default:
                             break;
@@ -111,16 +113,16 @@ namespace Led.ViewModels
 
         public List<Utility.LedModelID> Leds
         {
-            get => _effectBase.Leds;
+            get => EffectBase.Leds;
             set
             {
-                _effectBase.Leds = value;
+                EffectBase.Leds = value;
                 RaisePropertyChanged(nameof(NumLEDs));
             }
         }
         public int NumLEDs
         {
-            get => _effectBase.Leds.Count();
+            get => EffectBase.Leds.Count();
         }
 
         private bool _editingLeds;
