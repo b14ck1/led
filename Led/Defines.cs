@@ -135,10 +135,10 @@ namespace Led
         public byte BusID;
         public byte PositionInBus;
 
-        public LedGroupIdentifier(byte BusID, byte PositionInBus)
+        public LedGroupIdentifier(byte busID, byte positionInBus)
         {
-            this.BusID = BusID;
-            this.PositionInBus = PositionInBus;
+            BusID = busID;
+            PositionInBus = positionInBus;
         }
 
         public override int GetHashCode()
@@ -196,10 +196,10 @@ namespace Led
             public bool Edit { get; }
             public List<Utility.LedModelID> SelectedLeds { get; }
 
-            public EffectVMEditSelectedLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
+            public EffectVMEditSelectedLeds(bool edit, List<Utility.LedModelID> selectedLeds)
             {
-                this.Edit = Edit;
-                this.SelectedLeds = SelectedLeds;
+                Edit = edit;
+                SelectedLeds = selectedLeds;
             }
         }
 

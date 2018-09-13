@@ -10,21 +10,16 @@ namespace Led.ViewModels
 {
     public class LedGridCellVM : INPC
     {
-        private Model.LedGridCell _ledView;
-        public Model.LedGridCell LedView
-        {
-            get => _ledView;
-        }
-
+        public Model.LedGridCell LedView { get; }
 
         public bool Status
         {
-            get => _ledView.Status;
+            get => LedView.Status;
             set
             {
-                if (_ledView.Status != value)
+                if (LedView.Status != value)
                 {
-                    _ledView.Status = value;
+                    LedView.Status = value;
                     RaisePropertyChanged("Brush");
                 }
             }
@@ -34,14 +29,14 @@ namespace Led.ViewModels
             get => Status ? Defines.LedColor : Brushes.Transparent;
         }
 
-        private LedViewArrowDirection _direction
+        private LedViewArrowDirection _Direction
         {
-            get => _ledView.Direction;
+            get => LedView.Direction;
             set
             {
-                if (_ledView.Direction != value)
+                if (LedView.Direction != value)
                 {
-                    _ledView.Direction = value;
+                    LedView.Direction = value;
                     RaisePropertyChanged("Arrow");
                 }
             }
@@ -50,7 +45,7 @@ namespace Led.ViewModels
         {
             get
             {
-                switch (_direction)
+                switch (_Direction)
                 {
                     case LedViewArrowDirection.Up: return _ArrowUp;
                     case LedViewArrowDirection.Right: return _ArrowRight;
@@ -66,19 +61,19 @@ namespace Led.ViewModels
 
         public LedGridCellVM()
         {
-            _ledView = new Model.LedGridCell();
+            LedView = new Model.LedGridCell();
 
-            MouseDownCommand = new Command<MouseEventArgs>(OnMouseDownCommand);
+            MouseDownCommand = new Command<MouseEventArgs>(_OnMouseDownCommand);
         }
 
         public LedGridCellVM(Model.LedGridCell _ledView)
         {
-            this._ledView = _ledView;
+            this.LedView = _ledView;
 
-            MouseDownCommand = new Command<MouseEventArgs>(OnMouseDownCommand);
+            MouseDownCommand = new Command<MouseEventArgs>(_OnMouseDownCommand);
         }
 
-        private void OnMouseDownCommand(MouseEventArgs e)
+        private void _OnMouseDownCommand(MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
                 Status = !Status;
@@ -87,10 +82,10 @@ namespace Led.ViewModels
             {
                 if (Status)
                 {
-                    if (_direction == LedViewArrowDirection.None)
-                        _direction = 0;
+                    if (_Direction == LedViewArrowDirection.None)
+                        _Direction = 0;
                     else
-                        _direction++;
+                        _Direction++;
                 }
             }
         }

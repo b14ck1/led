@@ -11,15 +11,15 @@ namespace Led.Services
         public string OpenFileDialog(string filter = null)
         {
             // Configure open file dialog box
-            Microsoft.Win32.OpenFileDialog dlg = new Microsoft.Win32.OpenFileDialog()
+            Microsoft.Win32.OpenFileDialog _Dialog = new Microsoft.Win32.OpenFileDialog()
             {
                 Filter = filter
             };
 
             // Show open file dialog box
-            dlg.ShowDialog();
+            _Dialog.ShowDialog();
 
-            return dlg.FileName;
+            return _Dialog.FileName;
         }
     }
 }

@@ -90,10 +90,10 @@ namespace Led.Utility
                     //temp.Add(new Model.LedChangeData(x.LedID, Data.ID, Data.Color[Data.CurrColor]));
                 }
 
-                if (Data.CurrColor == Data.Color.Count - 1)
-                    Data.CurrColor = 0;
+                if (Data.CurrentColor == Data.Colors.Count - 1)
+                    Data.CurrentColor = 0;
                 else
-                    Data.CurrColor++;
+                    Data.CurrentColor++;
             }
             return temp;
         }

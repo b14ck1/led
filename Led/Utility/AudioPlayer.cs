@@ -12,24 +12,24 @@ namespace Led.Controller
 {
     public sealed class AudioPlayer : IDisposable
     {
-        private WaveOutEvent outputDevice;
-        private AudioFileReader audioFile;
-        private readonly string filePath;
+        private WaveOutEvent _OutputDevice;
+        private AudioFileReader _AudioFile;
+        private readonly string _FilePath;
 
         /// <summary>
         /// Current playback position of the audio file.
         /// </summary>
-        public TimeSpan CurrentTime => audioFile.CurrentTime;
+        public TimeSpan CurrentTime => _AudioFile.CurrentTime;
         /// <summary>
         /// Total length of the audio file.
         /// </summary>
         public readonly TimeSpan Length;
-        public bool IsPlaying => outputDevice.PlaybackState.Equals(PlaybackState.Playing);
+        public bool IsPlaying => _OutputDevice.PlaybackState.Equals(PlaybackState.Playing);
 
         public float Volume
         {
-            get => outputDevice.Volume;
-            set => outputDevice.Volume = value;
+            get => _OutputDevice.Volume;
+            set => _OutputDevice.Volume = value;
         }
 
         /// <summary>
@@ -39,12 +39,12 @@ namespace Led.Controller
 
         public AudioPlayer(string audioFilePath)
         {
-            filePath = audioFilePath;
-            audioFile = new AudioFileReader(audioFilePath);
-            Length = audioFile.TotalTime;
-            outputDevice = new WaveOutEvent();
-            outputDevice.PlaybackStopped += OnPlaybackStopped;
-            outputDevice.Init(audioFile);
+            _FilePath = audioFilePath;
+            _AudioFile = new AudioFileReader(audioFilePath);
+            Length = _AudioFile.TotalTime;
+            _OutputDevice = new WaveOutEvent();
+            _OutputDevice.PlaybackStopped += OnPlaybackStopped;
+            _OutputDevice.Init(_AudioFile);
         }
 
         public Image CreateWaveform(int width, int height)
@@ -66,7 +66,7 @@ namespace Led.Controller
 
             // create WaveFormRenderer
             var renderer = new WaveFormRenderer();
-            var image = renderer.Render(filePath, maxPeakProvider, myRendererSettings);
+            var image = renderer.Render(_FilePath, maxPeakProvider, myRendererSettings);
             return image;
         }
 
@@ -77,10 +77,10 @@ namespace Led.Controller
         /// <param name="volume">Playback volume, defaults to 1f (100%) if null</param>
         public void Play(TimeSpan time)
         {
-            var pausedTime = audioFile.CurrentTime;
+            var pausedTime = _AudioFile.CurrentTime;
             Debug.WriteLine($"paused timeSpan: {pausedTime}, timeSpan to start: {time}");
             // don't change time if it didn't change, or playback is almost finished (-1 seconds to fix stopped event delay)
-            if (!pausedTime.Equals(time) && time.CompareTo(audioFile.TotalTime.Subtract(TimeSpan.FromSeconds(1))) < 0)
+            if (!pausedTime.Equals(time) && time.CompareTo(_AudioFile.TotalTime.Subtract(TimeSpan.FromSeconds(1))) < 0)
             {
                 ChangeTime(time);
             }
@@ -89,7 +89,7 @@ namespace Led.Controller
 
         public void Pause()
         {
-            outputDevice.Pause();
+            _OutputDevice.Pause();
             Debug.WriteLine("PAUSE: " + CurrentTime);
         }
 
@@ -100,35 +100,35 @@ namespace Led.Controller
         /// <param name="newTime">TimeSpan to start playback at</param>
         public void ChangeTime(TimeSpan newTime)
         {
-            switch (outputDevice.PlaybackState)
+            switch (_OutputDevice.PlaybackState)
             {
                 case PlaybackState.Playing:
                     // stop to clear buffer
                     Stop();
-                    audioFile.CurrentTime = newTime;
+                    _AudioFile.CurrentTime = newTime;
                     Play();
                     break;
                 case PlaybackState.Paused:
                     // stop to clear buffer
                     Stop();
-                    audioFile.CurrentTime = newTime;
+                    _AudioFile.CurrentTime = newTime;
                     break;
                 case PlaybackState.Stopped:
-                    audioFile.CurrentTime = newTime;
+                    _AudioFile.CurrentTime = newTime;
                     break;
             }
         }
 
         private void Play()
         {
-            outputDevice.Play();
+            _OutputDevice.Play();
             Debug.WriteLine("PLAY: " + CurrentTime);
         }
 
 
         private void Stop()
         {
-            outputDevice.Stop();
+            _OutputDevice.Stop();
             Debug.WriteLine("STOP: " + CurrentTime);
         }
 
@@ -138,15 +138,15 @@ namespace Led.Controller
             // reset playback position if playback has "normally" stopped
             if (CurrentTime >= Length)
             {
-                audioFile.Position = 0;
+                _AudioFile.Position = 0;
                 PlaybackFinished?.Invoke(this, EventArgs.Empty);
             }
         }
 
         public void Dispose()
         {
-            outputDevice.Dispose();
-            audioFile.Dispose();
+            _OutputDevice.Dispose();
+            _AudioFile.Dispose();
         }
     }
 

@@ -6,10 +6,10 @@ namespace Led.Model
     public class LedGridCell : INPC
     {
         [JsonProperty]
-        public bool Status;
+        public bool Status { get; set; }
 
         [JsonProperty]
-        public LedViewArrowDirection Direction;
+        public LedViewArrowDirection Direction { get; set; } 
 
         public LedGridCell()
         {

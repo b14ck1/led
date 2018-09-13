@@ -111,8 +111,8 @@ namespace Led.ViewModels
         public virtual Cursor FrontCursor => Cursors.Arrow;
         public virtual Cursor BackCursor => Cursors.Arrow;
 
-        protected Dictionary<LedGroupIdentifier, LedGroupPropertiesVM> LedIDToGroupVM { get; private set; }
-        protected Dictionary<LedGroupPropertiesVM, LedOffset> LedOffsets { get; private set; }
+        protected Dictionary<LedGroupIdentifier, LedGroupPropertiesVM> _LedIDToGroupVM { get; private set; }
+        protected Dictionary<LedGroupPropertiesVM, LedOffset> _LedOffsets { get; private set; }
 
         public Command SelectLedEntityCommand { get; set; }
         public static string SelectLedEntityMessage = "LedEntitySelected";
@@ -131,15 +131,15 @@ namespace Led.ViewModels
 
             //Initialize all that shit
             LedGroups = new List<LedGroupPropertiesVM>();
-            AddExisitingLedGroups();
-            GenerateLedVMs();
-            MapLedGroups();
-            UpdateAllLedPositions();
+            _AddExisitingLedGroups();
+            _GenerateLedVMs();
+            _MapLedGroups();
+            _UpdateAllLedPositions();
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
 
-            SelectLedEntityCommand = new Command(OnSelectLedEntityCommand);
+            SelectLedEntityCommand = new Command(_OnSelectLedEntityCommand);
 
             //If it is a new entity (has no name), give it a default name
             if (Name == null)
@@ -155,7 +155,7 @@ namespace Led.ViewModels
         /// <summary>
         /// If we edit an existing LedEntity, add's all existing LedGroups to List:LedGroups.
         /// </summary>
-        private void AddExisitingLedGroups()
+        private void _AddExisitingLedGroups()
         {
             foreach (Model.LedBus LedBus in LedEntity.LedBuses.Values)
             {
@@ -170,7 +170,7 @@ namespace Led.ViewModels
         /// Calculates all Led Positions of all Groups and saves them in List:Leds.
         /// Index all generated LedVMs in List:LedOffsets.
         /// </summary>
-        protected void GenerateLedVMs()
+        protected void _GenerateLedVMs()
         {
             Leds = new List<LedVM>();
 
@@ -189,23 +189,23 @@ namespace Led.ViewModels
                 }
             }
 
-            IndexLedVMs();
+            _IndexLedVMs();
         }
 
         /// <summary>
         /// Index all generated LedVMs, to get from a specific SAVED Led to the corresponding DISPLAYED Led.
         /// </summary>
-        private void IndexLedVMs()
+        private void _IndexLedVMs()
         {
-            LedOffsets = new Dictionary<LedGroupPropertiesVM, LedOffset>();
+            _LedOffsets = new Dictionary<LedGroupPropertiesVM, LedOffset>();
 
             int offset = 0;
             foreach (LedGroupPropertiesVM ledGroupVM in LedGroups)
             {
-                if (LedOffsets.Count != 0)
-                    offset = LedOffsets.Last().Value.Offset + LedOffsets.Last().Value.Length;
+                if (_LedOffsets.Count != 0)
+                    offset = _LedOffsets.Last().Value.Offset + _LedOffsets.Last().Value.Length;
                 if (ledGroupVM.LedGroup.Leds.Count > 0)
-                    LedOffsets.Add(ledGroupVM, new LedOffset(offset, ledGroupVM.LedGroup.Leds.Count, ledGroupVM.View));
+                    _LedOffsets.Add(ledGroupVM, new LedOffset(offset, ledGroupVM.LedGroup.Leds.Count, ledGroupVM.View));
                 else
                     Console.WriteLine("LedGroup with BusID: {0} and Position: {1} got no Leds. No indexing required.", ledGroupVM.BusID, ledGroupVM.PositionInBus);
             }
@@ -215,11 +215,11 @@ namespace Led.ViewModels
         /// Updates the position of all groups and leds.
         /// </summary>
         /// <param name="scale">Scale them to main window size or not. Default = false.</param>
-        protected void UpdateAllLedPositions(bool scale = false)
+        protected void _UpdateAllLedPositions(bool scale = false)
         {
             foreach (LedGroupPropertiesVM LedGroupViewModel in LedGroups)
             {
-                UpdateLedPositions(LedGroupViewModel, scale);
+                _UpdateLedPositions(LedGroupViewModel, scale);
             }
         }
 
@@ -227,7 +227,7 @@ namespace Led.ViewModels
         /// Updates the position of a specific group and the leds included.
         /// </summary>
         /// <param name="scale">Scale them to main window size or not. Default = false.</param>
-        protected void UpdateLedPositions(LedGroupPropertiesVM ledGroupViewModel, bool scale = false)
+        protected void _UpdateLedPositions(LedGroupPropertiesVM ledGroupViewModel, bool scale = false)
         {
             double deltaX = ledGroupViewModel.SizeOnImage.Width / (ledGroupViewModel.GridRangeX + 1);
             double deltaY = ledGroupViewModel.SizeOnImage.Height / (ledGroupViewModel.GridRangeY + 1);
@@ -241,9 +241,9 @@ namespace Led.ViewModels
                 };
 
                 if (scale)
-                    Leds[i + LedOffsets[ledGroupViewModel].Offset].Position = _ScalePoint(newPosition);
+                    Leds[i + _LedOffsets[ledGroupViewModel].Offset].Position = _ScalePoint(newPosition);
                 else
-                    Leds[i + LedOffsets[ledGroupViewModel].Offset].Position = newPosition;
+                    Leds[i + _LedOffsets[ledGroupViewModel].Offset].Position = newPosition;
             }
             
             if (scale)
@@ -258,7 +258,7 @@ namespace Led.ViewModels
             }            
         }
 
-        private void OnSelectLedEntityCommand()
+        private void _OnSelectLedEntityCommand()
         {
             _SendMessage(MediatorMessages.LedEntitySelectButtonClicked, null);
         }
@@ -266,17 +266,17 @@ namespace Led.ViewModels
         /// <summary>
         /// Maps all exisiting led groups to the corresponding VM.
         /// </summary>
-        private void MapLedGroups()
+        private void _MapLedGroups()
         {
-            LedIDToGroupVM = new Dictionary<LedGroupIdentifier, LedGroupPropertiesVM>();
+            _LedIDToGroupVM = new Dictionary<LedGroupIdentifier, LedGroupPropertiesVM>();
             foreach (LedGroupPropertiesVM LedGroupViewModel in LedGroups)
             {
                 //NEED: Every added group needs to have a different identifier (BusID, PositionInBus)
-                LedIDToGroupVM.Add(new LedGroupIdentifier(LedGroupViewModel.LedGroup.BusID, LedGroupViewModel.LedGroup.PositionInBus), LedGroupViewModel);
+                _LedIDToGroupVM.Add(new LedGroupIdentifier(LedGroupViewModel.LedGroup.BusID, LedGroupViewModel.LedGroup.PositionInBus), LedGroupViewModel);
             }
         }
 
-        protected void SetLedColor(List<int> leds, Color color)
+        protected void _SetLedColor(List<int> leds, Color color)
         {
             foreach (int ID in leds)
             {
@@ -288,14 +288,14 @@ namespace Led.ViewModels
         /// <summary>
         /// Sets the color of the specified leds.
         /// </summary>
-        /// <param name="LedChangeData"></param>
-        public void SetLedColor(Model.LedChangeData LedChangeData)
+        /// <param name="ledChangeData"></param>
+        public void SetLedColor(Model.LedChangeData ledChangeData)
         {
-            foreach (Utility.LedModelID ID in LedChangeData.LedIDs)
+            foreach (Utility.LedModelID ID in ledChangeData.LedIDs)
             {
                 LedGroupIdentifier identifier = new LedGroupIdentifier(ID.BusID, ID.PositionInBus);
-                if (LedIDToGroupVM.ContainsKey(identifier))
-                    Leds[ID.Led + LedOffsets[LedIDToGroupVM[identifier]].Offset].Brush = new SolidColorBrush(LedChangeData.Color);
+                if (_LedIDToGroupVM.ContainsKey(identifier))
+                    Leds[ID.Led + _LedOffsets[_LedIDToGroupVM[identifier]].Offset].Brush = new SolidColorBrush(ledChangeData.Color);
                 else
                     Console.WriteLine("LedGroup with BusID: {0} and Position: {1} was not indexed.", identifier.BusID, identifier.PositionInBus);
             }
@@ -304,12 +304,12 @@ namespace Led.ViewModels
         /// <summary>
         /// Sets the color of the specified leds.
         /// </summary>
-        /// <param name="LedChangeData"></param>
-        public void SetLedColor(List<Model.LedChangeData> LedChangeData)
+        /// <param name="ledChangeData"></param>
+        public void SetLedColor(List<Model.LedChangeData> ledChangeData)
         {
-            foreach (Model.LedChangeData ChangeData in LedChangeData)
+            foreach (Model.LedChangeData changeData in ledChangeData)
             {
-                SetLedColor(ChangeData);
+                SetLedColor(changeData);
             }
         }
 
@@ -351,15 +351,15 @@ namespace Led.ViewModels
 
     class LedOffset
     {
-        public int Offset;
-        public int Length;
-        public LedEntityView View;
+        public int Offset { get; set; }
+        public int Length { get; set; }
+        public LedEntityView View { get; set; }
 
-        public LedOffset(int Offset, int Length, LedEntityView View)
+        public LedOffset(int offset, int length, LedEntityView view)
         {
-            this.Offset = Offset;
-            this.Length = Length;
-            this.View = View;
+            Offset = offset;
+            Length = length;
+            View = view;
         }       
     }
 }

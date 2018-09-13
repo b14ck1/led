@@ -111,16 +111,16 @@ namespace Led.ViewModels
             }
         }
 
-        public List<Utility.LedModelID> Leds
+        public List<Utility.LedModelID> SelectedLeds
         {
             get => EffectBase.Leds;
             set
             {
                 EffectBase.Leds = value;
-                RaisePropertyChanged(nameof(NumLEDs));
+                RaisePropertyChanged(nameof(NumberOfLeds));
             }
         }
-        public int NumLEDs
+        public int NumberOfLeds
         {
             get => EffectBase.Leds.Count();
         }
@@ -159,14 +159,14 @@ namespace Led.ViewModels
         {
             _editingLeds = !_editingLeds;
             RaisePropertyChanged(nameof(EditCommandContent));
-            SendMessage(MediatorMessages.EffectVMEditSelectedLedsClicked, new MediatorMessageData.EffectVMEditSelectedLeds(_editingLeds, _effectBase.Leds));
+            _SendMessage(MediatorMessages.EffectVMEditSelectedLedsClicked, new MediatorMessageData.EffectVMEditSelectedLeds(_editingLeds, _effectBase.Leds));
         }
 
         public void OnClearCommand()
         {
-            Leds.Clear();
-            RaisePropertyChanged(nameof(NumLEDs));
-            SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, null);
+            SelectedLeds.Clear();
+            RaisePropertyChanged(nameof(NumberOfLeds));
+            _SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, null);
         }
 
         public void OnPreviewCommand()
@@ -184,7 +184,7 @@ namespace Led.ViewModels
 
         }
 
-        protected void SendMessage(MediatorMessages message, object data)
+        protected void _SendMessage(MediatorMessages message, object data)
         {
             _Mediator.BroadcastMessage(message, this, data);
         }
@@ -194,7 +194,7 @@ namespace Led.ViewModels
             switch (message)
             {
                 case MediatorMessages.EffectVMEditSelectedLedsFinished:
-                    Leds = (data as MediatorMessageData.EffectVMEditSelectedLeds).SelectedLeds;
+                    SelectedLeds = (data as MediatorMessageData.EffectVMEditSelectedLeds).SelectedLeds;
                     break;
                 case MediatorMessages.GroupBusDefinitionsChanged:
                     break;

@@ -8,15 +8,15 @@ namespace Led.ViewModels
 {
     class DialogVM : INPC
     {
-        public bool DialogResult;
+        public bool DialogResult { get; set; }
 
-        public void OnOkCommand()
+        protected void _OnOkCommand()
         {
             DialogResult = true;
             App.Instance.WindowService.CloseWindow(this);
         }
 
-        public void OnAbortCommand()
+        protected void _OnAbortCommand()
         {
             DialogResult = false;
             App.Instance.WindowService.CloseWindow(this);

@@ -38,13 +38,13 @@ namespace Led.ViewModels
             }
         }
 
-        public LedEntityView View;
+        public LedEntityView View { get; set; }
 
-        public LedVM(Point Position, LedEntityView View)
+        public LedVM(Point position, LedEntityView view)
         {
-            this.Position = Position;
+            Position = position;
             Brush = Defines.LedColor;
-            this.View = View;
+            View = view;
         }
     }
 }

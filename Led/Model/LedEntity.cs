@@ -9,16 +9,16 @@ namespace Led.Model
     class LedEntity : INPC
     {
         [JsonProperty]
-        public string LedEntityName;
+        public string LedEntityName { get; set; }
 
         [JsonProperty]
-        public Dictionary<byte, LedBus> LedBuses;
+        public Dictionary<byte, LedBus> LedBuses { get; set; }
 
         [JsonProperty]
-        public List<Effect.EffectBase> Effects;
+        public List<Effect.EffectBase> Effects { get; set; }
 
         [JsonProperty]
-        public Dictionary<LedEntityView, ImageInfo> ImageInfos;
+        public Dictionary<LedEntityView, ImageInfo> ImageInfos { get; set; }
 
         public LedEntity()
         {

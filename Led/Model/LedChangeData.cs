@@ -8,19 +8,19 @@ namespace Led.Model
     public class LedChangeData : INPC
     {
         [JsonProperty]
-        public List<Utility.LedModelID> LedIDs;
+        public List<Utility.LedModelID> LedIDs { get; set; }
 
         [JsonProperty]
-        public Color Color;
+        public Color Color { get; set; }
 
         [JsonProperty]
-        public ushort EffectID;
+        public ushort EffectID { get; set; }
 
-        public LedChangeData(List<Utility.LedModelID> LedIDs, Color Color, ushort EffectID)
+        public LedChangeData(List<Utility.LedModelID> ledIDs, Color color, ushort effectID)
         {
-            this.LedIDs = LedIDs;
-            this.Color = Color;
-            this.EffectID = EffectID;
+            LedIDs = ledIDs;
+            Color = color;
+            EffectID = effectID;
         }
     }
 }

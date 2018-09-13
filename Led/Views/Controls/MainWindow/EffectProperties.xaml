@@ -74,7 +74,7 @@
             <Label Content="Ausgewählte Led's" FontWeight="Bold" VerticalAlignment="Bottom" Margin="3,3,3,0" />
             
             <Label Content="Anzahl" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3"/>
-            <Label Content="{Binding NumLEDs}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3"/>
+            <Label Content="{Binding NumberOfLeds}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3"/>
 
             <Button Content="{Binding EditCommandContent}" Command="{Binding EditCommand}" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3" />
             <Button Content="Clear" Command="{Binding ClearCommand}" Grid.Row="2" Grid.Column="1" Margin="3,3,3,3" />

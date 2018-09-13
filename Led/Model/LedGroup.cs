@@ -11,31 +11,31 @@ namespace Led.Model
         /// Which bus
         /// </summary>
         [JsonProperty]
-        public byte BusID;
+        public byte BusID { get; set; }
 
         /// <summary>
         /// Position on the bus (hard wiring)
         /// </summary>
         [JsonProperty]
-        public byte PositionInBus;
+        public byte PositionInBus { get; set; }
 
         /// <summary>
         /// Position in the global grid of the base entity
         /// </summary>
         [JsonProperty]
-        public Point PositionInEntity;
+        public Point PositionInEntity { get; set; }
 
         /// <summary>
         /// All leds in this group in respect to the wiring of the physical leds
         /// </summary>
         [JsonProperty]
-        public List<Point> Leds;
+        public List<Point> Leds { get; set; }
 
         /// <summary>
         /// All relevant information to display this group
         /// </summary>
         [JsonProperty]
-        public LedGroupViewProperty View;
+        public LedGroupViewProperty View { get; set; }
 
         public LedGroup()
         {
