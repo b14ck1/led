@@ -13,9 +13,11 @@ namespace Led.Model.Effect
 
         public EffectType EffectType { get; private set; }
 
-        public short StartFrame { get; set; }
+        public ushort StartFrame { get; set; }
 
-        public short EndFrame { get; set; }
+        public ushort Dauer => (ushort)(EndFrame > StartFrame ? EndFrame - StartFrame : 0);
+
+        public ushort EndFrame { get; set; }
 
         public List<Utility.LedModelID> Leds { get; set; }
 
@@ -25,12 +27,12 @@ namespace Led.Model.Effect
 
         public short ColPriority { get; set; }
 
-        public EffectBase(EffectType EffectType)
+        public EffectBase(EffectType effectType, ushort startFrame = 0, ushort endFrame = 0)
         {
             Active = true;
-            this.EffectType = EffectType;
-            StartFrame = 0;
-            EndFrame = 1;
+            EffectType = effectType;
+            StartFrame = startFrame;
+            EndFrame = endFrame;
 
             PosPriority = 0;
             ColPriority = 0;

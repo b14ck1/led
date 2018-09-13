@@ -13,8 +13,8 @@ namespace Led.Model.Effect
     {
         public List<Color> Color { get; set; }
 
-        public EffectFadeColor()
-            : base(EffectType.Fade)
+        public EffectFadeColor(ushort startFrame = 0, ushort endFrame = 0)
+            : base(EffectType.Fade, startFrame, endFrame)
         {
             this.Color = Color;
         }

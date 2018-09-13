@@ -45,13 +45,13 @@
             <CheckBox IsChecked="{Binding EffectActive, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="3,3,3,3"/>
 
             <Label Content="Startframe" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Text="{Binding StartFrame, Mode=TwoWay}" Grid.Row="2" Grid.Column="2" Margin="3,3,3,3"/>
+            <xctk:DecimalUpDown Value="{Binding StartFrame, Mode=TwoWay}" Minimum="0" Grid.Row="2" Grid.Column="2" Margin="3,3,3,3"/>
 
             <Label Content="Dauer" Grid.Row="3" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Text="{Binding Dauer, Mode=TwoWay}" Grid.Row="3" Grid.Column="1" Margin="3,3,3,3"/>
+            <xctk:DecimalUpDown Value="{Binding Dauer, Mode=TwoWay}" Minimum="0" Grid.Row="3" Grid.Column="1" Margin="3,3,3,3"/>
 
             <Label Content="Endframe" Grid.Row="4" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Text="{Binding Endframe, Mode=TwoWay}" Grid.Row="4" Grid.Column="1" Margin="3,3,3,3"/>
+            <xctk:DecimalUpDown Value="{Binding EndFrame, Mode=TwoWay}" Minimum="0" Grid.Row="4" Grid.Column="1" Margin="3,3,3,3"/>
 
             <Label Content="Effekt" Grid.Row="5" Grid.Column="0" Margin="3,3,3,3"/>
             <ComboBox ItemsSource="{Binding Source={StaticResource enmEffect}}"
