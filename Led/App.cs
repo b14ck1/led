@@ -51,31 +51,31 @@ namespace Led
 
         static void MainWindowTest()
         {
-            Views.MainWindow MainWindow = new Views.MainWindow();
-            Views.Controls.MainWindow.LedEntityButtons EntityButtons = new Views.Controls.MainWindow.LedEntityButtons();
-            Views.Controls.LedEntityOverview Entity = new Views.Controls.LedEntityOverview();
-            Views.Controls.MainWindow.EffectProperties EffectProperties = new Views.Controls.MainWindow.EffectProperties();
+            Views.MainWindow mainWindow = new Views.MainWindow();
+            Views.Controls.MainWindow.LedEntityButtons entityButtons = new Views.Controls.MainWindow.LedEntityButtons();
+            Views.Controls.LedEntityOverview entity = new Views.Controls.LedEntityOverview();
+            Views.Controls.MainWindow.EffectProperties effectProperties = new Views.Controls.MainWindow.EffectProperties();
             Views.Controls.MainWindow.AudioUserControl audioUserControl = new Views.Controls.MainWindow.AudioUserControl();
 
-            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(MainWindow, Entity, EffectProperties, audioUserControl);
+            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, audioUserControl);
 
-            System.Windows.Controls.Grid.SetColumn(EntityButtons, 1);
-            MainWindow.Grid.Children.Add(EntityButtons);
+            System.Windows.Controls.Grid.SetColumn(entityButtons, 1);
+            mainWindow.Grid.Children.Add(entityButtons);
 
-            System.Windows.Controls.Grid.SetColumn(Entity, 1);
-            System.Windows.Controls.Grid.SetRow(Entity, 1);
-            MainWindow.Grid.Children.Add(Entity);
+            System.Windows.Controls.Grid.SetColumn(entity, 1);
+            System.Windows.Controls.Grid.SetRow(entity, 1);
+            mainWindow.Grid.Children.Add(entity);
 
-            System.Windows.Controls.Grid.SetColumn(EffectProperties, 2);
-            System.Windows.Controls.Grid.SetRow(EffectProperties, 1);
-            MainWindow.Grid.Children.Add(EffectProperties);
+            System.Windows.Controls.Grid.SetColumn(effectProperties, 2);
+            System.Windows.Controls.Grid.SetRow(effectProperties, 1);
+            mainWindow.Grid.Children.Add(effectProperties);           
 
             System.Windows.Controls.Grid.SetRow(audioUserControl, 2);
             System.Windows.Controls.Grid.SetColumn(audioUserControl, 0);
             System.Windows.Controls.Grid.SetColumnSpan(audioUserControl, 3);
-            MainWindow.Grid.Children.Add(audioUserControl);
+            mainWindow.Grid.Children.Add(audioUserControl);
 
-            Instance.WindowService.ShowNewWindow(MainWindow, MainViewModel);
+            Instance.WindowService.ShowNewWindow(mainWindow, MainViewModel);
         }
 
         static void JsonTest()

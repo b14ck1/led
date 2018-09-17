@@ -22,7 +22,7 @@ namespace Led.ViewModels
             {
                 if (_ledEntity != value)
                 {
-                    _ledEntity = value;
+                    _ledEntity = value;                    
                     RaiseAllPropertyChanged();
                 }
             }
@@ -51,7 +51,7 @@ namespace Led.ViewModels
         /// </summary>
         public string FrontImagePath
         {
-            get => _ledEntity.ImageInfos[LedEntityView.Front].Path;                
+            get => _ledEntity.ImageInfos[LedEntityView.Front].Path;
             set
             {
                 _ledEntity.ImageInfos[LedEntityView.Front].Path = value;
@@ -65,9 +65,9 @@ namespace Led.ViewModels
         {
             get => _ledEntity.ImageInfos[LedEntityView.Back].Path;
             set
-            {                
+            {
                 _ledEntity.ImageInfos[LedEntityView.Back].Path = value;
-                RaisePropertyChanged(nameof(BackImagePath));                
+                RaisePropertyChanged(nameof(BackImagePath));
             }
         }
 
@@ -79,7 +79,7 @@ namespace Led.ViewModels
         /// All LED Groups to be displayed (Rectangles).
         /// </summary>
         public List<LedGroupPropertiesVM> LedGroups { get; }
-        
+
         public virtual List<Rectangle> FrontLedGroups
         {
             get
@@ -127,14 +127,10 @@ namespace Led.ViewModels
 
         public LedEntityBaseVM(Model.LedEntity ledEntity)
         {
+            LedGroups = new List<LedGroupPropertiesVM>();
             LedEntity = ledEntity ?? throw new ArgumentNullException();
 
-            //Initialize all that shit
-            LedGroups = new List<LedGroupPropertiesVM>();
-            _AddExisitingLedGroups();
-            _GenerateLedVMs();
-            _MapLedGroups();
-            _UpdateAllLedPositions();
+            _Init();
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
@@ -147,9 +143,25 @@ namespace Led.ViewModels
         }
 
         public LedEntityBaseVM(LedEntityCRUDVM ledEntityCRUDVM)
-            :this(ledEntityCRUDVM.LedEntity)
+            : this(ledEntityCRUDVM.LedEntity)
         {
 
+        }
+
+        private void _Init()
+        {
+            LedGroups.Clear();
+            _AddExisitingLedGroups();
+            _GenerateLedVMs();
+            _MapLedGroups();
+            _UpdateAllLedPositions();
+
+        }
+
+        public void Update()
+        {
+            _Init();
+            _UpdateAllLedPositions(true);
         }
 
         /// <summary>
@@ -165,7 +177,7 @@ namespace Led.ViewModels
                 }
             }
         }
-        
+
         /// <summary>
         /// Calculates all Led Positions of all Groups and saves them in List:Leds.
         /// Index all generated LedVMs in List:LedOffsets.
@@ -210,7 +222,7 @@ namespace Led.ViewModels
                     Console.WriteLine("LedGroup with BusID: {0} and Position: {1} got no Leds. No indexing required.", ledGroupVM.BusID, ledGroupVM.PositionInBus);
             }
         }
-        
+
         /// <summary>
         /// Updates the position of all groups and leds.
         /// </summary>
@@ -245,7 +257,7 @@ namespace Led.ViewModels
                 else
                     Leds[i + _LedOffsets[ledGroupViewModel].Offset].Position = newPosition;
             }
-            
+
             if (scale)
             {
                 ledGroupViewModel.StartPositionOnImageScaled = _ScalePoint(ledGroupViewModel.StartPositionOnImage);
@@ -255,7 +267,7 @@ namespace Led.ViewModels
             {
                 ledGroupViewModel.StartPositionOnImageScaled = new Point(ledGroupViewModel.StartPositionOnImage.X, ledGroupViewModel.StartPositionOnImage.Y);
                 ledGroupViewModel.SizeOnImageScaled = new Size(ledGroupViewModel.SizeOnImage.Width, ledGroupViewModel.SizeOnImage.Height);
-            }            
+            }
         }
 
         private void _OnSelectLedEntityCommand()
@@ -320,7 +332,7 @@ namespace Led.ViewModels
             double offsetX = 0.16666666666668561;
             double offsetY = 15.90170657858522;
 
-            return  new Point
+            return new Point
             {
                 X = point.X * scaleX + offsetX,
                 Y = point.Y * scaleY + offsetY
@@ -360,6 +372,6 @@ namespace Led.ViewModels
             Offset = offset;
             Length = length;
             View = view;
-        }       
+        }
     }
 }

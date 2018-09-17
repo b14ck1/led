@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -86,27 +87,78 @@ namespace Led.ViewModels
             get => EffectBase.EffectType;
             set
             {
-                    if (EffectBase.EffectType != value)
+                if (EffectBase.EffectType != value)
                 {
                     switch (value)
                     {
                         case EffectType.SetColor:
+                            BlinkVMs.Clear();
+                            FadeVMs.Clear();
+                            SetColorVMs.Add(new EffectProperties.SetColorVM());                                                        
                             EffectBase = new Model.Effect.EffectSetColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Blink:
+                            SetColorVMs.Clear();
+                            FadeVMs.Clear();
+                            BlinkVMs.Add(new EffectProperties.BlinkVM());                            
                             EffectBase = new Model.Effect.EffectBlinkColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Fade:
+                            SetColorVMs.Clear();
+                            BlinkVMs.Clear();
+                            FadeVMs.Add(new EffectProperties.FadeVM());                            
                             EffectBase = new Model.Effect.EffectFadeColor(StartFrame, EndFrame);
                             break;
                         case EffectType.Group:
-                            EffectBase = new Model.Effect.EffectGroup(StartFrame, EndFrame);
+                            //EffectBase = new Model.Effect.EffectGroup(StartFrame, EndFrame);
                             break;
                         default:
                             break;
                     }
 
                     RaisePropertyChanged(nameof(EffectType));
+                }
+            }
+        }
+
+        private ObservableCollection<EffectProperties.SetColorVM> _setColorVMs;
+        public ObservableCollection<EffectProperties.SetColorVM> SetColorVMs
+        {
+            get => _setColorVMs;
+            set
+            {
+                if (_setColorVMs != value)
+                {
+                    _setColorVMs = value;
+                    RaisePropertyChanged(nameof(SetColorVMs));
+                }
+            }
+        }
+
+        private ObservableCollection<EffectProperties.BlinkVM> _blinkVMs;
+        public ObservableCollection<EffectProperties.BlinkVM> BlinkVMs
+        {
+            get => _blinkVMs;
+            set
+            {
+                if (_blinkVMs != value)
+                {
+                    _blinkVMs = value;
+                    RaisePropertyChanged(nameof(BlinkVMs));
+                }
+            }
+        }
+
+        private ObservableCollection<EffectProperties.FadeVM> _fadeVMs;
+        public ObservableCollection<EffectProperties.FadeVM> FadeVMs
+        {
+            get => _fadeVMs;
+            set
+            {
+                if (_fadeVMs != value)
+                {
+                    _fadeVMs = value;
+                    RaisePropertyChanged(nameof(FadeVMs));
                 }
             }
         }
@@ -145,6 +197,14 @@ namespace Led.ViewModels
 
             EditCommand = new Command(OnEditCommand);
             ClearCommand = new Command(OnClearCommand);
+
+            SetColorVMs = new ObservableCollection<EffectProperties.SetColorVM>()
+            {
+                new EffectProperties.SetColorVM(),
+                
+            };
+            BlinkVMs = new ObservableCollection<EffectProperties.BlinkVM>();
+            FadeVMs = new ObservableCollection<EffectProperties.FadeVM>();
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);

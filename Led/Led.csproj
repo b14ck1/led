@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ColorPickerWPF, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\ColorPickerWPF.1.0.9\lib\net461\ColorPickerWPF.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio, Version=1.8.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.8.4\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -59,6 +62,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WriteableBitmapEx.Wpf, Version=1.5.0.0, Culture=neutral, PublicKeyToken=50375ca6144f1c69, processorArchitecture=MSIL">
+      <HintPath>..\packages\WriteableBitmapEx.1.5.1.0\lib\net40\WriteableBitmapEx.Wpf.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Wpf.AvalonDock, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\packages\Extended.Wpf.Toolkit.3.4.0\lib\net40\Xceed.Wpf.AvalonDock.dll</HintPath>
     </Reference>
@@ -115,6 +121,10 @@
     <Compile Include="Utility\SaveLoad.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
+    <Compile Include="ViewModels\EffectProperties\BlinkVM.cs" />
+    <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
+    <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
+    <Compile Include="ViewModels\EffectProperties\SetColorVM.cs" />
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
@@ -133,15 +143,6 @@
     <Compile Include="ViewModels\MainWindowVM.cs" />
     <Compile Include="Defines.cs" />
     <Compile Include="ViewModels\LedEntityBaseVM.cs" />
-    <Compile Include="Views\Controls\EffectProperties\BlinkProperties.xaml.cs">
-      <DependentUpon>BlinkProperties.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Controls\EffectProperties\FadeProperties.xaml.cs">
-      <DependentUpon>FadeProperties.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\Controls\EffectProperties\SetColorProperties.xaml.cs">
-      <DependentUpon>SetColorProperties.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\Controls\MainWindow\EffectProperties.xaml.cs">
       <DependentUpon>EffectProperties.xaml</DependentUpon>
     </Compile>
@@ -201,18 +202,6 @@
     <None Include="PropertyChanged.snippet" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Views\Controls\EffectProperties\BlinkProperties.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Controls\EffectProperties\FadeProperties.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\Controls\EffectProperties\SetColorProperties.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Views\Controls\MainWindow\EffectProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -259,8 +248,6 @@
     <None Include="Resources\if_icon-play_211876.png" />
     <None Include="Resources\if_icon-pause_211871.png" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ViewModels\EffectProperties\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -172,7 +172,7 @@ namespace Led
     }
 
     public enum EffectType
-    {
+    { 
         SetColor,
         Blink,
         Fade,
