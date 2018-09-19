@@ -37,6 +37,9 @@
     <Reference Include="ColorPickerWPF, Version=1.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ColorPickerWPF.1.0.9\lib\net461\ColorPickerWPF.dll</HintPath>
     </Reference>
+    <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio, Version=1.8.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\NAudio.1.8.4\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -119,12 +122,17 @@
     <Compile Include="Behaviours\MouseBehaviour.cs" />
     <Compile Include="Utility\Rectangle.cs" />
     <Compile Include="Utility\SaveLoad.cs" />
+    <Compile Include="Utility\Timeline\ITimeLineManager.cs" />
+    <Compile Include="Utility\Timeline\TimeLineControl.cs" />
+    <Compile Include="Utility\Timeline\TimeLineItemControl.cs" />
+    <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
     <Compile Include="ViewModels\EffectProperties\BlinkVM.cs" />
     <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
     <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
     <Compile Include="ViewModels\EffectProperties\SetColorVM.cs" />
+    <Compile Include="ViewModels\TimelineUserControlVM.cs" />
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
@@ -151,6 +159,9 @@
     </Compile>
     <Compile Include="Views\Controls\MainWindow\LedEntityButtons.xaml.cs">
       <DependentUpon>LedEntityButtons.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\TimelineUserControl.xaml.cs">
+      <DependentUpon>TimelineUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\CRUDs\LedEntityCRUD.xaml.cs">
       <DependentUpon>LedEntityCRUD.xaml</DependentUpon>
@@ -219,6 +230,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Controls\MainWindow\LedEntityButtons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\TimelineUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
