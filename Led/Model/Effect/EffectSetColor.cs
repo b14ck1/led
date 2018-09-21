@@ -10,6 +10,7 @@ namespace Led.Model.Effect
         public EffectSetColor(ushort startFrame = 0, ushort endFrame = 0)
             : base(EffectType.SetColor, startFrame, endFrame)
         {
+            Color = Colors.Black;
         }
     }
 }

@@ -16,7 +16,11 @@ namespace Led.Model.Effect
         public EffectFadeColor(ushort startFrame = 0, ushort endFrame = 0)
             : base(EffectType.Fade, startFrame, endFrame)
         {
-            Colors = new List<Color>();
+            Colors = new List<Color>()
+            {
+                System.Windows.Media.Colors.Black,
+                System.Windows.Media.Colors.Black
+            };
         }
     }
 }

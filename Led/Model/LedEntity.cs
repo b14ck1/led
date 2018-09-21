@@ -22,7 +22,7 @@ namespace Led.Model
 
         public LedEntity()
         {
-            LedBuses = new Dictionary<byte, LedBus>();            
+            LedBuses = new Dictionary<byte, LedBus>();
             Effects = new List<Effect.EffectBase>();
             ImageInfos = new Dictionary<LedEntityView, ImageInfo>();
             ImageInfos.Add(LedEntityView.Front, new ImageInfo());

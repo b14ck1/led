@@ -12,7 +12,11 @@ namespace Led.Model.Effect
         public EffectBlinkColor(ushort startFrame = 0, ushort endFrame = 0)
             : base(EffectType.Blink, startFrame, endFrame)
         {
-            Colors = new List<Color>();
+            Colors = new List<Color>()
+            {
+                System.Windows.Media.Colors.Black,
+                System.Windows.Media.Colors.Black
+            };
             BlinkFrames = BlinkFrames;
             CurrentColor = 0;
         }

@@ -48,7 +48,7 @@ namespace Led.ViewModels
                 {
                     EffectBase.EndFrame = (ushort)(value + Dauer);
                     EffectBase.StartFrame = value;
-                    
+
                     RaisePropertyChanged(nameof(StartFrame));
                     RaisePropertyChanged(nameof(EndFrame));
                 }
@@ -61,7 +61,7 @@ namespace Led.ViewModels
             {
                 if (Dauer != value)
                 {
-                    EffectBase.EndFrame = (ushort)(StartFrame + value);
+                    EffectBase.EndFrame = (ushort)(value + StartFrame);
 
                     RaisePropertyChanged(nameof(Dauer));
                     RaisePropertyChanged(nameof(EndFrame));
@@ -75,7 +75,8 @@ namespace Led.ViewModels
             {
                 if (EffectBase.EndFrame != value && value >= StartFrame)
                 {
-                    EffectBase.EndFrame = value;                    
+                    EffectBase.EndFrame = value;
+
                     RaisePropertyChanged(nameof(EndFrame));
                     RaisePropertyChanged(nameof(Dauer));
                 }
@@ -94,20 +95,20 @@ namespace Led.ViewModels
                         case EffectType.SetColor:
                             BlinkVMs.Clear();
                             FadeVMs.Clear();
-                            SetColorVMs.Add(new EffectProperties.SetColorVM());                                                        
                             EffectBase = new Model.Effect.EffectSetColor(StartFrame, EndFrame);
+                            SetColorVMs.Add(new EffectProperties.SetColorVM((EffectBase as Model.Effect.EffectSetColor).Color));
                             break;
                         case EffectType.Blink:
                             SetColorVMs.Clear();
                             FadeVMs.Clear();
-                            BlinkVMs.Add(new EffectProperties.BlinkVM());                            
                             EffectBase = new Model.Effect.EffectBlinkColor(StartFrame, EndFrame);
+                            BlinkVMs.Add(new EffectProperties.BlinkVM((EffectBase as Model.Effect.EffectBlinkColor).Colors));
                             break;
                         case EffectType.Fade:
                             SetColorVMs.Clear();
                             BlinkVMs.Clear();
-                            FadeVMs.Add(new EffectProperties.FadeVM());                            
                             EffectBase = new Model.Effect.EffectFadeColor(StartFrame, EndFrame);
+                            FadeVMs.Add(new EffectProperties.FadeVM((EffectBase as Model.Effect.EffectFadeColor).Colors));
                             break;
                         case EffectType.Group:
                             //EffectBase = new Model.Effect.EffectGroup(StartFrame, EndFrame);
@@ -189,30 +190,35 @@ namespace Led.ViewModels
         public Command DeleteCommand { get; set; }
         public Command RefreshCommand { get; set; }
 
-        public static string OnLedEditCommandMessage = "LedEditCommand";
-
-        public EffectBaseVM()
+        public EffectBaseVM(Model.Effect.EffectBase effectBase)
         {
-            EffectBase = new Model.Effect.EffectSetColor();
+            SetColorVMs = new ObservableCollection<EffectProperties.SetColorVM>();
+            BlinkVMs = new ObservableCollection<EffectProperties.BlinkVM>();
+            FadeVMs = new ObservableCollection<EffectProperties.FadeVM>();
+
+            EffectBase = effectBase;
+            switch (EffectType)
+            {
+                case EffectType.SetColor:
+                    SetColorVMs.Add(new EffectProperties.SetColorVM((EffectBase as Model.Effect.EffectSetColor).Color));
+                    break;
+                case EffectType.Blink:
+                    BlinkVMs.Add(new EffectProperties.BlinkVM((EffectBase as Model.Effect.EffectBlinkColor).Colors));
+                    break;
+                case EffectType.Fade:
+                    FadeVMs.Add(new EffectProperties.FadeVM((EffectBase as Model.Effect.EffectFadeColor).Colors));
+                    break;
+                case EffectType.Group:
+                    break;
+                default:
+                    break;
+            }
 
             EditCommand = new Command(OnEditCommand);
             ClearCommand = new Command(OnClearCommand);
 
-            SetColorVMs = new ObservableCollection<EffectProperties.SetColorVM>()
-            {
-                new EffectProperties.SetColorVM(),
-                
-            };
-            BlinkVMs = new ObservableCollection<EffectProperties.BlinkVM>();
-            FadeVMs = new ObservableCollection<EffectProperties.FadeVM>();
-
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
-        }
-
-        public EffectBaseVM(Model.Effect.EffectBase EffectBase)        
-        {
-            this.EffectBase = EffectBase;
         }
 
         public void OnEditCommand()

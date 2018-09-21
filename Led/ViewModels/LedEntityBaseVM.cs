@@ -108,14 +108,27 @@ namespace Led.ViewModels
             get => Leds.FindAll(X => X.View == LedEntityView.Back);
         }
 
+        private ObservableCollection<EffectBaseVM> _effects;
+        public ObservableCollection<EffectBaseVM> Effects
+        {
+            get => _effects;
+            set
+            {
+                if (_effects != value)
+                {
+                    _effects = value;
+                    RaisePropertyChanged(nameof(Effects));
+                }
+            }
+        }
+
         public virtual Cursor FrontCursor => Cursors.Arrow;
         public virtual Cursor BackCursor => Cursors.Arrow;
 
         protected Dictionary<LedGroupIdentifier, LedGroupPropertiesVM> _LedIDToGroupVM { get; private set; }
         protected Dictionary<LedGroupPropertiesVM, LedOffset> _LedOffsets { get; private set; }
 
-        public Command SelectLedEntityCommand { get; set; }
-        public static string SelectLedEntityMessage = "LedEntitySelected";
+        public Command SelectLedEntityCommand { get; set; }        
 
         public Command<MouseEventArgs> FrontImageMouseDownCommand { get; set; }
         public Command<MouseEventArgs> FrontImageMouseMoveCommand { get; set; }
@@ -128,9 +141,13 @@ namespace Led.ViewModels
         public LedEntityBaseVM(Model.LedEntity ledEntity)
         {
             LedGroups = new List<LedGroupPropertiesVM>();
+            Effects = new ObservableCollection<EffectBaseVM>();
             LedEntity = ledEntity ?? throw new ArgumentNullException();
 
             _Init();
+
+            //Don't map effects in init function because it will get called every update and is a waste of time
+            LedEntity.Effects.ForEach(Effect => Effects.Add(new EffectBaseVM(Effect)));            
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);

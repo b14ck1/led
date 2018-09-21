@@ -184,6 +184,14 @@ namespace Led.ViewModels
             return ID.Led + _LedOffsets[_LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset;
         }
 
+        private void AddEffect(ushort startFrame = 0)
+        {
+            LedEntity.Effects.Add(new Model.Effect.EffectSetColor(startFrame, startFrame));
+            Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
+
+            //Entweder CurrentEffect ändern oder Message rausschicken
+        }
+
         public override void RecieveMessage(MediatorMessages message, object sender, object data)
         {
             switch (message)

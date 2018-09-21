@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Led.Interfaces;
+using Newtonsoft.Json;
 
 namespace Led.ViewModels
 {
@@ -19,8 +20,18 @@ namespace Led.ViewModels
             get => _project;
             set
             {
+                LedEntities.Clear();
+                _CurrentLedEntity = null;
+                _LedEntityView.DataContext = null;
+                _LedEntityView.DataContext = _CurrentLedEntity;
+                EditLedEntityCommand.RaiseCanExecuteChanged();
+
                 _project = value;
+                                
+                Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
+
                 RaiseAllPropertyChanged();
+                SaveProjectCommand.RaiseCanExecuteChanged();
                 NewLedEntityCommand.RaiseCanExecuteChanged();
                 AddAudioCommand.RaiseCanExecuteChanged();
             }
@@ -31,12 +42,12 @@ namespace Led.ViewModels
 
         public string ProjectName
         {
-            get => _project == null ? "Sickes LED Progr jaaa" : _project.ProjectName;
+            get => Project == null ? "Sickes LED Progr jaaa" : Project.ProjectName;
             set
             {
-                if (_project.ProjectName != value)
+                if (Project.ProjectName != value)
                 {
-                    _project.ProjectName = value;
+                    Project.ProjectName = value;
                     RaisePropertyChanged(nameof(ProjectName));
                 }
             }
@@ -62,7 +73,7 @@ namespace Led.ViewModels
                 if (_ledEntities != value)
                 {
                     _ledEntities = value;
-                    RaisePropertyChanged("LedEntities");
+                    RaisePropertyChanged(nameof(LedEntities));
                 }
             }
         }
@@ -84,6 +95,9 @@ namespace Led.ViewModels
             }
         }
 
+        public Command SaveProjectCommand { get; set; }
+        public Command LoadProjectCommand { get; set; }
+
         public Command NewProjectCommand { get; set; }
         public Command NewLedEntityCommand { get; set; }
         public Command AddAudioCommand { get; set; }
@@ -98,20 +112,39 @@ namespace Led.ViewModels
             
             _EffectView = effectView;
 
-            _ledEntities = new ObservableCollection<LedEntityBaseVM>();
+            LedEntities = new ObservableCollection<LedEntityBaseVM>();
 
-            _CurrentEffect = new EffectBaseVM();
+            //_CurrentEffect = new EffectBaseVM();
             effectView.DataContext = _CurrentEffect;
             _AudioUserControl = audioUserControl;
             audioUserControl.DataContext = AudioUserControlVM;
 
+            SaveProjectCommand = new Command(_OnSaveProjectCommand, () => Project != null);
+            LoadProjectCommand = new Command(_OnLoadProjectCommand);
+
             NewProjectCommand = new Command(_OnNewProjectCommand);
-            NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => _project != null);
+            NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
             EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
-            AddAudioCommand = new Command(_OnAddAudioCommand, () => _project != null);
+            AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
+        }
+
+        private void _OnSaveProjectCommand()
+        {
+            System.IO.File.WriteAllText(@"C:\Users\Robin\Desktop\test.json", Newtonsoft.Json.JsonConvert.SerializeObject(Project, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            }));
+        }
+
+        private void _OnLoadProjectCommand()
+        {
+            Project = JsonConvert.DeserializeObject<Model.Project>(System.IO.File.ReadAllText(@"C:\Users\Robin\Desktop\test.json"), new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
         }
 
         private void _OnNewProjectCommand()

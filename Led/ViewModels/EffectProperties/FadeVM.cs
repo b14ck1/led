@@ -24,13 +24,13 @@ namespace Led.ViewModels.EffectProperties
             }
         }
 
-        public FadeVM()
+        public FadeVM(List<Color> colors)
         {
-            Colors = new ObservableCollection<EffectColorVM>()
+            Colors = new ObservableCollection<EffectColorVM>();
+            for (int i = 0; i < colors.Count; i++)
             {
-                new EffectColorVM(System.Windows.Media.Colors.Black, "Farbe 1"),
-                new EffectColorVM(System.Windows.Media.Colors.Black, "Farbe 2")
-            };
+                Colors.Add(new EffectColorVM(colors[i], "Farbe " + (i + 1)));
+            }
         }
     }
 }

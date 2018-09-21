@@ -23,11 +23,11 @@ namespace Led.ViewModels.EffectProperties
             }
         }
 
-        public SetColorVM()
+        public SetColorVM(System.Windows.Media.Color color)
         {
             Colors = new ObservableCollection<EffectColorVM>()
             {
-                new EffectColorVM(System.Windows.Media.Colors.Black, "Farbe")
+                new EffectColorVM(color, "Farbe")
             };
         }
     }
