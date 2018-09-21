@@ -83,6 +83,34 @@ namespace Led.ViewModels
             }
         }
 
+        public DateTime StartFrameDateTime
+        {
+            get => new DateTime(StartFrame);
+            set
+            {
+                if (StartFrame != (ushort)value.Ticks)
+                    StartFrame = (ushort)value.Ticks;
+            }
+        }
+        public DateTime DauerDateTime
+        {
+            get => new DateTime(Dauer);
+            set
+            {
+                if (Dauer != (ushort)value.Ticks)
+                    Dauer = (ushort)value.Ticks;
+            }
+        }
+        public DateTime EndFrameDateTime
+        {
+            get => new DateTime(EndFrame);
+            set
+            {
+                if (EndFrame != (ushort)value.Ticks)
+                    EndFrame = (ushort)value.Ticks;
+            }
+        }
+
         public EffectType EffectType
         {
             get => EffectBase.EffectType;
