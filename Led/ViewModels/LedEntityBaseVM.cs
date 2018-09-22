@@ -304,7 +304,7 @@ namespace Led.ViewModels
         private void _OnSelectLedEntityCommand()
         {
             _SendMessage(MediatorMessages.LedEntitySelectButtonClicked, null);
-            _SendMessage(MediatorMessages.TimeLineCollectionChanged, Effects);
+            _SendMessage(MediatorMessages.TimeLineCollectionChanged, new MediatorMessageData.TimeLineCollectionChangedData(Effects));
         }
 
         /// <summary>
