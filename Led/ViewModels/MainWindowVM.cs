@@ -62,8 +62,7 @@ namespace Led.ViewModels
             get => Defines.MainWindowHeight;
         }
 
-        private LedEntityBaseVM _CurrentLedEntity;
-        private EffectBaseVM _CurrentEffect;
+        private LedEntityBaseVM _CurrentLedEntity;        
         private ObservableCollection<LedEntityBaseVM> _ledEntities;
         public ObservableCollection<LedEntityBaseVM> LedEntities
         {
@@ -78,6 +77,7 @@ namespace Led.ViewModels
             }
         }
 
+        private EffectBaseVM _CurrentEffect => _CurrentLedEntity.CurrentEffect;
         private Views.Controls.MainWindow.EffectProperties _EffectView;
 
         private Views.Controls.MainWindow.AudioUserControl _AudioUserControl;
@@ -115,7 +115,7 @@ namespace Led.ViewModels
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
 
             //_CurrentEffect = new EffectBaseVM();
-            effectView.DataContext = _CurrentEffect;
+            //effectView.DataContext = _CurrentEffect;
             _AudioUserControl = audioUserControl;
             audioUserControl.DataContext = AudioUserControlVM;
 
@@ -218,6 +218,7 @@ namespace Led.ViewModels
                 case MediatorMessages.LedEntitySelectButtonClicked:
                     _CurrentLedEntity = (sender as LedEntityBaseVM);                    
                     _LedEntityView.DataContext = _CurrentLedEntity;
+                    _EffectView.DataContext = _CurrentEffect;
                     EditLedEntityCommand.RaiseCanExecuteChanged();
                     break;
                 default:

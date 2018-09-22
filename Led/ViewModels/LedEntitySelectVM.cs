@@ -16,7 +16,7 @@ namespace Led.ViewModels
         private bool _AllowSelectLeds;
         private bool _SelectingLeds;
         private LedEntityView _SelectGroupView;
-        private Utility.Rectangle _Selection;
+        private Rectangle _Selection;
 
         public override List<Rectangle> FrontLedGroups
         {
@@ -40,11 +40,11 @@ namespace Led.ViewModels
         }
 
         private List<int> _selectedLeds;
-        public List<Utility.LedModelID> SelectedLeds
+        public List<LedModelID> SelectedLeds
         {
             get
             {
-                List<Utility.LedModelID> res = new List<Utility.LedModelID>();
+                List<LedModelID> res = new List<LedModelID>();
                 foreach (int index in _selectedLeds)
                 {
                     res.Add(_IndexToLedID(index));
@@ -120,7 +120,7 @@ namespace Led.ViewModels
             Point mousePosition = e.GetPosition((IInputElement)e.Source);
             mousePosition = _ScalePoint(mousePosition);
 
-            _Selection = new Utility.Rectangle((int)mousePosition.X, (int)mousePosition.Y, Defines.LedSelectRectangleColor);
+            _Selection = new Rectangle((int)mousePosition.X, (int)mousePosition.Y, Defines.LedSelectRectangleColor);
 
             _SelectGroupView = view;
             _SelectingLeds = true;
@@ -169,7 +169,7 @@ namespace Led.ViewModels
             return ledIndices;
         }
 
-        private Utility.LedModelID _IndexToLedID(int index)
+        private LedModelID _IndexToLedID(int index)
         {
             foreach (var KVP in _LedOffsets)
             {
@@ -184,12 +184,12 @@ namespace Led.ViewModels
             return ID.Led + _LedOffsets[_LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset;
         }
 
-        private void AddEffect(ushort startFrame = 0)
+        private void _AddEffect(ushort startFrame = 0)
         {
             LedEntity.Effects.Add(new Model.Effect.EffectSetColor(startFrame, startFrame));
             Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
 
-            //Entweder CurrentEffect ändern oder Message rausschicken
+            CurrentEffect = Effects.Last();
         }
 
         public override void RecieveMessage(MediatorMessages message, object sender, object data)
@@ -224,6 +224,9 @@ namespace Led.ViewModels
                 case MediatorMessages.EffectVMEditSelectedLedsFinished:
                     _SetLedColor(_selectedLeds, Colors.LimeGreen);
                     _selectedLeds.Clear();
+                    break;
+                case MediatorMessages.TimeLineAddEffect:
+                    _AddEffect();
                     break;
                 default:
                     break;

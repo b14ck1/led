@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace Led.ViewModels
 {
-    class EffectBaseVM : INPC, Interfaces.IParticipant
+    public class EffectBaseVM : INPC, Interfaces.IParticipant
     {
         private Services.MediatorService _Mediator;
 

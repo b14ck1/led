@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
 
 namespace Led
 {
@@ -186,7 +187,10 @@ namespace Led
         EffectVMEditSelectedLedsFinished,
         EffectVMEditSelectedLedsClear,
         GroupBusDefinitionsChanged,
-        GroupBusDefinitionsNeedCorrectionChanged
+        GroupBusDefinitionsNeedCorrectionChanged,
+        TimeLineCollectionChanged,
+        TimeLineAddEffect,
+        TimeLineDeleteEffect
     }
 
     public class MediatorMessageData
@@ -212,6 +216,35 @@ namespace Led
                 NeedCorrection = needCorrection;
             }
         }
+
+        public class TimeLineCollectionChangedData
+        {
+            public ObservableCollection<ViewModels.EffectBaseVM> Effects { get; }
+
+            public TimeLineCollectionChangedData(ObservableCollection<ViewModels.EffectBaseVM> effects)
+            {
+                Effects = effects;
+            }
+        }
+
+        //public class TimeLineEffectPropertiesChangedData
+        //{
+        //    public enum Values
+        //    {
+        //        StartFrame,
+        //        Dauer,
+        //        EndFrame
+        //    }
+
+        //    public Values ChangedValue { get; }
+        //    public ushort Value { get; }
+
+        //    public TimeLineEffectPropertiesChangedData(Values changedValue, ushort value)
+        //    {
+        //        ChangedValue = changedValue;
+        //        Value = value;
+        //    }
+        //}
     }
 
     public static class Defines

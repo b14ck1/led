@@ -17,7 +17,7 @@ namespace Led.Model.Effect
                 System.Windows.Media.Colors.Black,
                 System.Windows.Media.Colors.Black
             };
-            BlinkFrames = BlinkFrames;
+            BlinkFrames = 0;
             CurrentColor = 0;
         }
     }

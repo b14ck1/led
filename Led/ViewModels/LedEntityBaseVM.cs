@@ -108,6 +108,20 @@ namespace Led.ViewModels
             get => Leds.FindAll(X => X.View == LedEntityView.Back);
         }
 
+        private EffectBaseVM _currentEffect;
+        public EffectBaseVM CurrentEffect
+        {
+            get => _currentEffect;
+            set
+            {
+                if (_currentEffect != value)
+                {
+                    _currentEffect = value;
+                    RaisePropertyChanged(nameof(CurrentEffect));
+                }
+            }
+        }
+
         private ObservableCollection<EffectBaseVM> _effects;
         public ObservableCollection<EffectBaseVM> Effects
         {
