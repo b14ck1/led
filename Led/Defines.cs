@@ -189,8 +189,7 @@ namespace Led
         GroupBusDefinitionsChanged,
         GroupBusDefinitionsNeedCorrectionChanged,
         TimeLineCollectionChanged,
-        TimeLineAddEffect,
-        TimeLineDeleteEffect
+        TimeLineEffectSelected
     }
 
     public class MediatorMessageData
@@ -224,6 +223,16 @@ namespace Led
             public TimeLineCollectionChangedData(ObservableCollection<ViewModels.EffectBaseVM> effects)
             {
                 Effects = effects;
+            }
+        }
+
+        public class TimeLineEffectSelectedData
+        {
+            public ViewModels.EffectBaseVM EffectBaseVM { get; }
+            
+            public TimeLineEffectSelectedData(ViewModels.EffectBaseVM effectBaseVM)
+            {
+                EffectBaseVM = effectBaseVM;
             }
         }
 

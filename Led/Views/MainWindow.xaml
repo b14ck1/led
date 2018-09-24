@@ -38,6 +38,9 @@
             <Button Command="{Binding EditLedEntityCommand}" >
                 <TextBlock TextWrapping="Wrap">Current LedEntity bearbeiten</TextBlock>
             </Button>
+            <Button Command="{Binding AddEffectCommand}" Grid.Column="2">
+                <TextBlock TextWrapping="Wrap">Current LedEntity AddEffect</TextBlock>
+            </Button>
         </Grid>        
     </DockPanel>
 </Window>
