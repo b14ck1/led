@@ -103,6 +103,7 @@ namespace Led.ViewModels
         public Command AddAudioCommand { get; set; }
 
         public Command EditLedEntityCommand { get; set; }
+        public Command AddEffectCommand { get; set; }
 
         public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity, Views.Controls.MainWindow.EffectProperties effectView, Views.Controls.MainWindow.AudioUserControl audioUserControl)
         {
@@ -125,6 +126,7 @@ namespace Led.ViewModels
             NewProjectCommand = new Command(_OnNewProjectCommand);
             NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
             EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
+            AddEffectCommand = new Command(_OnAddEffectCommand);
             AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
             _Mediator = App.Instance.MediatorService;
@@ -189,9 +191,15 @@ namespace Led.ViewModels
 
             App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, new LedEntityCRUDVM(_CurrentLedEntity.LedEntity));
             
-            _CurrentLedEntity.Update();            
+            _CurrentLedEntity.Update();
             _LedEntityView.DataContext = null;
             _LedEntityView.DataContext = _CurrentLedEntity;
+        }
+
+        private void _OnAddEffectCommand()
+        {
+            //Message kommt momentan bei jeder LedEntity an, Data muss ref auf AktiveLedEntity sein
+            _SendMessage(MediatorMessages.TimeLineAddEffect, null);
         }
 
         //private void OnSelectedLedEntity(object sender, EventArgs e)
@@ -209,6 +217,11 @@ namespace Led.ViewModels
 
             AudioUserControlVM = new AudioUserControlVM(audioFileName);
             _AudioUserControl.DataContext = AudioUserControlVM;
+        }
+
+        protected void _SendMessage(MediatorMessages message, object data)
+        {
+            _Mediator.BroadcastMessage(message, this, data);
         }
 
         public virtual void RecieveMessage(MediatorMessages message, object sender, object data)
