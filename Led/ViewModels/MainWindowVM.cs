@@ -222,7 +222,7 @@ namespace Led.ViewModels
         private void _InitAudioUserControl()
         {
             var audioFilePath = Project.AudioProperty?.FilePath;
-            if (!audioFilePath.Equals(string.Empty))
+            if (audioFilePath != null && !audioFilePath.Equals(string.Empty))
             {
                 AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
                 _AudioUserControl.DataContext = AudioUserControlVM;
