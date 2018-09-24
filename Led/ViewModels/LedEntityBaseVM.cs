@@ -314,8 +314,7 @@ namespace Led.ViewModels
         {
             _LedIDToGroupVM = new Dictionary<LedGroupIdentifier, LedGroupPropertiesVM>();
             foreach (LedGroupPropertiesVM LedGroupViewModel in LedGroups)
-            {
-                //NEED: Every added group needs to have a different identifier (BusID, PositionInBus)
+            {                
                 _LedIDToGroupVM.Add(new LedGroupIdentifier(LedGroupViewModel.LedGroup.BusID, LedGroupViewModel.LedGroup.PositionInBus), LedGroupViewModel);
             }
         }
