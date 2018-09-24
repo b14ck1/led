@@ -25,6 +25,7 @@ namespace Led.ViewModels
                 _LedEntityView.DataContext = null;
                 _LedEntityView.DataContext = _CurrentLedEntity;
                 EditLedEntityCommand.RaiseCanExecuteChanged();
+                AddEffectCommand.RaiseCanExecuteChanged();
 
                 _project = value;
                                 
@@ -126,7 +127,7 @@ namespace Led.ViewModels
             NewProjectCommand = new Command(_OnNewProjectCommand);
             NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
             EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
-            AddEffectCommand = new Command(_OnAddEffectCommand);
+            AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null);
             AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
             _Mediator = App.Instance.MediatorService;
@@ -197,9 +198,8 @@ namespace Led.ViewModels
         }
 
         private void _OnAddEffectCommand()
-        {
-            //Message kommt momentan bei jeder LedEntity an, Data muss ref auf AktiveLedEntity sein
-            _SendMessage(MediatorMessages.TimeLineAddEffect, null);
+        {           
+            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();
         }
 
         //private void OnSelectedLedEntity(object sender, EventArgs e)
@@ -233,6 +233,7 @@ namespace Led.ViewModels
                     _LedEntityView.DataContext = _CurrentLedEntity;
                     _EffectView.DataContext = _CurrentEffect;
                     EditLedEntityCommand.RaiseCanExecuteChanged();
+                    AddEffectCommand.RaiseCanExecuteChanged();
                     break;
                 default:
                     break;

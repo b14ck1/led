@@ -184,7 +184,7 @@ namespace Led.ViewModels
             return ID.Led + _LedOffsets[_LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset;
         }
 
-        private void _AddEffect(ushort startFrame = 0)
+        public void AddEffect(ushort startFrame = 0)
         {
             LedEntity.Effects.Add(new Model.Effect.EffectSetColor(startFrame, startFrame));
             Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
@@ -224,9 +224,6 @@ namespace Led.ViewModels
                 case MediatorMessages.EffectVMEditSelectedLedsFinished:
                     _SetLedColor(_selectedLeds, Colors.LimeGreen);
                     _selectedLeds.Clear();
-                    break;
-                case MediatorMessages.TimeLineAddEffect:
-                    _AddEffect();
                     break;
                 default:
                     break;
