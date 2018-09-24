@@ -234,7 +234,6 @@ namespace Led.ViewModels
             {
                 AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
                 _AudioUserControl.DataContext = AudioUserControlVM;
-                _TimelineUserControl.DataContext = new TimeLineUserControlVM();
             }
         }
 

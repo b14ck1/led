@@ -122,7 +122,6 @@
     <Compile Include="Behaviours\MouseBehaviour.cs" />
     <Compile Include="Utility\Rectangle.cs" />
     <Compile Include="Utility\SaveLoad.cs" />
-    <Compile Include="Utility\Timeline\ITimeLineManager.cs" />
     <Compile Include="Utility\Timeline\TimeLineControl.cs" />
     <Compile Include="Utility\Timeline\TimeLineItemControl.cs" />
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />

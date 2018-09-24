@@ -4,11 +4,15 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Led.Views.Controls.MainWindow"
+             xmlns:vm="clr-namespace:Led.ViewModels"
              xmlns:ef="clr-namespace:Led.Model.Effect"
              xmlns:tt="clr-namespace:Led.Utility.Timeline"
              xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <vm:TimelineUserControlVM/>
+    </UserControl.DataContext>
     <UserControl.Resources>
         <Color R="255"
                G="255"
@@ -65,10 +69,10 @@
                     Height="60"
                     Background="{StaticResource BgBrush}">
                 <StackPanel Orientation="Vertical">
-                    <TextBlock Text="{Binding Path=Name}"/>
-                    <TextBlock Text="{Binding Path=StartFrame}"/>
-                    <TextBlock Text="{Binding Path=EndFrame}"/>
-                    <TextBlock Text="{Binding Path=Duration}"/>
+                    <!--<TextBlock Text="{Binding Path=Name}"/>-->
+                    <TextBlock Text="{Binding Path=StartFrame, StringFormat=S: {0}}"/>
+                    <TextBlock Text="{Binding Path=EndFrame, StringFormat=E: {0}}"/>
+                    <TextBlock Text="{Binding Path=Dauer, StringFormat=D: {0}}"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -83,6 +87,8 @@
             <ItemsControl>
                 <!-- Height = ItemControl Height + Margins -->
                 <tt:TimeLineControl x:Name="TimeLine2"
+                                    TotalFrames="{Binding TotalFrames}"
+                                    Items="{Binding Effects}"
                                     ItemTemplate="{StaticResource UsedTemplateProperty}"
                                     HorizontalAlignment="Left"
                                     UnitSize="20"
@@ -96,7 +102,6 @@
         </ScrollViewer>
         <DockPanel Grid.Row="1" LastChildFill="True">
             <Label Content="Timeline Zoom" DockPanel.Dock="Left"/>
-            <Button Content="insert random" Width="100" HorizontalAlignment="Right" Click="Button_Click" DockPanel.Dock="Right"/>
             <Slider x:Name="Slider_Scale" Grid.Row="1" Minimum="1" Maximum="100" Width="Auto"
                     ValueChanged="Slider_Scale_ValueChanged" VerticalAlignment="Center" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Stretch"/>
         </DockPanel>

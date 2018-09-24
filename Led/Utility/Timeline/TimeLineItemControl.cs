@@ -14,7 +14,8 @@ namespace Led.Utility.Timeline
 	//public class TimeLineItemControl:ContentPresenter
 	public class TimeLineItemControl : Button
 	{
-		private Boolean _ready = true;
+
+        private Boolean _ready = true;
 		internal Boolean ReadyToDraw
 		{
 			get { return _ready; }

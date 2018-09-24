@@ -11,7 +11,8 @@ using System.Windows.Input;
 using System.Windows.Shapes;
 using System.Windows.Documents;
 using System.Windows.Controls.Primitives;
-using Led.Model.Effect;
+using System.Diagnostics;
+using Led.ViewModels;
 
 namespace Led.Utility.Timeline
 {
@@ -31,7 +32,7 @@ namespace Led.Utility.Timeline
     internal class TimeLineDragAdorner : Adorner
     {
         private ContentPresenter _adorningContentPresenter;
-        internal EffectBase Data { get; set; }
+        internal EffectBaseVM Data { get; set; }
         internal DataTemplate Template { get; set; }
         Point _mousePosition;
         public Point MousePosition
@@ -162,26 +163,26 @@ namespace Led.Utility.Timeline
         #region dependency properties
 
 
-        public EffectBase FocusOnItem
+        public EffectBaseVM FocusOnItem
         {
-            get { return (EffectBase)GetValue(FocusOnItemProperty); }
+            get { return (EffectBaseVM)GetValue(FocusOnItemProperty); }
             set { SetValue(FocusOnItemProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for FocusOnItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty FocusOnItemProperty =
-            DependencyProperty.Register("FocusOnItem", typeof(EffectBase), typeof(TimeLineControl), new UIPropertyMetadata(null, new PropertyChangedCallback(FocusItemChanged)));
+            DependencyProperty.Register("FocusOnItem", typeof(EffectBaseVM), typeof(TimeLineControl), new UIPropertyMetadata(null, new PropertyChangedCallback(FocusItemChanged)));
         public static void FocusItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             TimeLineControl tc = d as TimeLineControl;
             if ((e.NewValue != null) && (tc != null))
             {
-                tc.ScrollToItem(e.NewValue as EffectBase);
+                tc.ScrollToItem(e.NewValue as EffectBaseVM);
             }
 
         }
 
-        private void ScrollToItem(EffectBase target)
+        private void ScrollToItem(EffectBaseVM target)
         {
             Double tgtNewWidth = 0;
             Double maxUnitSize = 450;//28000;
@@ -221,20 +222,6 @@ namespace Led.Utility.Timeline
         }
 
 
-
-        #region manager
-        public ITimeLineManager Manager
-        {
-            get { return (ITimeLineManager)GetValue(ManagerProperty); }
-            set { SetValue(ManagerProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Manager.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ManagerProperty =
-            DependencyProperty.Register("Manager", typeof(ITimeLineManager), typeof(TimeLineControl),
-            new UIPropertyMetadata(null));
-
-        #endregion
 
         #region minwidth
         public Double MinWidth
@@ -433,23 +420,27 @@ namespace Led.Utility.Timeline
         #endregion
 
         #region Items
-        public ObservableCollection<EffectBase> Items
+        public ObservableCollection<EffectBaseVM> Items
         {
-            get { return (ObservableCollection<EffectBase>)GetValue(ItemsProperty); }
-            set { SetValue(ItemsProperty, value); }
+            get { return (ObservableCollection<EffectBaseVM>)GetValue(ItemsProperty); }
+            set {
+                Debug.WriteLine("TLC Items set");
+                SetValue(ItemsProperty, value);
+            }
         }
 
         // Using a DependencyProperty as the backing store for Items.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemsProperty =
-            DependencyProperty.Register("Items", typeof(ObservableCollection<EffectBase>), typeof(TimeLineControl),
+            DependencyProperty.Register("Items", typeof(ObservableCollection<EffectBaseVM>), typeof(TimeLineControl),
             new UIPropertyMetadata(null,
                 new PropertyChangedCallback(OnItemsChanged)));
         private static void OnItemsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            Debug.WriteLine("TLC OnItemsChanged()");
             TimeLineControl tc = d as TimeLineControl;
             if (tc != null)
             {
-                tc.InitializeItems(e.NewValue as ObservableCollection<EffectBase>);
+                tc.InitializeItems(e.NewValue as ObservableCollection<EffectBaseVM>);
                 tc.UpdateUnitSize(tc.UnitSize);
                 tc._itemsInitialized = true;
 
@@ -637,14 +628,14 @@ namespace Led.Utility.Timeline
             }
         }
 
-        private void InitializeItems(ObservableCollection<EffectBase> observableCollection)
+        private void InitializeItems(ObservableCollection<EffectBaseVM> observableCollection)
         {
             if (observableCollection == null)
                 return;
             this.Children.Clear();
             Children.Add(_gridCanvas);
 
-            foreach (EffectBase data in observableCollection)
+            foreach (EffectBaseVM data in observableCollection)
             {
                 TimeLineItemControl adder = CreateTimeLineItemControl(data);
 
@@ -656,32 +647,33 @@ namespace Led.Utility.Timeline
 
         void Items_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            //if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
-            //{
-            //    var itm = e.NewItems[0] as ITimeLineDataItem;
-            //    if (itm.StartTime.HasValue && itm.StartTime > long.MinValue)
-            //    {//newly created item isn't a drop in so we need to instantiate and place its control.
-            //        long duration = itm.EndTime.Value - itm.StartTime.Value;
-            //        if (Items.Count == 1)//this is the first one added
-            //        {
-            //            itm.StartTime = 0;
-            //            itm.EndTime = duration;
-            //        }
-            //        else
-            //        {
-            //            var last = Items.OrderBy(i => i.StartTime.Value).LastOrDefault();
-            //            if (last != null)
-            //            {
-            //                itm.StartTime = last.EndTime;
-            //                itm.EndTime = itm.StartTime.Value + duration;
-            //            }
-            //        }
-            //        var ctrl = CreateTimeLineItemControl(itm);
-            //        //The index if Items.Count-1 because of zero indexing.
-            //        //however our children is 1 indexed because 0 is our canvas grid.
-            //        Children.Insert(Items.Count, ctrl);
-            //    }
-            //}
+            Debug.WriteLine("TLC Items_CollectionChanged()");
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+            {
+                var itm = e.NewItems[0] as EffectBaseVM;
+                //if (itm.StartTime.HasValue && itm.StartTime > long.MinValue)
+                //{//newly created item isn't a drop in so we need to instantiate and place its control.
+                    //long duration = itm.EndTime.Value - itm.StartTime.Value;
+                    //if (Items.Count == 1)//this is the first one added
+                    //{
+                    //    itm.StartTime = 0;
+                    //    itm.EndTime = duration;
+                    //}
+                    //else
+                    //{
+                    //    var last = Items.OrderBy(i => i.StartTime.Value).LastOrDefault();
+                    //    if (last != null)
+                    //    {
+                    //        itm.StartTime = last.EndTime;
+                    //        itm.EndTime = itm.StartTime.Value + duration;
+                    //    }
+                    //}
+                    var ctrl = CreateTimeLineItemControl(itm);
+                    //The index if Items.Count-1 because of zero indexing.
+                    //however our children is 1 indexed because 0 is our canvas grid.
+                    Children.Insert(Items.Count, ctrl);
+                //}
+            }
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
             {
                 var removeItem = e.OldItems[0];
@@ -695,9 +687,14 @@ namespace Led.Utility.Timeline
                     }
                 }
             }
+            if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                // first element is canvas, everything else it TimeLineItemControl
+                Children.RemoveRange(1, Children.Count - 1);
+            }
         }
 
-        private TimeLineItemControl CreateTimeLineItemControl(EffectBase data)
+        private TimeLineItemControl CreateTimeLineItemControl(EffectBaseVM data)
         {
             Binding startBinding = new Binding("StartFrame");
             startBinding.Mode = BindingMode.TwoWay;
@@ -1212,6 +1209,9 @@ namespace Led.Utility.Timeline
             _dragStartPosition = Mouse.GetPosition(null);
             _dragObject = sender as TimeLineItemControl;
 
+            // send message about selected effect
+            var data = new MediatorMessageData.TimeLineEffectSelectedData((EffectBaseVM)_dragObject.Content);
+            App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TimeLineEffectSelected, this, data);
         }
 
         void item_PreviewDragButtonUp(object sender, MouseButtonEventArgs e)
@@ -1230,14 +1230,6 @@ namespace Led.Utility.Timeline
             TimeLineItemControl d = e.Data.GetData(typeof(TimeLineItemControl)) as TimeLineItemControl;
             if (d != null)
             {
-                if (Manager != null)
-                {
-                    if (!Manager.CanAddToTimeLine(d.DataContext as EffectBase))
-                    {
-                        e.Effects = DragDropEffects.None;
-                        return;
-                    }
-                }
                 e.Effects = DragDropEffects.Move;
                 //this is an internal drag or a drag from another time line control
                 if (DragAdorner == null)
@@ -1255,15 +1247,6 @@ namespace Led.Utility.Timeline
                 var d2 = e.Data.GetData("GongSolutions.Wpf.DragDrop");
                 if (d2 != null)
                 {
-                    if (Manager != null)
-                    {
-                        if (!Manager.CanAddToTimeLine(d2 as EffectBase))
-                        {
-                            e.Effects = DragDropEffects.None;
-                            return;
-                        }
-                    }
-
                     e.Effects = DragDropEffects.Move;
                     if (DragAdorner == null)
                     {
@@ -1302,11 +1285,11 @@ namespace Led.Utility.Timeline
             DragAdorner = null;
 
             TimeLineItemControl dropper = e.Data.GetData(typeof(TimeLineItemControl)) as TimeLineItemControl;
-            EffectBase dropData = null;
+            EffectBaseVM dropData = null;
             if (dropper == null)
             {
                 //dropData = e.Data.GetData(typeof(ITimeLineDataItem)) as ITimeLineDataItem;
-                dropData = e.Data.GetData("GongSolutions.Wpf.DragDrop") as EffectBase;
+                dropData = e.Data.GetData("GongSolutions.Wpf.DragDrop") as EffectBaseVM;
                 if (dropData != null)
                 {
                     //I haven't figured out why but
@@ -1327,7 +1310,7 @@ namespace Led.Utility.Timeline
             }
             var dropX = e.GetPosition(this).X;
             int newIndex = GetDroppedNewIndex(dropX);
-            var curData = dropper.DataContext as EffectBase;
+            var curData = dropper.DataContext as EffectBaseVM;
             var curIndex = Items.IndexOf(curData);
             if ((curIndex == newIndex || curIndex + 1 == newIndex) && dropData == null && dropper.Parent == this)//dropdata null is to make sure we aren't failing on adding a new data item into the timeline
             //dropper.parent==this makes it so that we allow a dropper control from another timeline to be inserted in at the start.
@@ -1390,7 +1373,7 @@ namespace Led.Utility.Timeline
         #region drop helpers
         private void InsertTimeLineItemControlAt(int index, TimeLineItemControl adder)
         {
-            var Data = adder.DataContext as EffectBase;
+            var Data = adder.DataContext as EffectBaseVM;
             if (Items.Contains(Data))
                 return;
 
@@ -1413,7 +1396,7 @@ namespace Led.Utility.Timeline
         }
         private void RemoveTimeLineItemControl(TimeLineItemControl remover)
         {
-            var curData = remover.DataContext as EffectBase;
+            var curData = remover.DataContext as EffectBaseVM;
             remover.PreviewMouseRightButtonDown -= item_PreviewEditButtonDown;
             remover.MouseMove -= item_MouseMove;
             remover.PreviewMouseRightButtonUp -= item_PreviewEditButtonUp;

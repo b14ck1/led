@@ -10,16 +10,37 @@ using System.Threading.Tasks;
 
 namespace Led.ViewModels
 {
-    class TimeLineUserControlVM : IParticipant
+    class TimelineUserControlVM : IParticipant
     {
         private Services.MediatorService _Mediator;
 
-        private ObservableCollection<EffectBaseVM> effects;
+        public ObservableCollection<EffectBaseVM> Effects { get; set; }
+        public ushort TotalFrames { get; set; } // TODO item can be moved passed this value if you move your mouse fast...
 
-        public TimeLineUserControlVM()
+        public TimelineUserControlVM()
         {
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
+
+            TotalFrames = 5000;
+
+            Effects = new ObservableCollection<EffectBaseVM>();
+
+            //var tmp1 = new EffectBaseVM(new EffectBlinkColor()
+            //{
+            //    StartFrame = 3,
+            //    EndFrame = 18,
+            //    //Name = "Temp 1"
+            //});
+            //var tmp2 = new EffectBaseVM(new EffectFadeColor()
+            //{
+            //    StartFrame = 18,
+            //    EndFrame = 33,
+            //    //Name = "Temp 2"
+            //});
+
+            //Effects.Add(tmp1);
+            //Effects.Add(tmp2);
         }
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
@@ -28,20 +49,14 @@ namespace Led.ViewModels
             switch (message)
             {
                 case MediatorMessages.TimeLineCollectionChanged:
-                    effects = (data as MediatorMessageData.TimeLineCollectionChangedData).Effects;
-                    if (Debugger.IsAttached)
+                    // sort, TimeLineControl needs the lowest one to be first etc.
+                    var effectsList = (data as MediatorMessageData.TimeLineCollectionChangedData).Effects.OrderBy(o => o.StartFrame).ToList();
+                    // TODO set the ObservableCollection properly in the DataBinding so we don't have to add every effect one at a time
+                    Effects.Clear();
+                    foreach (EffectBaseVM vm in effectsList)
                     {
-                        if (effects.Count > 0)
-                        {
-                            foreach (EffectBaseVM vm in effects)
-                            {
-                                Debug.WriteLine("    " + vm);
-                            }
-                        }
-                        else
-                        {
-                            Debug.WriteLine("    empty effects");
-                        }
+                        Effects.Add(vm);
+                        Debug.WriteLine("    " + vm.StartFrame);
                     }
                     break;
             }

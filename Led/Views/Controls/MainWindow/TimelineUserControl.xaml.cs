@@ -23,53 +23,12 @@ namespace Led.Views.Controls.MainWindow
     /// </summary>
     public partial class TimelineUserControl : UserControl
     {
-        public ObservableCollection<EffectBase> t2Data = new ObservableCollection<EffectBase>();
-        public ushort TotalFrames = 5000; // TODO item can be moved passed this value if you move your mouse fast...
-
         public TimelineUserControl()
         {
             InitializeComponent();
 
-            var tmp1 = new EffectBlinkColor()
-            {
-                StartFrame = 3,
-                EndFrame = 18,
-                //Name = "Temp 1"
-            };
-            var tmp2 = new EffectFadeColor()
-            {
-                StartFrame = 18,
-                EndFrame = 33,
-                //Name = "Temp 2"
-            };
-
-            t2Data.Add(tmp1);
-            t2Data.Add(tmp2);
-
-            TimeLine2.StartDate = DateTime.MinValue.AddMinutes(1); // TODO added 1 so it isn't 00:00, the tool doesn't like that
-
-            TimeLine2.Items = t2Data;
-            TimeLine2.TotalFrames = TotalFrames;
-
+            TimeLine2.StartDate = (DateTime)new UshortDateConverter().Convert((ushort)0, null, null, null);
         }
-
-        // TODO remove later
-        // TODO not working
-        private Random random = new Random();
-        private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            var startR = random.Next(0, 150);
-            var endR = startR + random.Next(1, 100);
-            var randomItem = new EffectBlinkColor()
-            {
-                StartFrame = (ushort)startR,
-                EndFrame = (ushort)endR,
-                //Name = "random"
-            };
-
-            TimeLine2.Items.Add(randomItem);
-        }
-
 
         private void Slider_Scale_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
