@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels.EffectProperties
 {
-    class FadeVM : INPC
+    public class FadeVM : INPC
     {
         private ObservableCollection<EffectColorVM> _colors;
         public ObservableCollection<EffectColorVM> Colors

@@ -61,7 +61,7 @@
             <Border BorderThickness="1"
                     BorderBrush="Green"
                     CornerRadius="3"
-                    Margin="0,10,0,10"
+                    Margin="0,5,0,5"
                     Height="60"
                     Background="{StaticResource BgBrush}">
                 <StackPanel Orientation="Vertical">
@@ -81,6 +81,7 @@
         <ScrollViewer Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Hidden">
             <ItemsControl>
+                <!-- Height = ItemControl Height + Margins -->
                 <tt:TimeLineControl x:Name="TimeLine2"
                                     ItemTemplate="{StaticResource UsedTemplateProperty}"
                                     HorizontalAlignment="Left"
@@ -88,12 +89,16 @@
                                     MinimumUnitWidth="20"
                                     Background="AntiqueWhite"
                                     DrawTimeGrid="True"
-                                    MinWidth="50" Height="80"
+                                    MinWidth="50"
+                                    Height="70"
                                     SynchedWithSiblings="False"/>
             </ItemsControl>
         </ScrollViewer>
-        <Slider x:Name="Slider_Scale" Grid.Row="1" Minimum="1" Maximum="100"
-                ValueChanged="Slider_Scale_ValueChanged" VerticalAlignment="Bottom" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Stretch"/>
-        <Button Grid.Row="1" Content="insert random" Width="100" HorizontalAlignment="Right" Click="Button_Click"/>
+        <DockPanel Grid.Row="1" LastChildFill="True">
+            <Label Content="Timeline Zoom" DockPanel.Dock="Left"/>
+            <Button Content="insert random" Width="100" HorizontalAlignment="Right" Click="Button_Click" DockPanel.Dock="Right"/>
+            <Slider x:Name="Slider_Scale" Grid.Row="1" Minimum="1" Maximum="100" Width="Auto"
+                    ValueChanged="Slider_Scale_ValueChanged" VerticalAlignment="Center" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Stretch"/>
+        </DockPanel>
     </Grid>
 </UserControl>

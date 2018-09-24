@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Led.ViewModels.EffectProperties
 {
-    class SetColorVM : INPC
+    public class SetColorVM : INPC
     {
         private ObservableCollection<EffectColorVM> _colors;
         public ObservableCollection<EffectColorVM> Colors

@@ -1962,10 +1962,10 @@ namespace Led.Utility.Timeline
             {
                 left = width = end = 0;
                 var checker = GetTimeLineItemControlAt(afterIndex++);
-                endTime = checker.EndTime;
                 if (checker != null)
                 {
                     checker.GetPlacementInfo(ref left, ref width, ref end);
+                    endTime = checker.EndTime;
                     Double gap = left - lastAddedEnd;
                     if (gap > bumpThreshold)
                     {

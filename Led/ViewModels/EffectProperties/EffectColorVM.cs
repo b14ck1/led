@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels.EffectProperties
 {
-    class EffectColorVM : INPC
+    public class EffectColorVM : INPC
     {
         private System.Windows.Media.Color _color;
         public Color Color
