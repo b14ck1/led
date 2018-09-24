@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels.EffectProperties
 {
-    class BlinkVM : INPC
+    public class BlinkVM : INPC
     {
         private ushort _blinkFrames;
         public ushort BlinkFrames
