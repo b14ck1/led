@@ -13,9 +13,10 @@ using System.Windows.Threading;
 
 namespace Led.ViewModels
 {
-    public class AudioUserControlVM : INPC
+    public class AudioUserControlVM : INPC, Interfaces.IParticipant
     {
         private AudioPlayer player;
+        private Services.MediatorService _mediatorService;
 
         public bool IsPlaying => player.IsPlaying;
 
@@ -62,6 +63,7 @@ namespace Led.ViewModels
         {
             _currentTime = value;
             _progress = _currentTime.Ticks / (double)_length.Ticks;
+            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentTickData(player.CurrentTime.Ticks));
             RaisePropertyChanged(nameof(CurrentTime));
             RaisePropertyChanged(nameof(Progress));
         }
@@ -128,6 +130,9 @@ namespace Led.ViewModels
                 SetCurrentTime(player.CurrentTime);
                 RaisePropertyChanged(playPausePropertyNames);
             };
+
+            _mediatorService = App.Instance.MediatorService;
+            _mediatorService.Register(this);
         }
 
         private static readonly ImageSource playImage = Properties.Resources.IconPlay.ToImageSource();
@@ -149,7 +154,17 @@ namespace Led.ViewModels
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
             SetCurrentTime(player.CurrentTime);
+            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentTickData(player.CurrentTime.Ticks));
         }
 
+        private void _SendMessage(MediatorMessages message, object data)
+        {
+            _mediatorService.BroadcastMessage(message, this, data);
+        }
+
+        public void RecieveMessage(MediatorMessages message, object sender, object data)
+        {
+
+        }
     }
 }

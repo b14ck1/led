@@ -189,7 +189,8 @@ namespace Led
         GroupBusDefinitionsChanged,
         GroupBusDefinitionsNeedCorrectionChanged,
         TimeLineCollectionChanged,
-        TimeLineEffectSelected
+        TimeLineEffectSelected,
+        AudioControlCurrentTick        
     }
 
     public class MediatorMessageData
@@ -233,6 +234,16 @@ namespace Led
             public TimeLineEffectSelectedData(ViewModels.EffectBaseVM effectBaseVM)
             {
                 EffectBaseVM = effectBaseVM;
+            }
+        }
+
+        public class AudioControlCurrentTickData
+        {
+            public long CurrentTicks;
+
+            public AudioControlCurrentTickData(long currentTicks)
+            {
+                CurrentTicks = currentTicks;
             }
         }
 
