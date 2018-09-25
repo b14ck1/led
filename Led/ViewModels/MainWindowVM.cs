@@ -28,8 +28,10 @@ namespace Led.ViewModels
                 AddEffectCommand.RaiseCanExecuteChanged();
 
                 _project = value;
-                                
+
                 Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
+
+                _InitAudioUserControl();
 
                 RaiseAllPropertyChanged();
                 SaveProjectCommand.RaiseCanExecuteChanged();
@@ -38,7 +40,7 @@ namespace Led.ViewModels
             }
         }
 
-        private Views.Controls.LedEntityOverview _LedEntityView;        
+        private Views.Controls.LedEntityOverview _LedEntityView;
         private Views.MainWindow _MainWindow;
 
         public string ProjectName
@@ -81,6 +83,7 @@ namespace Led.ViewModels
         private EffectBaseVM _CurrentEffect => _CurrentLedEntity.CurrentEffect;
         private Views.Controls.MainWindow.EffectProperties _EffectView;
 
+        private Views.Controls.MainWindow.TimelineUserControl _TimelineUserControl;
         private Views.Controls.MainWindow.AudioUserControl _AudioUserControl;
         private AudioUserControlVM _audioUserControlVM;
         public AudioUserControlVM AudioUserControlVM
@@ -106,18 +109,22 @@ namespace Led.ViewModels
         public Command EditLedEntityCommand { get; set; }
         public Command AddEffectCommand { get; set; }
 
-        public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity, Views.Controls.MainWindow.EffectProperties effectView, Views.Controls.MainWindow.AudioUserControl audioUserControl)
+        public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity,
+            Views.Controls.MainWindow.EffectProperties effectView,
+            Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
+            Views.Controls.MainWindow.AudioUserControl audioUserControl)
         {
             _MainWindow = mainWindow;
             _LedEntityView = ledEntity;
             _LedEntityView.DataContext = _CurrentLedEntity;
-            
+
             _EffectView = effectView;
 
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
 
             //_CurrentEffect = new EffectBaseVM();
             //effectView.DataContext = _CurrentEffect;
+            _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
             audioUserControl.DataContext = AudioUserControlVM;
 
@@ -136,7 +143,7 @@ namespace Led.ViewModels
 
         private void _OnSaveProjectCommand()
         {
-            System.IO.File.WriteAllText(@"C:\Users\Robin\Desktop\test.json", Newtonsoft.Json.JsonConvert.SerializeObject(Project, new JsonSerializerSettings
+            System.IO.File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Desktop\Led\test.json", Newtonsoft.Json.JsonConvert.SerializeObject(Project, new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Objects
             }));
@@ -144,7 +151,7 @@ namespace Led.ViewModels
 
         private void _OnLoadProjectCommand()
         {
-            Project = JsonConvert.DeserializeObject<Model.Project>(System.IO.File.ReadAllText(@"C:\Users\Robin\Desktop\test.json"), new JsonSerializerSettings
+            Project = JsonConvert.DeserializeObject<Model.Project>(System.IO.File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Desktop\Led\test.json"), new JsonSerializerSettings
             {
                 TypeNameHandling = TypeNameHandling.Auto
             });
@@ -177,7 +184,7 @@ namespace Led.ViewModels
 
             App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, ledEntityEditVM);
 
-            LedEntities.Add(new LedEntitySelectVM(ledEntityEditVM.LedEntity));            
+            LedEntities.Add(new LedEntitySelectVM(ledEntityEditVM.LedEntity));
         }
 
         private void _OnEditLedEntityCommand()
@@ -191,7 +198,7 @@ namespace Led.ViewModels
             ledEntityCRUDView.Grid.Children.Add(ledEntity);
 
             App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, new LedEntityCRUDVM(_CurrentLedEntity.LedEntity));
-            
+
             _CurrentLedEntity.Update();
             _LedEntityView.DataContext = null;
             _LedEntityView.DataContext = _CurrentLedEntity;
@@ -213,10 +220,21 @@ namespace Led.ViewModels
         private void _OnAddAudioCommand()
         {
             var fileFilter = "*.mp3;*.m4a;*.wav;*.flac";
-            String audioFileName = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
 
-            AudioUserControlVM = new AudioUserControlVM(audioFileName);
-            _AudioUserControl.DataContext = AudioUserControlVM;
+            Project.AudioProperty = new Model.AudioProperty();
+            Project.AudioProperty.FilePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
+
+            _InitAudioUserControl();
+        }
+
+        private void _InitAudioUserControl()
+        {
+            var audioFilePath = Project.AudioProperty?.FilePath;
+            if (audioFilePath != null && !audioFilePath.Equals(string.Empty))
+            {
+                AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
+                _AudioUserControl.DataContext = AudioUserControlVM;
+            }
         }
 
         protected void _SendMessage(MediatorMessages message, object data)
@@ -229,7 +247,7 @@ namespace Led.ViewModels
             switch (message)
             {
                 case MediatorMessages.LedEntitySelectButtonClicked:
-                    _CurrentLedEntity = (sender as LedEntityBaseVM);                    
+                    _CurrentLedEntity = (sender as LedEntityBaseVM);
                     _LedEntityView.DataContext = _CurrentLedEntity;
                     _EffectView.DataContext = _CurrentEffect;
                     EditLedEntityCommand.RaiseCanExecuteChanged();
@@ -237,7 +255,7 @@ namespace Led.ViewModels
                     break;
                 default:
                     break;
-            }    
+            }
         }
     }
 }

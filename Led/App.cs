@@ -55,9 +55,10 @@ namespace Led
             Views.Controls.MainWindow.LedEntityButtons entityButtons = new Views.Controls.MainWindow.LedEntityButtons();
             Views.Controls.LedEntityOverview entity = new Views.Controls.LedEntityOverview();
             Views.Controls.MainWindow.EffectProperties effectProperties = new Views.Controls.MainWindow.EffectProperties();
+            Views.Controls.MainWindow.TimelineUserControl timelineUserControl = new Views.Controls.MainWindow.TimelineUserControl();
             Views.Controls.MainWindow.AudioUserControl audioUserControl = new Views.Controls.MainWindow.AudioUserControl();
 
-            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, audioUserControl);
+            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, timelineUserControl, audioUserControl);
 
             System.Windows.Controls.Grid.SetColumn(entityButtons, 1);
             mainWindow.Grid.Children.Add(entityButtons);
@@ -70,7 +71,12 @@ namespace Led
             System.Windows.Controls.Grid.SetRow(effectProperties, 1);
             mainWindow.Grid.Children.Add(effectProperties);           
 
-            System.Windows.Controls.Grid.SetRow(audioUserControl, 2);
+            System.Windows.Controls.Grid.SetRow(timelineUserControl, 2);
+            System.Windows.Controls.Grid.SetColumn(timelineUserControl, 0);
+            System.Windows.Controls.Grid.SetColumnSpan(timelineUserControl, 3);
+            mainWindow.Grid.Children.Add(timelineUserControl);
+
+            System.Windows.Controls.Grid.SetRow(audioUserControl, 3);
             System.Windows.Controls.Grid.SetColumn(audioUserControl, 0);
             System.Windows.Controls.Grid.SetColumnSpan(audioUserControl, 3);
             mainWindow.Grid.Children.Add(audioUserControl);
