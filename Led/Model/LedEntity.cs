@@ -6,7 +6,7 @@ using System.Windows;
 namespace Led.Model
 {
     [JsonObject]
-    class LedEntity : INPC
+    class LedEntity
     {
         [JsonProperty]
         public string LedEntityName { get; set; }
@@ -20,13 +20,18 @@ namespace Led.Model
         [JsonProperty]
         public Dictionary<LedEntityView, ImageInfo> ImageInfos { get; set; }
 
+        [JsonProperty]
+        public List<Second> Seconds { get; set; }
+
         public LedEntity()
         {
             LedBuses = new Dictionary<byte, LedBus>();
             Effects = new List<Effect.EffectBase>();
-            ImageInfos = new Dictionary<LedEntityView, ImageInfo>();
-            ImageInfos.Add(LedEntityView.Front, new ImageInfo());
-            ImageInfos.Add(LedEntityView.Back, new ImageInfo());
+            ImageInfos = new Dictionary<LedEntityView, ImageInfo>
+            {
+                { LedEntityView.Front, new ImageInfo() },
+                { LedEntityView.Back, new ImageInfo() }
+            };
         }
     }
 }

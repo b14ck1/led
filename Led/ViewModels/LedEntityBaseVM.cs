@@ -14,6 +14,8 @@ namespace Led.ViewModels
 {
     abstract class LedEntityBaseVM : INPC, Interfaces.IParticipant
     {
+        private Services.MediatorService _Mediator;
+
         private Model.LedEntity _ledEntity;
         public Model.LedEntity LedEntity
         {
@@ -26,9 +28,7 @@ namespace Led.ViewModels
                     RaiseAllPropertyChanged();
                 }
             }
-        }
-
-        private Services.MediatorService _Mediator;
+        }        
 
         /// <summary>
         /// Just to display the Name of the Entity.
@@ -108,6 +108,11 @@ namespace Led.ViewModels
             get => Leds.FindAll(X => X.View == LedEntityView.Back);
         }
 
+        /// <summary>
+        /// When the EffectService updates led colors to match a specific frame it gets saved here
+        /// so on another update call we can check if we maybe jumped a frame or smth else went wrong
+        /// </summary>
+        public long CurrentFrame;
         private EffectBaseVM _currentEffect;
         public EffectBaseVM CurrentEffect
         {
@@ -167,6 +172,8 @@ namespace Led.ViewModels
             _Mediator.Register(this);
 
             SelectLedEntityCommand = new Command(_OnSelectLedEntityCommand);
+
+            CurrentFrame = 0;
 
             //If it is a new entity (has no name), give it a default name
             if (Name == null)

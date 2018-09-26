@@ -277,6 +277,6 @@ namespace Led
         public static Brush LedSelectedColor = Brushes.Blue;
 
         public static int MainWindowWidth = 1600;
-        public static int MainWindowHeight = 900;
+        public static int MainWindowHeight = 900;        
     }
 }
