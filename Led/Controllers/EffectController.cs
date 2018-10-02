@@ -20,39 +20,6 @@
         //    //}
         //}
 
-        //public void RenderObject(int ObjectID)
-        //{
-        //    FrameData Data = Model.FrameDataGet(ObjectID);
-        //    ArrayList temp = new ArrayList();
-        //    short frame = 0;
-
-        //    for (int i = 0; i < Data.Seconds.Count; i++)
-        //    {
-        //        for (int j = 0; j < Data.Seconds[i].Frames.Count; j++)
-        //        {
-        //            if (Data.Seconds[i].Frames[j].Functions.Count > 0)
-        //            {
-        //                for (int k = 0; k < Data.Seconds[i].Frames[j].Functions.Count; k++)
-        //                {
-        //                    temp.Add(Data.Seconds[i].Frames[j].Functions[k]);
-        //                }
-        //            }
-
-        //            foreach (var func in temp)
-        //            {
-        //                if (func as Util.IEffectLogic != null)
-        //                    Data.Seconds[i].Frames[j].LedChanges.AddRange((func as Util.IEffectLogic).Calc(Logic, frame));
-        //                else if (func as List<Util.IEffectLogic> != null)
-        //                    Data.Seconds[i].Frames[j].LedChanges.AddRange(Logic.OrderByPriority(func as List<Util.IEffectLogic>, frame));
-        //                //else
-        //                //LogDatShit  
-        //            }
-
-        //            frame++;
-        //        }
-        //    }
-        //}
-
         //public void RenderFrameRange(int ObjectID, short StartFrame, short EndFrame)
         //{
         //    FrameData Data = Model.FrameDataGet(ObjectID);

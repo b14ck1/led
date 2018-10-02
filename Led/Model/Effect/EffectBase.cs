@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Led.Model.Effect
 {
-    public abstract class EffectBase
+    public abstract class EffectBase : IEffectLogic
     {
         public bool Active;
 
@@ -38,6 +38,11 @@ namespace Led.Model.Effect
             ColorPriority = 0;
 
             Leds = new List<Utility.LedModelID>();
+        }
+
+        public virtual void Calc(IEffectLogic effectLogic)
+        {
+            throw new NotImplementedException();
         }
     }
 }
