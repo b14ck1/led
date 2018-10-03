@@ -121,7 +121,7 @@ namespace Led.ViewModels
                     for (int i = 0; i < GridRangeX; i++)
                     {
                         res.Add(new LedGridCellVM(_ledGroup.View.LedGrid[i, j]));
-                        res.Last().PropertyChanged += LedGroupViewModel_PropertyChanged;
+                        res.Last().PropertyChanged += _LedGroupViewModel_PropertyChanged;
                     }
                 }
                 return res;
@@ -330,7 +330,7 @@ namespace Led.ViewModels
             }
         }
 
-        private Point _minLedPosition
+        private Point _MinLedPosition
         {
             get
             {
@@ -381,16 +381,16 @@ namespace Led.ViewModels
         {
             LedGroup = ledGroup ?? (LedGroup = new Model.LedGroup());
             Rectangle = new Utility.Rectangle(0, 0, Defines.LedGroupColor);
-            CloseWindowCommand = new Command(OnCloseWindowCommand);
+            CloseWindowCommand = new Command(_OnCloseWindowCommand);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);            
         }
 
-        private void OnCloseWindowCommand()
+        private void _OnCloseWindowCommand()
         {
             _ledGroup.Leds = new List<Point>();
-            Point _minLeds = _minLedPosition;
+            Point _minLeds = _MinLedPosition;
             bool[,] done = new bool[GridRangeX, GridRangeY];
 
             int i = StartPositionWiringX;
@@ -436,7 +436,7 @@ namespace Led.ViewModels
             App.Instance.WindowService.CloseWindow(this);
         }
 
-        private void LedGroupViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void _LedGroupViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals(nameof(LedGridCellVM.Arrow)))
                 RaisePropertyChanged(nameof(WiringLine));

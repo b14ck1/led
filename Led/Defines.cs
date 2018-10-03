@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Runtime.CompilerServices;
+using System.Collections.ObjectModel;
 
 namespace Led
 {
@@ -135,10 +136,10 @@ namespace Led
         public byte BusID;
         public byte PositionInBus;
 
-        public LedGroupIdentifier(byte BusID, byte PositionInBus)
+        public LedGroupIdentifier(byte busID, byte positionInBus)
         {
-            this.BusID = BusID;
-            this.PositionInBus = PositionInBus;
+            BusID = busID;
+            PositionInBus = positionInBus;
         }
 
         public override int GetHashCode()
@@ -172,7 +173,7 @@ namespace Led
     }
 
     public enum EffectType
-    {
+    { 
         SetColor,
         Blink,
         Fade,
@@ -186,7 +187,10 @@ namespace Led
         EffectVMEditSelectedLedsFinished,
         EffectVMEditSelectedLedsClear,
         GroupBusDefinitionsChanged,
-        GroupBusDefinitionsNeedCorrectionChanged
+        GroupBusDefinitionsNeedCorrectionChanged,
+        TimeLineCollectionChanged,
+        TimeLineEffectSelected,
+        AudioControlCurrentTick        
     }
 
     public class MediatorMessageData
@@ -196,10 +200,10 @@ namespace Led
             public bool Edit { get; }
             public List<Utility.LedModelID> SelectedLeds { get; }
 
-            public EffectVMEditSelectedLeds(bool Edit, List<Utility.LedModelID> SelectedLeds)
+            public EffectVMEditSelectedLeds(bool edit, List<Utility.LedModelID> selectedLeds)
             {
-                this.Edit = Edit;
-                this.SelectedLeds = SelectedLeds;
+                Edit = edit;
+                SelectedLeds = selectedLeds;
             }
         }
 
@@ -212,6 +216,55 @@ namespace Led
                 NeedCorrection = needCorrection;
             }
         }
+
+        public class TimeLineCollectionChangedData
+        {
+            public ObservableCollection<ViewModels.EffectBaseVM> Effects { get; }
+
+            public TimeLineCollectionChangedData(ObservableCollection<ViewModels.EffectBaseVM> effects)
+            {
+                Effects = effects;
+            }
+        }
+
+        public class TimeLineEffectSelectedData
+        {
+            public ViewModels.EffectBaseVM EffectBaseVM { get; }
+            
+            public TimeLineEffectSelectedData(ViewModels.EffectBaseVM effectBaseVM)
+            {
+                EffectBaseVM = effectBaseVM;
+            }
+        }
+
+        public class AudioControlCurrentTickData
+        {
+            public long CurrentTicks;
+
+            public AudioControlCurrentTickData(long currentTicks)
+            {
+                CurrentTicks = currentTicks;
+            }
+        }
+
+        //public class TimeLineEffectPropertiesChangedData
+        //{
+        //    public enum Values
+        //    {
+        //        StartFrame,
+        //        Dauer,
+        //        EndFrame
+        //    }
+
+        //    public Values ChangedValue { get; }
+        //    public ushort Value { get; }
+
+        //    public TimeLineEffectPropertiesChangedData(Values changedValue, ushort value)
+        //    {
+        //        ChangedValue = changedValue;
+        //        Value = value;
+        //    }
+        //}
     }
 
     public static class Defines
@@ -224,6 +277,6 @@ namespace Led
         public static Brush LedSelectedColor = Brushes.Blue;
 
         public static int MainWindowWidth = 1600;
-        public static int MainWindowHeight = 900;
+        public static int MainWindowHeight = 900;        
     }
 }

@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Led"
+             xmlns:EffectProperties="clr-namespace:Led.ViewModels.EffectProperties"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              mc:Ignorable="d" 
@@ -14,82 +15,190 @@
                 <x:Type TypeName="local:EffectType"></x:Type>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
+
+        <ItemsPanelTemplate x:Key="ITP">
+            <StackPanel Orientation="Vertical" />
+        </ItemsPanelTemplate>
+
+        <DataTemplate DataType="{x:Type EffectProperties:EffectColorVM}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Content="{Binding Number}" Margin="3,3,3,3" Grid.Column="0" />
+                <Button Background="{Binding ColorAsBrush}" Command="{Binding PickColorCommand}" Margin="3,3,3,3" Grid.Column="1" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type EffectProperties:SetColorVM}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Label Content="SetColor" Grid.Row="0"/>
+                <ItemsControl ItemsPanel="{StaticResource ITP}"
+                              ItemsSource="{Binding Colors}"
+                              Grid.Row="1" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type EffectProperties:BlinkVM}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Label Content="Blink" Grid.Row="0"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Blinktakt (Frames)" Margin="3,3,3,3" Grid.Column="0" />
+                    <TextBox Text="{Binding BlinkFrames, Mode=TwoWay}" Margin="3,3,3,3" Grid.Column="1" />
+                </Grid>
+                <ItemsControl ItemsPanel="{StaticResource ITP}"
+                              ItemsSource="{Binding Colors}" 
+                              Grid.Row="2" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type EffectProperties:FadeVM}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="32" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Label Content="Fade" Grid.Row="0"/>
+                <Grid Grid.Row="1">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Wiederholen" Margin="3,3,3,3" Grid.Row="0" Grid.Column="0" />
+                    <CheckBox VerticalAlignment="Center" Margin="3,3,3,3" Grid.Row="0" Grid.Column="1" />
+                </Grid>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.5*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Content="Dauer (Frames)" HorizontalAlignment="Right" Margin="3,3,3,3" Grid.Column="0" />
+                    <xctk:DecimalUpDown Margin="3,3,3,3" Grid.Column="1" />
+
+                    <Label Content="Anz." HorizontalAlignment="Right" Margin="3,3,3,3" Grid.Column="2" />
+                    <xctk:DecimalUpDown Margin="3,3,3,3" Grid.Column="3" />
+                </Grid>
+                <ItemsControl ItemsPanel="{StaticResource ITP}"
+                              ItemsSource="{Binding Colors}" 
+                              Grid.Row="3" />
+            </Grid>
+        </DataTemplate>
     </UserControl.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="192"/>
-            <RowDefinition Height="Auto" MinHeight="100"/>
-            <RowDefinition Height="96" />
-            <RowDefinition Height="30" />
-            <RowDefinition Height="32" />
-        </Grid.RowDefinitions>
-
-        <Grid Grid.Row="0">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+        <Grid Name="Grid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
+                <RowDefinition Height="192"/>
+                <RowDefinition Height="250"/>
+                <RowDefinition Height="96" />
+                <RowDefinition Height="30" />
+                <RowDefinition Height="32" />
             </Grid.RowDefinitions>
 
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
 
-            <Label Content="Allgemeines" FontWeight="Bold" Margin="3,3,3,0" VerticalAlignment="Bottom" />
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
 
-            <Label Content="Effekt Aktiv" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3"/>
-            <CheckBox IsChecked="{Binding EffectActive, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="3,3,3,3"/>
+                <Label Content="Allgemeines" FontWeight="Bold" Margin="3,3,3,0" VerticalAlignment="Bottom" />
 
-            <Label Content="Startframe" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Value="{Binding StartFrame, Mode=TwoWay}" Minimum="0" Grid.Row="2" Grid.Column="2" Margin="3,3,3,3"/>
+                <Label Content="Effekt Aktiv" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3"/>
+                <CheckBox IsChecked="{Binding EffectActive, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Margin="3,3,3,3"/>
 
-            <Label Content="Dauer" Grid.Row="3" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Value="{Binding Dauer, Mode=TwoWay}" Minimum="0" Grid.Row="3" Grid.Column="1" Margin="3,3,3,3"/>
+                <Label Content="Startframe" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3"/>
+                <xctk:DecimalUpDown Value="{Binding StartFrame, Mode=TwoWay}" Minimum="0" Grid.Row="2" Grid.Column="2" Margin="3,3,3,3"/>
 
-            <Label Content="Endframe" Grid.Row="4" Grid.Column="0" Margin="3,3,3,3"/>
-            <xctk:DecimalUpDown Value="{Binding EndFrame, Mode=TwoWay}" Minimum="0" Grid.Row="4" Grid.Column="1" Margin="3,3,3,3"/>
+                <Label Content="Dauer" Grid.Row="3" Grid.Column="0" Margin="3,3,3,3"/>
+                <xctk:DecimalUpDown Value="{Binding Dauer, Mode=TwoWay}" Minimum="0" Grid.Row="3" Grid.Column="1" Margin="3,3,3,3"/>
 
-            <Label Content="Effekt" Grid.Row="5" Grid.Column="0" Margin="3,3,3,3"/>
-            <ComboBox ItemsSource="{Binding Source={StaticResource enmEffect}}"
-                      SelectedValue="{Binding EffectType, Mode=TwoWay}"
-                      Grid.Row="5" Grid.Column="1" Margin="3,3,3,3"/>
+                <Label Content="Endframe" Grid.Row="4" Grid.Column="0" Margin="3,3,3,3"/>
+                <xctk:DecimalUpDown Value="{Binding EndFrame, Mode=TwoWay}" Minimum="0" Grid.Row="4" Grid.Column="1" Margin="3,3,3,3"/>
+
+                <Label Content="Effekt" Grid.Row="5" Grid.Column="0" Margin="3,3,3,3"/>
+                <ComboBox ItemsSource="{Binding Source={StaticResource enmEffect}}"
+                          SelectedValue="{Binding EffectType, Mode=TwoWay}"
+                          Grid.Row="5" Grid.Column="1" Margin="3,3,3,3"/>
+            </Grid>
+
+            <ScrollViewer Grid.Row="1">
+                <Grid>
+                    <ItemsControl ItemsPanel="{StaticResource ITP}"
+                          ItemsSource="{Binding SetColorVMs}"/>
+
+                    <ItemsControl ItemsPanel="{StaticResource ITP}"
+                          ItemsSource="{Binding BlinkVMs}"/>
+
+                    <ItemsControl ItemsPanel="{StaticResource ITP}"
+                          ItemsSource="{Binding FadeVMs}"/>
+                </Grid>
+            </ScrollViewer>
+
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Content="Ausgewählte Led's" FontWeight="Bold" VerticalAlignment="Bottom" Margin="3,3,3,0" />
+
+                <Label Content="Anzahl" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3"/>
+                <Label Content="{Binding NumberOfLeds}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3"/>
+
+                <Button Content="{Binding EditCommandContent}" Command="{Binding EditCommand}" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3" />
+                <Button Content="Clear" Command="{Binding ClearCommand}" Grid.Row="2" Grid.Column="1" Margin="3,3,3,3" />
+            </Grid>
+
+            <Grid Grid.Row="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Content="Vorschau" Grid.Column="0" Margin="3,3,3,3" />
+                <Button Content="Löschen" Grid.Column="1" Margin="3,3,3,3" />
+                <Button Content="Aktualisieren" Grid.Column="2" Margin="3,3,3,3" />
+            </Grid>
         </Grid>
-
-        <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-
-            <Label Content="Ausgewählte Led's" FontWeight="Bold" VerticalAlignment="Bottom" Margin="3,3,3,0" />
-            
-            <Label Content="Anzahl" Grid.Row="1" Grid.Column="0" Margin="3,3,3,3"/>
-            <Label Content="{Binding NumLEDs}" Grid.Row="1" Grid.Column="1" Margin="3,3,3,3"/>
-
-            <Button Content="{Binding EditCommandContent}" Command="{Binding EditCommand}" Grid.Row="2" Grid.Column="0" Margin="3,3,3,3" />
-            <Button Content="Clear" Command="{Binding ClearCommand}" Grid.Row="2" Grid.Column="1" Margin="3,3,3,3" />
-        </Grid>
-
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-
-            <Button Content="Vorschau" Grid.Column="0" Margin="3,3,3,3" />
-            <Button Content="Löschen" Grid.Column="1" Margin="3,3,3,3" />
-            <Button Content="Aktualisieren" Grid.Column="2" Margin="3,3,3,3" />
-        </Grid>
-    </Grid>
+    </ScrollViewer>
 </UserControl>

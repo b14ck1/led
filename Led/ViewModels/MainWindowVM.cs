@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using Led.Interfaces;
+using Newtonsoft.Json;
 
 namespace Led.ViewModels
 {
@@ -19,24 +20,37 @@ namespace Led.ViewModels
             get => _project;
             set
             {
+                LedEntities.Clear();
+                _CurrentLedEntity = null;
+                _LedEntityView.DataContext = null;
+                _LedEntityView.DataContext = _CurrentLedEntity;
+                EditLedEntityCommand.RaiseCanExecuteChanged();
+                AddEffectCommand.RaiseCanExecuteChanged();
+
                 _project = value;
+
+                Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
+
+                _InitAudioUserControl();
+
                 RaiseAllPropertyChanged();
+                SaveProjectCommand.RaiseCanExecuteChanged();
                 NewLedEntityCommand.RaiseCanExecuteChanged();
                 AddAudioCommand.RaiseCanExecuteChanged();
             }
         }
 
-        private Views.Controls.LedEntityOverview _ledEntityView;
-        private Views.MainWindow _mainWindow;
+        private Views.Controls.LedEntityOverview _LedEntityView;
+        private Views.MainWindow _MainWindow;
 
         public string ProjectName
         {
-            get => _project == null ? "Sickes LED Progr jaaa" : _project.ProjectName;
+            get => Project == null ? "Sickes LED Progr jaaa" : Project.ProjectName;
             set
             {
-                if (_project.ProjectName != value)
+                if (Project.ProjectName != value)
                 {
-                    _project.ProjectName = value;
+                    Project.ProjectName = value;
                     RaisePropertyChanged(nameof(ProjectName));
                 }
             }
@@ -51,7 +65,7 @@ namespace Led.ViewModels
             get => Defines.MainWindowHeight;
         }
 
-        private LedEntityBaseVM _currentLedEntity;
+        private LedEntityBaseVM _CurrentLedEntity;        
         private ObservableCollection<LedEntityBaseVM> _ledEntities;
         public ObservableCollection<LedEntityBaseVM> LedEntities
         {
@@ -61,16 +75,17 @@ namespace Led.ViewModels
                 if (_ledEntities != value)
                 {
                     _ledEntities = value;
-                    RaisePropertyChanged("LedEntities");
+                    RaisePropertyChanged(nameof(LedEntities));
                 }
             }
         }
 
-        private Views.Controls.MainWindow.EffectProperties EffectView;
-        private EffectBaseVM EffectViewModel;
+        private EffectBaseVM _CurrentEffect => _CurrentLedEntity.CurrentEffect;
+        private Views.Controls.MainWindow.EffectProperties _EffectView;
 
+        private Views.Controls.MainWindow.TimelineUserControl _TimelineUserControl;
         private Views.Controls.MainWindow.AudioUserControl _AudioUserControl;
-        public AudioUserControlVM _audioUserControlVM;
+        private AudioUserControlVM _audioUserControlVM;
         public AudioUserControlVM AudioUserControlVM
         {
             get => _audioUserControlVM;
@@ -84,33 +99,65 @@ namespace Led.ViewModels
             }
         }
 
+        public Command SaveProjectCommand { get; set; }
+        public Command LoadProjectCommand { get; set; }
+
         public Command NewProjectCommand { get; set; }
         public Command NewLedEntityCommand { get; set; }
         public Command AddAudioCommand { get; set; }
 
-        public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity, Views.Controls.MainWindow.EffectProperties effectView, Views.Controls.MainWindow.AudioUserControl audioUserControl)
-        {
-            _mainWindow = mainWindow;
-            _ledEntityView = ledEntity;
-            ledEntity.DataContext = null;
-            EffectView = effectView;
+        public Command EditLedEntityCommand { get; set; }
+        public Command AddEffectCommand { get; set; }
 
-            _ledEntities = new ObservableCollection<LedEntityBaseVM>();
-            
-            EffectViewModel = new EffectBaseVM();            
-            effectView.DataContext = EffectViewModel;
+        public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity,
+            Views.Controls.MainWindow.EffectProperties effectView,
+            Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
+            Views.Controls.MainWindow.AudioUserControl audioUserControl)
+        {
+            _MainWindow = mainWindow;
+            _LedEntityView = ledEntity;
+            _LedEntityView.DataContext = _CurrentLedEntity;
+
+            _EffectView = effectView;
+
+            LedEntities = new ObservableCollection<LedEntityBaseVM>();
+
+            //_CurrentEffect = new EffectBaseVM();
+            //effectView.DataContext = _CurrentEffect;
+            _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
             audioUserControl.DataContext = AudioUserControlVM;
 
-            NewProjectCommand = new Command(OnNewProject);
-            NewLedEntityCommand = new Command(OnNewLedEntity, () => _project != null);
-            AddAudioCommand = new Command(OnAddAudio, () => _project != null);
+            SaveProjectCommand = new Command(_OnSaveProjectCommand, () => Project != null);
+            LoadProjectCommand = new Command(_OnLoadProjectCommand);
+
+            NewProjectCommand = new Command(_OnNewProjectCommand);
+            NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
+            EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
+            AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null);
+            AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
         }
 
-        private void OnNewProject()
+        private void _OnSaveProjectCommand()
+        {
+            System.IO.File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Desktop\Led\test.json", Newtonsoft.Json.JsonConvert.SerializeObject(Project, new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Objects
+            }));
+        }
+
+        private void _OnLoadProjectCommand()
+        {
+            Project = JsonConvert.DeserializeObject<Model.Project>(System.IO.File.ReadAllText(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\Desktop\Led\test.json"), new JsonSerializerSettings
+            {
+                TypeNameHandling = TypeNameHandling.Auto
+            });
+        }
+
+        private void _OnNewProjectCommand()
         {
             View.SingleTextDialog _newProjectDialog = new View.SingleTextDialog();
             NewProjectDialogVM _newProjectDialogVM = new NewProjectDialogVM();
@@ -121,23 +168,45 @@ namespace Led.ViewModels
                 Project = new Model.Project(_newProjectDialogVM.ProjectName);
         }
 
-        private void OnNewLedEntity()
+        private void _OnNewLedEntityCommand()
         {
             Project.LedEntities.Add(new Model.LedEntity());
 
-            Views.CRUDs.LedEntityCRUD _LedEntityCreationView = new Views.CRUDs.LedEntityCRUD();
-            LedEntityCRUDVM _ledEntityEditVM = new LedEntityCRUDVM(Project.LedEntities.Last());
+            Views.CRUDs.LedEntityCRUD ledEntityCRUDView = new Views.CRUDs.LedEntityCRUD();
+            LedEntityCRUDVM ledEntityEditVM = new LedEntityCRUDVM(Project.LedEntities.Last());
 
             Views.Controls.CRUDs.LedEntityGroupProperties _ledGroupProperties = new Views.Controls.CRUDs.LedEntityGroupProperties();
-            _LedEntityCreationView.InnerGrid.Children.Add(_ledGroupProperties);
+            ledEntityCRUDView.InnerGrid.Children.Add(_ledGroupProperties);
 
             Views.Controls.LedEntityOverview _ledEntity = new Views.Controls.LedEntityOverview();
             Grid.SetColumn(_ledEntity, 1);
-            _LedEntityCreationView.Grid.Children.Add(_ledEntity);
+            ledEntityCRUDView.Grid.Children.Add(_ledEntity);
 
-            App.Instance.WindowService.ShowNewWindow(_LedEntityCreationView, _ledEntityEditVM);
+            App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, ledEntityEditVM);
 
-            LedEntities.Add(new LedEntitySelectVM(_ledEntityEditVM.LedEntity));            
+            LedEntities.Add(new LedEntitySelectVM(ledEntityEditVM.LedEntity));
+        }
+
+        private void _OnEditLedEntityCommand()
+        {
+            Views.CRUDs.LedEntityCRUD ledEntityCRUDView = new Views.CRUDs.LedEntityCRUD();
+            Views.Controls.CRUDs.LedEntityGroupProperties _ledGroupProperties = new Views.Controls.CRUDs.LedEntityGroupProperties();
+            ledEntityCRUDView.InnerGrid.Children.Add(_ledGroupProperties);
+
+            Views.Controls.LedEntityOverview ledEntity = new Views.Controls.LedEntityOverview();
+            Grid.SetColumn(ledEntity, 1);
+            ledEntityCRUDView.Grid.Children.Add(ledEntity);
+
+            App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, new LedEntityCRUDVM(_CurrentLedEntity.LedEntity));
+
+            _CurrentLedEntity.Update();
+            _LedEntityView.DataContext = null;
+            _LedEntityView.DataContext = _CurrentLedEntity;
+        }
+
+        private void _OnAddEffectCommand()
+        {           
+            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();
         }
 
         //private void OnSelectedLedEntity(object sender, EventArgs e)
@@ -148,13 +217,29 @@ namespace Led.ViewModels
         //    _ledEntityView.DataContext = (LedEntityBaseVM)sender;         
         //}
 
-        private void OnAddAudio()
+        private void _OnAddAudioCommand()
         {
             var fileFilter = "*.mp3;*.m4a;*.wav;*.flac";
-            String audioFileName = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
 
-            AudioUserControlVM = new AudioUserControlVM(audioFileName);
-            _AudioUserControl.DataContext = AudioUserControlVM;
+            Project.AudioProperty = new Model.AudioProperty();
+            Project.AudioProperty.FilePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
+
+            _InitAudioUserControl();
+        }
+
+        private void _InitAudioUserControl()
+        {
+            var audioFilePath = Project.AudioProperty?.FilePath;
+            if (audioFilePath != null && !audioFilePath.Equals(string.Empty))
+            {
+                AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
+                _AudioUserControl.DataContext = AudioUserControlVM;
+            }
+        }
+
+        protected void _SendMessage(MediatorMessages message, object data)
+        {
+            _Mediator.BroadcastMessage(message, this, data);
         }
 
         public virtual void RecieveMessage(MediatorMessages message, object sender, object data)
@@ -162,12 +247,15 @@ namespace Led.ViewModels
             switch (message)
             {
                 case MediatorMessages.LedEntitySelectButtonClicked:
-                    _currentLedEntity = (sender as LedEntityBaseVM);
-                    _ledEntityView.DataContext = (sender as LedEntityBaseVM);
+                    _CurrentLedEntity = (sender as LedEntityBaseVM);
+                    _LedEntityView.DataContext = _CurrentLedEntity;
+                    _EffectView.DataContext = _CurrentEffect;
+                    EditLedEntityCommand.RaiseCanExecuteChanged();
+                    AddEffectCommand.RaiseCanExecuteChanged();
                     break;
                 default:
                     break;
-            }    
+            }
         }
     }
 }

@@ -56,16 +56,16 @@ namespace Led.ViewModels
         public Command AbortCommand { get; set; }
         public Command CloseWindowCommand { get; set; }
 
-        public NewProjectDialogVM(string _dialogTitle = "Neues Projekt anlegen", string _textToEnter = "Bitte Namen eingeben:")
+        public NewProjectDialogVM(string dialogTitle = "Neues Projekt anlegen", string textToEnter = "Bitte Namen eingeben:")
         {
-            DialogTitle = _dialogTitle;
-            TextToEnter = _textToEnter;
-            OkCommand = new Command(OnOkCommand);
-            AbortCommand = new Command(OnAbortCommand);
-            CloseWindowCommand = new Command(OnCloseWindowCommand);
+            DialogTitle = dialogTitle;
+            TextToEnter = textToEnter;
+            OkCommand = new Command(_OnOkCommand);
+            AbortCommand = new Command(_OnAbortCommand);
+            CloseWindowCommand = new Command(_OnCloseWindowCommand);
         }
 
-        private void OnCloseWindowCommand()
+        private void _OnCloseWindowCommand()
         {
             App.Instance.WindowService.CloseWindow(this);
         }

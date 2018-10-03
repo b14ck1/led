@@ -10,12 +10,12 @@ namespace Led.ViewModels
 {
     class LedEntityCRUDVM : LedEntityBaseVM
     {
-        private bool _addGroup;
-        private bool _creatingGroup;
-        private bool _movingGroup;
-        private bool _resizingGroup;
+        private bool _AddGroup;
+        private bool _CreatingGroup;
+        private bool _MovingGroup;
+        private bool _ResizingGroup;
         
-        private Size _moveDelta;
+        private Size _MoveDelta;
 
         private Cursor _frontCursor;
         public new Cursor FrontCursor
@@ -56,28 +56,28 @@ namespace Led.ViewModels
 
         public Command CloseWindowCommand { get; set; }
 
-        public LedEntityCRUDVM(Model.LedEntity LedEntity)
-            : base(LedEntity)
+        public LedEntityCRUDVM(Model.LedEntity ledEntity)
+            : base(ledEntity)
         {
-            NewFrontImageCommand = new Command(OnNewFrontImmage);
-            NewBackImageCommand = new Command(OnNewBackImmage);
+            NewFrontImageCommand = new Command(_OnNewFrontImmage);
+            NewBackImageCommand = new Command(_OnNewBackImmage);
 
-            AddLedGroupCommand = new Command(OnAddLedGroupCommand, () => !(_addGroup || (FrontImagePath == null && BackImagePath == null)));
-            EditLedGroupCommand = new Command(OnEditLedGroupCommand, () => CurrentLedGroup != null);
-            DeleteLedGroupCommand = new Command(OnDeleteLedGroupCommand, () => CurrentLedGroup != null);
+            AddLedGroupCommand = new Command(_OnAddLedGroupCommand, () => !(_AddGroup || (FrontImagePath == null && BackImagePath == null)));
+            EditLedGroupCommand = new Command(_OnEditLedGroupCommand, () => CurrentLedGroup != null);
+            DeleteLedGroupCommand = new Command(_OnDeleteLedGroupCommand, () => CurrentLedGroup != null);
 
-            FrontImageMouseDownCommand = new Command<MouseEventArgs>(OnFrontImageMouseDownCommand);
-            FrontImageMouseMoveCommand = new Command<MouseEventArgs>(OnFrontImageMouseMoveCommand);
+            FrontImageMouseDownCommand = new Command<MouseEventArgs>(_OnFrontImageMouseDownCommand);
+            FrontImageMouseMoveCommand = new Command<MouseEventArgs>(_OnFrontImageMouseMoveCommand);
 
-            BackImageMouseDownCommand = new Command<MouseEventArgs>(OnBackImageMouseDownCommand);
-            BackImageMouseMoveCommand = new Command<MouseEventArgs>(OnBackImageMouseMoveCommand);
+            BackImageMouseDownCommand = new Command<MouseEventArgs>(_OnBackImageMouseDownCommand);
+            BackImageMouseMoveCommand = new Command<MouseEventArgs>(_OnBackImageMouseMoveCommand);
 
-            ImageMouseUpCommand = new Command<MouseEventArgs>(OnImageMouseUpCommand);
+            ImageMouseUpCommand = new Command<MouseEventArgs>(_OnImageMouseUpCommand);
 
             CloseWindowCommand = new Command(_OnCloseWindowCommand, _CanExecuteClosing);
         }
 
-        private void OnNewFrontImmage()
+        private void _OnNewFrontImmage()
         {
             string Path = App.Instance.IOService.OpenFileDialog();
             if (Path != "")
@@ -90,7 +90,7 @@ namespace Led.ViewModels
 
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
-        private void OnNewBackImmage()
+        private void _OnNewBackImmage()
         {
             string Path = App.Instance.IOService.OpenFileDialog();
             if (Path != "")
@@ -104,24 +104,24 @@ namespace Led.ViewModels
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
 
-        private void OnAddLedGroupCommand()
+        private void _OnAddLedGroupCommand()
         {
-            _addGroup = true;
+            _AddGroup = true;
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
-        private void OnEditLedGroupCommand()
+        private void _OnEditLedGroupCommand()
         {
             App.Instance.WindowService.ShowNewWindow(new Views.CRUDs.LedGroupCRUD(), CurrentLedGroup);
-            GenerateLedVMs();
+            _GenerateLedVMs();
             RaisePropertyChanged("FrontLeds");
             RaisePropertyChanged("BackLeds");
         }
-        private void OnDeleteLedGroupCommand()
+        private void _OnDeleteLedGroupCommand()
         {
             LedGroups.Remove(CurrentLedGroup);
             CurrentLedGroup = null;
 
-            GenerateLedVMs();
+            _GenerateLedVMs();
             RaisePropertyChanged("FrontLeds");
             RaisePropertyChanged("BackLeds");
             RaisePropertyChanged("BackLedGroups");
@@ -131,9 +131,9 @@ namespace Led.ViewModels
             DeleteLedGroupCommand.RaiseCanExecuteChanged();
         }
 
-        private void OnFrontImageMouseDownCommand(MouseEventArgs e)
+        private void _OnFrontImageMouseDownCommand(MouseEventArgs e)
         {
-            if (_addGroup)
+            if (_AddGroup)
             {
                 _AddLedGroup(e, LedEntityView.Front);
                 RaisePropertyChanged(nameof(FrontLedGroups));
@@ -146,9 +146,9 @@ namespace Led.ViewModels
                 DeleteLedGroupCommand.RaiseCanExecuteChanged();
             }
         }
-        private void OnBackImageMouseDownCommand(MouseEventArgs e)
+        private void _OnBackImageMouseDownCommand(MouseEventArgs e)
         {
-            if (_addGroup)
+            if (_AddGroup)
             {
                 _AddLedGroup(e, LedEntityView.Back);
                 RaisePropertyChanged(nameof(BackLedGroups));
@@ -162,14 +162,14 @@ namespace Led.ViewModels
             }
         }
 
-        private void OnFrontImageMouseMoveCommand(MouseEventArgs e)
+        private void _OnFrontImageMouseMoveCommand(MouseEventArgs e)
         {
-            if (_creatingGroup || _resizingGroup)
+            if (_CreatingGroup || _ResizingGroup)
             {
                 _ResizeGroup(e);
                 return;
             }
-            else if (_movingGroup)
+            else if (_MovingGroup)
             {
                 _MoveGroup(e);
                 return;
@@ -178,14 +178,14 @@ namespace Led.ViewModels
             //Bisschen Bling Bling
             FrontCursor = _ChangeCursor(e, LedGroups.FindAll(x => x.View == LedEntityView.Front));
         }
-        private void OnBackImageMouseMoveCommand(MouseEventArgs e)
+        private void _OnBackImageMouseMoveCommand(MouseEventArgs e)
         {
-            if (_creatingGroup || _resizingGroup)
+            if (_CreatingGroup || _ResizingGroup)
             {
                 _ResizeGroup(e);
                 return;
             }
-            else if (_movingGroup)
+            else if (_MovingGroup)
             {
                 _MoveGroup(e);
                 return;
@@ -195,7 +195,7 @@ namespace Led.ViewModels
             BackCursor = _ChangeCursor(e, LedGroups.FindAll(x => x.View == LedEntityView.Back));
         }
 
-        private void OnImageMouseUpCommand(MouseEventArgs e)
+        private void _OnImageMouseUpCommand(MouseEventArgs e)
         {
             _ResetFlags();
         }
@@ -241,7 +241,7 @@ namespace Led.ViewModels
             });
             CurrentLedGroup = LedGroups.Last();
             _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
-            _creatingGroup = true;            
+            _CreatingGroup = true;            
         }
 
         private bool _ScanForLedGroups(MouseEventArgs e, List<LedGroupPropertiesVM> ledGroups)
@@ -258,7 +258,7 @@ namespace Led.ViewModels
                     RaisePropertyChanged(nameof(CurrentLedGroup));
                     EditLedGroupCommand.RaiseCanExecuteChanged();
                     DeleteLedGroupCommand.RaiseCanExecuteChanged();
-                    _resizingGroup = true;
+                    _ResizingGroup = true;
                     return true;
                 }
 
@@ -270,8 +270,8 @@ namespace Led.ViewModels
                     DeleteLedGroupCommand.RaiseCanExecuteChanged();
                     if (e.LeftButton == MouseButtonState.Pressed)
                     {
-                        _moveDelta = new Size(MousePosition.X - Start.X, MousePosition.Y - Start.Y);
-                        _movingGroup = true;
+                        _MoveDelta = new Size(MousePosition.X - Start.X, MousePosition.Y - Start.Y);
+                        _MovingGroup = true;
                     }
                     return true;
                 }
@@ -293,14 +293,14 @@ namespace Led.ViewModels
                 deltaY = 5;                    
 
             CurrentLedGroup.SizeOnImage = new Size(deltaX, deltaY);
-            UpdateLedPositions(CurrentLedGroup);
+            _UpdateLedPositions(CurrentLedGroup);
         }
 
         private void _MoveGroup(MouseEventArgs e)
         {
             Point MousePosition = e.GetPosition((IInputElement)e.Source);
-            double PositionX = MousePosition.X - _moveDelta.Width;
-            double PositionY = MousePosition.Y - _moveDelta.Height;
+            double PositionX = MousePosition.X - _MoveDelta.Width;
+            double PositionY = MousePosition.Y - _MoveDelta.Height;
 
             if (PositionX < 0)
                 PositionX = 0;
@@ -308,7 +308,7 @@ namespace Led.ViewModels
                 PositionY = 0;
 
             CurrentLedGroup.StartPositionOnImage = new Point(PositionX, PositionY);
-            UpdateLedPositions(CurrentLedGroup);
+            _UpdateLedPositions(CurrentLedGroup);
         }
 
         private Cursor _ChangeCursor(MouseEventArgs e, List<LedGroupPropertiesVM> ledGroups)
@@ -334,10 +334,10 @@ namespace Led.ViewModels
 
         private void _ResetFlags()
         {
-            _addGroup = false;
-            _creatingGroup = false;
-            _movingGroup = false;
-            _resizingGroup = false;
+            _AddGroup = false;
+            _CreatingGroup = false;
+            _MovingGroup = false;
+            _ResizingGroup = false;
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
 

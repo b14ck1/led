@@ -23,9 +23,9 @@ namespace Led.Model.Effect
 
         public List<Point> LedPositions { get; set; }
 
-        public short PosPriority { get; set; }
+        public short PositionPriority { get; set; }
 
-        public short ColPriority { get; set; }
+        public short ColorPriority { get; set; }
 
         public EffectBase(EffectType effectType, ushort startFrame = 0, ushort endFrame = 0)
         {
@@ -34,8 +34,8 @@ namespace Led.Model.Effect
             StartFrame = startFrame;
             EndFrame = endFrame;
 
-            PosPriority = 0;
-            ColPriority = 0;
+            PositionPriority = 0;
+            ColorPriority = 0;
 
             Leds = new List<Utility.LedModelID>();
         }

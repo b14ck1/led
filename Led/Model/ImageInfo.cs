@@ -12,7 +12,7 @@ namespace Led.Model
     class ImageInfo
     {
         [JsonProperty]
-        public string Path;
+        public string Path { get; set; }
 
         [JsonProperty]
         public Size Size;

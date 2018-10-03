@@ -9,15 +9,15 @@ namespace Led.Utility
 {
     public class LedModelID
     {
-        public byte BusID;
-        public byte PositionInBus;
-        public ushort Led;
+        public byte BusID { get; set; }
+        public byte PositionInBus { get; set; }
+        public ushort Led { get; set; }
 
-        public LedModelID(byte BusID, byte PositionInBus, ushort Led)
+        public LedModelID(byte busID, byte positionInBus, ushort led)
         {
-            this.BusID = BusID;
-            this.PositionInBus = PositionInBus;
-            this.Led = Led;
+            BusID = busID;
+            PositionInBus = positionInBus;
+            Led = led;
         }
     }
 }

@@ -14,38 +14,38 @@ namespace Led.Model
         /// On which view (side) is this group located
         /// </summary>
         [JsonProperty]
-        public LedEntityView View;
+        public LedEntityView View { get; set; }
 
         /// <summary>
         /// On which grid position does the wiring start
         /// </summary>
         [JsonProperty]
-        public Point StartPositionWiring;
+        public Point StartPositionWiring { get; set; }
 
         /// <summary>
         /// All information about the grid. Led y/n, arrow y/n.
         /// </summary>
         [JsonProperty]
-        public LedGridCell[,] LedGrid;
+        public LedGridCell[,] LedGrid { get; set; }
 
         /// <summary>
         /// Start position of the group with respect to the image of the base entity
         /// </summary>
         [JsonProperty]
-        public Point StartPositionOnImage;
+        public Point StartPositionOnImage { get; set; }
 
         /// <summary>
         /// Size of the group with respect to the image of the base entity
         /// </summary>
         [JsonProperty]
-        public Size SizeOnImage;
+        public Size SizeOnImage { get; set; }
 
         /// <summary>
         /// When the first led isn't in the first row/column of the grid
         /// </summary>
         [JsonProperty]
-        public Point GridLedStartOffset;
-        
+        public Point GridLedStartOffset { get; set; }
+
         public LedGroupViewProperty()
         {
             StartPositionWiring = new Point();

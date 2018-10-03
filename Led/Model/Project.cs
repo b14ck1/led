@@ -7,20 +7,20 @@ namespace Led.Model
     class Project : INPC
     {
         [JsonProperty]
-        public string ProjectName;
+        public string ProjectName { get; set; }
 
         [JsonProperty]
-        public byte FramesPerSecond;
+        public byte FramesPerSecond { get; set; }
 
         [JsonProperty]
-        public AudioProperty AudioProperty;
+        public AudioProperty AudioProperty { get; set; }
 
         [JsonProperty]
-        public List<LedEntity> LedEntities;
+        public List<LedEntity> LedEntities { get; set; }
 
-        public Project(string Name)
+        public Project(string projectName)
         {
-            ProjectName = Name;
+            ProjectName = projectName;
             LedEntities = new List<LedEntity>();
         }
     }

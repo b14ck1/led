@@ -7,7 +7,7 @@ namespace Led.Model
     class LedBus : INPC
     {
         [JsonProperty]
-        public List<LedGroup> LedGroups;
+        public List<LedGroup> LedGroups { get; set; }
 
         public LedBus()
         {

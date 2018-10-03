@@ -11,41 +11,41 @@ namespace Led.Services
 {
     public class WindowService
     {
-        private Dictionary<object, Window> _windowRegistry;
+        private Dictionary<object, Window> _WindowRegistry;
 
-        private void _AddWindowToRegistry(object _dataContext, Window _window)
+        private void _AddWindowToRegistry(object dataContext, Window window)
         {
-            _windowRegistry.Add(_dataContext, _window);
+            _WindowRegistry.Add(dataContext, window);
         }
 
         public WindowService()
         {
-            _windowRegistry = new Dictionary<object, Window>();
+            _WindowRegistry = new Dictionary<object, Window>();
         }
 
-        public void ShowNewWindow(Window _window, object _dataContext = null, bool _dialog = true)
+        public void ShowNewWindow(Window window, object dataContext = null, bool dialog = true)
         {
-            _window.DataContext = _dataContext;
-            _AddWindowToRegistry(_dataContext, _window);
+            window.DataContext = dataContext;
+            _AddWindowToRegistry(dataContext, window);
 
-            if (_dialog)
-                _window.ShowDialog();
+            if (dialog)
+                window.ShowDialog();
             else
-                _window.Show();
+                window.Show();
         }
 
-        public void CloseWindow(object _dataContext)
+        public void CloseWindow(object dataContext)
         {
             try
             {
-                _windowRegistry[_dataContext].Close();
+                _WindowRegistry[dataContext].Close();
             }
             catch (Exception)
             {
                 Debug.Print(ToString() + ": Window was closing so no need to close it again.");
             }
 
-            _windowRegistry.Remove(_dataContext);
+            _WindowRegistry.Remove(dataContext);
         }
     }
 }
