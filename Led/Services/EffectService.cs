@@ -50,43 +50,26 @@ namespace Led.Services
             _Entities = new List<LedEntityBaseVM>();
         }
 
-        public void RenderObject(LedEntityBaseVM ledEntity)
+        public void RenderEntity(LedEntityBaseVM ledEntity)
         {
-            List<Model.Effect.EffectBase> _Effects = ledEntity.LedEntity.Effects;
+            List<IEffectLogic> _Effects = new List<IEffectLogic>();
+            ledEntity.LedEntity.Effects.ForEach(x => _Effects.Add(x as IEffectLogic));
 
             foreach (var Effect in _Effects)
             {
                 if (Effect.Active)
                 {
-
+                    for (ushort i = Effect.StartFrame; i < Effect.EndFrame; i++)
+                    {
+                        ledEntity.LedEntity.Seconds[i / 60].Frames[i % 60].LedChanges.AddRange(Effect.LedChangeDatas);
+                    }
                 }
             }
+        }
 
-            for (int i = 0; i < Data.Seconds.Count; i++)
-            {
-                for (int j = 0; j < Data.Seconds[i].Frames.Count; j++)
-                {
-                    if (Data.Seconds[i].Frames[j].Functions.Count > 0)
-                    {
-                        for (int k = 0; k < Data.Seconds[i].Frames[j].Functions.Count; k++)
-                        {
-                            temp.Add(Data.Seconds[i].Frames[j].Functions[k]);
-                        }
-                    }
-
-                    foreach (var func in temp)
-                    {
-                        if (func as Util.IEffectLogic != null)
-                            Data.Seconds[i].Frames[j].LedChanges.AddRange((func as Util.IEffectLogic).Calc(Logic, frame));
-                        else if (func as List<Util.IEffectLogic> != null)
-                            Data.Seconds[i].Frames[j].LedChanges.AddRange(Logic.OrderByPriority(func as List<Util.IEffectLogic>, frame));
-                        //else
-                        //LogDatShit  
-                    }
-
-                    frame++;
-                }
-            }
+        public void RenderAllEntities()
+        {
+            _Entities.ForEach(x => RenderEntity(x));
         }
 
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)

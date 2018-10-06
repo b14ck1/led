@@ -8,7 +8,7 @@ namespace Led
 {
     public interface IEffectLogic
     {
-        void Calc(IEffectLogic effectLogic);
+        bool Active { get; }
 
         ushort StartFrame { get; }
 
@@ -16,10 +16,6 @@ namespace Led
 
         ushort EndFrame { get; }
 
-        List<Utility.LedModelID> Leds { get; }
-        
-        short PositionPriority { get; }
-
-        short ColorPriority { get; }
+        List<Model.LedChangeData> LedChangeDatas { get; }
     }
 }
