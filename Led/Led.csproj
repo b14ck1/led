@@ -130,6 +130,7 @@
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
+    <Compile Include="ViewModels\EffectListVM.cs" />
     <Compile Include="ViewModels\EffectProperties\BlinkVM.cs" />
     <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
     <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
@@ -137,6 +138,9 @@
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\EffectList.xaml.cs">
+      <DependentUpon>EffectList.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Controls\MainWindow\ImageTrackBar.xaml.cs">
       <DependentUpon>ImageTrackBar.xaml</DependentUpon>
@@ -215,6 +219,10 @@
     <None Include="PropertyChanged.snippet" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\Controls\MainWindow\EffectList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\MainWindow\EffectProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

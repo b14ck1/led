@@ -60,7 +60,7 @@
                 <TextBlock Text="{Binding Path=Name}"/>
             </Border>
         </DataTemplate>-->
-        <DataTemplate DataType="{x:Type ef:EffectBase}"
+        <DataTemplate DataType="vm:Type ef:EffectBaseVM}"
                       x:Key="UsedTemplateProperty">
             <Border BorderThickness="1"
                     BorderBrush="Green"
