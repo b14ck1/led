@@ -5,9 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Led.Views.Controls.MainWindow"
              xmlns:vm="clr-namespace:Led.ViewModels"
-             xmlns:ef="clr-namespace:Led.Model.Effect"
              xmlns:tt="clr-namespace:Led.Utility.Timeline"
-             xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.DataContext>

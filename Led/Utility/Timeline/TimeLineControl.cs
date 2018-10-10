@@ -27,82 +27,6 @@ namespace Led.Utility.Timeline
         public double DeltaX { get; set; }
     }
 
-    internal class TimeLineDragAdorner : Adorner
-    {
-        private ContentPresenter _adorningContentPresenter;
-        internal EffectBaseVM Data { get; set; }
-        internal DataTemplate Template { get; set; }
-        Point _mousePosition;
-        public Point MousePosition
-        {
-            get
-            {
-                return _mousePosition;
-            }
-            set
-            {
-                if (_mousePosition != value)
-                {
-                    _mousePosition = value;
-                    _layer.Update(AdornedElement);
-                }
-
-            }
-        }
-
-        AdornerLayer _layer;
-        public TimeLineDragAdorner(TimeLineItemControl uiElement, DataTemplate template)
-            : base(uiElement)
-        {
-            _adorningContentPresenter = new ContentPresenter();
-            _adorningContentPresenter.Content = uiElement.DataContext;
-            _adorningContentPresenter.ContentTemplate = template;
-            _adorningContentPresenter.Opacity = 0.5;
-            _layer = AdornerLayer.GetAdornerLayer(uiElement);
-
-            _layer.Add(this);
-            IsHitTestVisible = false;
-
-        }
-        public void Detach()
-        {
-            _layer.Remove(this);
-        }
-        protected override Visual GetVisualChild(int index)
-        {
-            return _adorningContentPresenter;
-        }
-
-        protected override Size MeasureOverride(Size constraint)
-        {
-            //_adorningContentPresenter.Measure(constraint);
-            return new Size((AdornedElement as TimeLineItemControl).Width, (AdornedElement as TimeLineItemControl).DesiredSize.Height);//(_adorningContentPresenter.Width,_adorningContentPresenter.Height);
-        }
-
-        protected override int VisualChildrenCount
-        {
-            get
-            {
-                return 1;
-            }
-        }
-
-        protected override Size ArrangeOverride(Size finalSize)
-        {
-            _adorningContentPresenter.Arrange(new Rect(finalSize));
-            return finalSize;
-        }
-
-        public override GeneralTransform GetDesiredTransform(GeneralTransform transform)
-        {
-            GeneralTransformGroup result = new GeneralTransformGroup();
-            result.Children.Add(base.GetDesiredTransform(transform));
-            result.Children.Add(new TranslateTransform(MousePosition.X - 4, MousePosition.Y - 4));
-            return result;
-        }
-
-    }
-
     public enum TimeLineViewLevel { Minutes, Hours, Days, Weeks, Months, Years };
     //public class TimeLineControl : ListBox
 
@@ -123,20 +47,7 @@ namespace Led.Utility.Timeline
         private double _BumpThreshold = 1.5;
         private ScrollViewer _ScrollViewer;
         private Canvas _GridCanvas;
-        static TimeLineDragAdorner _dragAdorner;
-        static TimeLineDragAdorner DragAdorner
-        {
-            get
-            {
-                return _dragAdorner;
-            }
-            set
-            {
-                if (_dragAdorner != null)
-                    _dragAdorner.Detach();
-                _dragAdorner = value;
-            }
-        }
+
         public bool SynchedWithSiblings { get; set; } = true;
         internal bool _isSynchInstigator = false;
         internal double SynchWidth = 0;
@@ -534,13 +445,6 @@ namespace Led.Utility.Timeline
             MouseLeave += TimeLineControl_MouseLeave;
             //Items = new ObservableCollection<ITimeLineDataItem>();
 
-            DragDrop.AddDragOverHandler(this, TimeLineControl_DragOver);
-            DragDrop.AddDropHandler(this, TimeLineControl_Drop);
-            DragDrop.AddDragEnterHandler(this, TimeLineControl_DragOver);
-            DragDrop.AddDragLeaveHandler(this, TimeLineControL_DragLeave);
-
-            AllowDrop = true;
-
             _ScrollViewer = GetParentScrollViewer();
         }
         #region control life cycle events
@@ -710,8 +614,6 @@ namespace Led.Utility.Timeline
             adder.MouseMove += Item_MouseMove;
             adder.PreviewMouseRightButtonUp += Item_PreviewEditButtonUp;
 
-            adder.PreviewMouseLeftButtonUp += Item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown += Item_PreviewDragButtonDown;
             adder.UnitSize = UnitSize;
             return adder;
         }
@@ -1165,359 +1067,6 @@ namespace Led.Utility.Timeline
         }
         #endregion
 
-        #region drag events and fields
-        private bool _Dragging = false;
-        private Point _DragStartPosition = new Point(double.MinValue, double.MinValue);
-        /// <summary>
-        /// When we drag something from an external control over this I need a temp control
-        /// that lets me adorn those accordingly as well
-        /// </summary>
-        private TimeLineItemControl _TmpDragAdornerControl;
-
-        TimeLineItemControl _DragObject = null;
-        void Item_PreviewDragButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            _DragStartPosition = Mouse.GetPosition(null);
-            _DragObject = sender as TimeLineItemControl;
-
-            // send message about selected effect
-            var data = new MediatorMessageData.TimeLineEffectSelectedData((EffectBaseVM)_DragObject.Content);
-            App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TimeLineEffectSelected, this, data);
-        }
-
-        void Item_PreviewDragButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            _DragStartPosition.X = double.MinValue;
-            _DragStartPosition.Y = double.MinValue;
-            _DragObject = null;
-        }
-
-
-        void TimeLineControl_DragOver(object sender, DragEventArgs e)
-        {
-            //throw new NotImplementedException();
-            TimeLineItemControl d = e.Data.GetData(typeof(TimeLineItemControl)) as TimeLineItemControl;
-            if (d != null)
-            {
-                e.Effects = DragDropEffects.Move;
-                //this is an internal drag or a drag from another time line control
-                if (DragAdorner == null)
-                {
-                    _dragAdorner = new TimeLineDragAdorner(d, ItemTemplate);
-
-                }
-                DragAdorner.MousePosition = e.GetPosition(d);
-                DragAdorner.InvalidateVisual();
-            }
-            else
-            {//GongSolutions.Wpf.DragDrop
-                var d2 = e.Data.GetData("GongSolutions.Wpf.DragDrop");
-                if (d2 != null)
-                {
-                    e.Effects = DragDropEffects.Move;
-                    if (DragAdorner == null)
-                    {
-                        //we are dragging from an external source and we don't have a timeline item control of any sort
-                        Children.Remove(_TmpDragAdornerControl);
-                        //in order to get an adornment layer the control has to be somewhere
-                        _TmpDragAdornerControl = new TimeLineItemControl();
-                        _TmpDragAdornerControl.UnitSize = UnitSize;
-                        Children.Add(_TmpDragAdornerControl);
-                        Canvas.SetLeft(_TmpDragAdornerControl, -1000000);
-                        _TmpDragAdornerControl.DataContext = d2;
-                        _TmpDragAdornerControl.StartTime = StartDate;
-                        _TmpDragAdornerControl.InitializeDefaultLength();
-                        _TmpDragAdornerControl.ContentTemplate = ItemTemplate;
-
-                        _dragAdorner = new TimeLineDragAdorner(_TmpDragAdornerControl, ItemTemplate);
-                    }
-                    DragAdorner.MousePosition = e.GetPosition(_TmpDragAdornerControl);
-                    DragAdorner.InvalidateVisual();
-                }
-            }
-            DragScroll(e);
-        }
-
-        void TimeLineControL_DragLeave(object sender, DragEventArgs e)
-        {
-            DragAdorner = null;
-            Children.Remove(_TmpDragAdornerControl);
-            _TmpDragAdornerControl = null;
-        }
-
-        void TimeLineControl_Drop(object sender, DragEventArgs e)
-        {
-            DragAdorner = null;
-
-            TimeLineItemControl dropper = e.Data.GetData(typeof(TimeLineItemControl)) as TimeLineItemControl;
-            EffectBaseVM dropData = null;
-            if (dropper == null)
-            {
-                //dropData = e.Data.GetData(typeof(ITimeLineDataItem)) as ITimeLineDataItem;
-                dropData = e.Data.GetData("GongSolutions.Wpf.DragDrop") as EffectBaseVM;
-                if (dropData != null)
-                {
-                    //I haven't figured out why but
-                    //sometimes when dropping from an external source
-                    //the drop event hits twice.
-                    //that results in ugly duplicates ending up in the timeline
-                    //and it is a mess.
-                    if (Items.Contains(dropData))
-                        return;
-                    //create a new timeline item control from this data
-                    dropper = CreateTimeLineItemControl(dropData);
-                    dropper.StartTime = StartDate;
-                    dropper.InitializeDefaultLength();
-                    Children.Remove(_TmpDragAdornerControl);
-                    _TmpDragAdornerControl = null;
-
-                }
-            }
-            var dropX = e.GetPosition(this).X;
-            int newIndex = GetDroppedNewIndex(dropX);
-            var curData = dropper.DataContext as EffectBaseVM;
-            var curIndex = Items.IndexOf(curData);
-            if ((curIndex == newIndex || curIndex + 1 == newIndex) && dropData == null && dropper.Parent == this)//dropdata null is to make sure we aren't failing on adding a new data item into the timeline
-            //dropper.parent==this makes it so that we allow a dropper control from another timeline to be inserted in at the start.
-            {
-                return;//our drag did nothing meaningful so we do nothing.
-            }
-
-            if (dropper != null)
-            {
-                DateTime start = (DateTime)GetValue(StartDateProperty);
-                if (newIndex == 0)
-                {
-                    if (dropData == null)
-                    {
-                        RemoveTimeLineItemControl(dropper);
-                    }
-                    if (dropper.Parent != this && dropper.Parent is TimeLineControl)
-                    {
-                        var tlCtrl = dropper.Parent as TimeLineControl;
-                        tlCtrl.RemoveTimeLineItemControl(dropper);
-                    }
-                    InsertTimeLineItemControlAt(newIndex, dropper);
-                    dropper.MoveToNewStartTime(start);
-                    MakeRoom(newIndex, dropper.Width);
-                }
-                else//we are moving this after something.
-                {
-                    //find out if we are moving the existing one back or forward.
-                    var placeAfter = GetTimeLineItemControlAt(newIndex - 1);
-                    if (placeAfter != null)
-                    {
-                        start = placeAfter.EndTime;
-                        RemoveTimeLineItemControl(dropper);
-                        if (curIndex < newIndex && curIndex >= 0)//-1 is on an insert in which case we definitely don't want to take off on our new index value
-                        {
-                            //we are moving forward.
-                            newIndex--;//when we removed our item, we shifted our insert index back 1
-                        }
-                        if (dropper.Parent != null && dropper.Parent != this)
-                        {
-                            var ptl = dropper.Parent as TimeLineControl;
-                            ptl.RemoveTimeLineItemControl(dropper);
-                        }
-
-                        InsertTimeLineItemControlAt(newIndex, dropper);
-                        dropper.MoveToNewStartTime(start);
-                        MakeRoom(newIndex, dropper.Width);
-                    }
-                }
-            }
-            //ReDrawChildren();
-            DrawBackGround();
-            e.Handled = true;
-        }
-
-
-        #region drop helpers
-        private void InsertTimeLineItemControlAt(int index, TimeLineItemControl adder)
-        {
-            var Data = adder.DataContext as EffectBaseVM;
-            if (Items.Contains(Data))
-                return;
-
-            adder.PreviewMouseRightButtonDown -= Item_PreviewEditButtonDown;
-            adder.MouseMove -= Item_MouseMove;
-            adder.PreviewMouseRightButtonUp -= Item_PreviewEditButtonUp;
-
-            adder.PreviewMouseLeftButtonUp -= Item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown -= Item_PreviewDragButtonDown;
-
-            adder.PreviewMouseRightButtonDown += Item_PreviewEditButtonDown;
-            adder.MouseMove += Item_MouseMove;
-            adder.PreviewMouseRightButtonUp += Item_PreviewEditButtonUp;
-
-            adder.PreviewMouseLeftButtonUp += Item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown += Item_PreviewDragButtonDown;
-            //child 0 is our grid and we want to keep that there.
-            Children.Insert(index + 1, adder);
-            Items.Insert(index, Data);
-        }
-
-        private void RemoveTimeLineItemControl(TimeLineItemControl remover)
-        {
-            var curData = remover.DataContext as EffectBaseVM;
-            remover.PreviewMouseRightButtonDown -= Item_PreviewEditButtonDown;
-            remover.MouseMove -= Item_MouseMove;
-            remover.PreviewMouseRightButtonUp -= Item_PreviewEditButtonUp;
-
-            remover.PreviewMouseLeftButtonUp -= Item_PreviewDragButtonUp;
-            remover.PreviewMouseLeftButtonDown -= Item_PreviewDragButtonDown;
-            Items.Remove(curData);
-            Children.Remove(remover);
-        }
-
-        private int GetDroppedNewIndex(double dropX)
-        {
-            double s = 0;
-            double w = 0;
-            double e = 0;
-            for (int i = 0; i < Items.Count(); i++)
-            {
-                var checker = GetTimeLineItemControlAt(i);
-                if (checker == null)
-                    continue;
-                checker.GetPlacementInfo(ref s, ref w, ref e);
-                if (dropX < s)
-                {
-                    return i;
-                }
-                if (s < dropX && e > dropX)
-                {
-                    double distStart = Math.Abs(dropX - s);
-                    double distEnd = Math.Abs(dropX - e);
-                    if (distStart < distEnd)//we dropped closer to the start of this item
-                    {
-                        return i;
-                    }
-                    //we are closer to the end of this item
-                    return i + 1;
-                }
-                if (e < dropX && i == Items.Count() - 1)
-                {
-                    return i + 1;
-                }
-                if (s < dropX && i == Items.Count() - 1)
-                {
-                    return i;
-                }
-            }
-            return Items.Count;
-        }
-
-        private void MakeRoom(int newIndex, double width)
-        {
-            int moveIndex = newIndex + 1;
-            //get our forward chain and gap
-            double chainGap = 0;
-
-            //because the grid is child 0 and we are essentially indexing as if it wasn't there
-            //the child index of add after is our effective index of next
-            var nextCtrl = GetTimeLineItemControlAt(moveIndex);
-            if (nextCtrl != null)
-            {
-                double nL = 0;
-                double nW = 0;
-                double nE = 0;
-                nextCtrl.GetPlacementInfo(ref nL, ref nW, ref nE);
-
-                double droppedIntoSpace = 0;
-                if (newIndex == 0)
-                {
-                    droppedIntoSpace = nL;
-                }
-                else
-                {
-                    var previousControl = GetTimeLineItemControlAt(newIndex - 1);
-                    if (previousControl != null)
-                    {
-                        double aL = 0;
-                        double aW = 0;
-                        double aE = 0;
-                        previousControl.GetPlacementInfo(ref aL, ref aW, ref aE);
-                        droppedIntoSpace = nL - aE;
-                    }
-                }
-                double neededSpace = width - droppedIntoSpace;
-                if (neededSpace <= 0)
-                    return;
-
-
-                bool lastHitsTotalFrames = false; // TODO dropping won't work near the end until this is properly implemented, I guess
-                var forwardChain = GetTimeLineForwardChain(nextCtrl, moveIndex + 1, ref lastHitsTotalFrames, ref chainGap);
-
-                if (chainGap < neededSpace)
-                {
-                    while (neededSpace > 0)
-                    {
-                        //move it to the smaller of our values -gap or remaning space
-                        double move = Math.Min(chainGap, neededSpace);
-                        foreach (var tictrl in forwardChain)
-                        {
-                            tictrl.MoveMe(move);
-                            neededSpace -= move;
-                        }
-                        //get our new chain and new gap
-                        forwardChain = GetTimeLineForwardChain(nextCtrl, moveIndex + 1, ref lastHitsTotalFrames, ref chainGap);
-                    }
-                }
-                else
-                {
-                    foreach (var tictrl in forwardChain)
-                    {
-                        tictrl.MoveMe(neededSpace);
-                    }
-                }
-            }//if next ctrl is null we are adding to the very end and there is no work to do to make room.
-        }
-        #endregion
-
-
-
-
-        //NOT WORKING YET AND I DON'T KNOW WHY 8(
-        private void DragScroll(DragEventArgs e)
-        {
-            if (_ScrollViewer == null)
-            {
-                _ScrollViewer = GetParentScrollViewer();
-            }
-            if (_ScrollViewer != null)
-            {
-                var available = LayoutInformation.GetLayoutSlot(this);
-                Point scrollPos = e.GetPosition(_ScrollViewer);
-                double scrollMargin = 50;
-                var actualW = _ScrollViewer.ActualWidth;
-                if (scrollPos.X >= actualW - scrollMargin &&
-                    _ScrollViewer.HorizontalOffset <= _ScrollViewer.ExtentWidth - _ScrollViewer.ViewportWidth)
-                {
-                    _ScrollViewer.LineRight();
-                }
-                else if (scrollPos.X < scrollMargin && _ScrollViewer.HorizontalOffset > 0)
-                {
-                    _ScrollViewer.LineLeft();
-                }
-                double actualH = _ScrollViewer.ActualHeight;
-                if (scrollPos.Y >= actualH - scrollMargin &&
-                    _ScrollViewer.VerticalOffset <= _ScrollViewer.ExtentHeight - _ScrollViewer.ViewportHeight)
-                {
-                    _ScrollViewer.LineDown();
-                }
-                else if (scrollPos.Y < scrollMargin && _ScrollViewer.VerticalOffset >= 0)
-                {
-                    _ScrollViewer.LineUp();
-                }
-            }
-        }
-
-
-
-        #endregion
-
-
         #region edit events etc
         private double _CurX = 0;
         private TimeLineAction _action;
@@ -1810,31 +1359,21 @@ namespace Led.Utility.Timeline
         #endregion
 
         /// <summary>
-        /// Mouse move is important for both edit and drag behaviors
+        /// Mouse move is important for both edit and select behaviors
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Item_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        void Item_MouseMove(object sender, MouseEventArgs e)
         {
-            #region drag - left click and move
+            #region select - left click
             TimeLineItemControl ctrl = sender as TimeLineItemControl;
             if (ctrl == null)
                 return;
 
             if (Mouse.LeftButton == MouseButtonState.Pressed)
             {
-                if (ctrl.IsExpanded)
-                    return;
-                var position = Mouse.GetPosition(null);
-                if (Math.Abs(position.X - _DragStartPosition.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                    Math.Abs(position.Y - _DragStartPosition.Y) > SystemParameters.MinimumVerticalDragDistance)
-                {
-                    DragDrop.DoDragDrop(this, ctrl, DragDropEffects.Move | DragDropEffects.Scroll);
-                    _Dragging = true;
-
-
-                }
-
+                var data = new MediatorMessageData.TimeLineEffectSelectedData((EffectBaseVM)ctrl.Content);
+                App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TimeLineEffectSelected, this, data);
                 return;
             }
             #endregion
