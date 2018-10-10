@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Led.ViewModels
 {
-    class TimelineUserControlVM : IParticipant
+    class TimelineUserControlVM : INPC,IParticipant
     {
         private Services.MediatorService _Mediator;
 
@@ -50,14 +50,8 @@ namespace Led.ViewModels
             {
                 case MediatorMessages.TimeLineCollectionChanged:
                     // sort, TimeLineControl needs the lowest one to be first etc.
-                    var effectsList = (data as MediatorMessageData.TimeLineCollectionChangedData).Effects.OrderBy(o => o.StartFrame).ToList();
-                    // TODO set the ObservableCollection properly in the DataBinding so we don't have to add every effect one at a time
-                    Effects.Clear();
-                    foreach (EffectBaseVM vm in effectsList)
-                    {
-                        Effects.Add(vm);
-                        Debug.WriteLine("    " + vm.StartFrame);
-                    }
+                    Effects = (data as MediatorMessageData.TimeLineCollectionChangedData).Effects;
+                    RaisePropertyChanged(nameof(Effects));
                     break;
             }
         }

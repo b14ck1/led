@@ -10,11 +10,11 @@ namespace Led.Model
         public Frame[] Frames { get; set; }
 
         [JsonProperty]        
-        public List<LedStatus> LedEntityStatus { get; set; }
+        public List<LedChangeData> LedEntityStatus { get; set; }
         
         public Second()
         {
-            LedEntityStatus = new List<LedStatus>();
+
         }
     }
 }

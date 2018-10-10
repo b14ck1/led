@@ -12,5 +12,10 @@ namespace Led.Model.Effect
         {
             Color = Colors.Black;
         }
+
+        public override List<LedChangeData> LedChangeDatas
+        {
+            get => new List<LedChangeData> { new LedChangeData(Leds, Color, ID) };
+        }
     }
 }

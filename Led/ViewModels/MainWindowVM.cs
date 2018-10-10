@@ -253,6 +253,10 @@ namespace Led.ViewModels
                     EditLedEntityCommand.RaiseCanExecuteChanged();
                     AddEffectCommand.RaiseCanExecuteChanged();
                     break;
+                case MediatorMessages.TimeLineEffectSelected:
+                    _CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;
+                    _EffectView.DataContext = _CurrentEffect;
+                    break;
                 default:
                     break;
             }

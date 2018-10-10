@@ -11,13 +11,13 @@ namespace Led.Services
     {
         /* The EffectService recieves the AudioTimer Message and updates all Entitys (AudioControlCurrentTick)
          * -> Maybe provide Async Update so the AudioControl won't get disturbed
-         * -> Provides functionality to jump to a position in the timeline
+         * -> Provides functionality to jump to a position in the timeline -> Check
          * -> Maybe just switch to a long instead of AudioControlCurrentTick in case of performance issues
          * 
          * The Entities must register themselves on construction
          * 
          * Implement different Updates
-         *      Update the View in the App
+         *      Update the View in the App -> Check
          *      Update the Suit
          * -> Only the visible view will get updated
          * 
@@ -47,24 +47,69 @@ namespace Led.Services
         }
         public EffectService()
         {
-            _Entities = new List<LedEntityBaseVM>();            
+            _Entities = new List<LedEntityBaseVM>();
+        }
+
+        public void RenderEntity(LedEntityBaseVM ledEntity)
+        {
+            List<IEffectLogic> _Effects = new List<IEffectLogic>();
+            ledEntity.LedEntity.Effects.ForEach(x => _Effects.Add(x as IEffectLogic));
+
+            foreach (var Effect in _Effects)
+            {
+                if (Effect.Active)
+                {
+                    for (ushort i = Effect.StartFrame; i < Effect.EndFrame; i++)
+                    {
+                        ledEntity.LedEntity.Seconds[i / 60].Frames[i % 60].LedChanges.AddRange(Effect.LedChangeDatas);
+                    }
+                }
+            }
+        }
+
+        public void RenderAllEntities()
+        {
+            _Entities.ForEach(x => RenderEntity(x));
         }
 
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)
         {
+            //Get refs and compute the current second
             int currentSecond = (int)(currentFrame / _FramesPerSecond);
+            int currentFramesRespectiveCurrentSecond = (int)(currentFrame % _FramesPerSecond);
             List<Model.Second> seconds = ledEntity.LedEntity.Seconds;
 
+            //Just some checking
             if (currentSecond >= seconds.Count)
             {
                 Console.WriteLine("UpdateFrame out of range. FrameValue: " + currentFrame + " SecondValue: " + currentSecond + "MaxSeconds: " + seconds.Count);
                 return;
             }
 
+            //When we are only one frame ahead of the ledEntity (normal) just execute the update
             if (currentFrame - 1 == ledEntity.CurrentFrame)
             {
-
+                ledEntity.SetLedColor(seconds[currentSecond].Frames[currentFramesRespectiveCurrentSecond].LedChanges);
             }
+            else
+            {
+                //When we aren't in the current Second, load the full image
+                if (ledEntity.CurrentFrame / _FramesPerSecond == currentSecond)
+                {
+                    ledEntity.SetLedColor(ledEntity.LedEntity.Seconds[currentSecond].LedEntityStatus);
+                }
+
+                //After this execute all FrameChanges till the current one
+                List<List<Model.LedChangeData>> _LedChangeDatas = new List<List<Model.LedChangeData>>();
+                for (int i = (int)(ledEntity.CurrentFrame % _FramesPerSecond) + 1; i <= currentFramesRespectiveCurrentSecond; i++)
+                {
+                    _LedChangeDatas.Add(ledEntity.LedEntity.Seconds[currentSecond].Frames[i].LedChanges);
+                }
+
+                ledEntity.SetLedColor(_CumulateLedChangeDatas(_LedChangeDatas));
+            }
+
+            ledEntity.CurrentFrame = currentFrame;
         }
 
         private void _UpdateSuit(LedEntityBaseVM ledEntity, long currentFrame)
@@ -72,14 +117,28 @@ namespace Led.Services
 
         }
 
-        private void _LoadFrameDataIntoView(LedEntityBaseVM ledEntity, List<Model.LedChangeData> ledChangeData)
+        /// <summary>
+        /// Cumulates ledChangeDatas so that every LED is refreshed only once.
+        /// </summary>
+        /// <param name="ledChangeDatas">New list of ledChangeDatas starting with the latest.</param>
+        /// <returns></returns>
+        private List<Model.LedChangeData> _CumulateLedChangeDatas(List<List<Model.LedChangeData>> ledChangeDatas)
         {
-            ledEntity.SetLedColor(ledChangeData);
-        }
+            List<Model.LedChangeData> _LedChangeDatas = new List<Model.LedChangeData>();
+            List<Utility.LedModelID> _LedIDs = new List<Utility.LedModelID>();
+            for (int i = 0; i < ledChangeDatas.Count; i++)
+            {
+                ledChangeDatas[i].ForEach(x => _LedIDs.AddRange(x.LedIDs));
 
-        private void _LoadFrameDataIntoView(LedEntityBaseVM ledEntity, List<List<Model.LedChangeData>> ledChangeData)
-        {
-            
+                for (int j = 0; j < ledChangeDatas.Count - i; j++)
+                {
+                    ledChangeDatas[i + j].ForEach(x => x.LedIDs.RemoveAll(LedID => _LedIDs.Contains(LedID)));
+                }
+
+                _LedChangeDatas.AddRange(ledChangeDatas[i]);
+            }
+
+            return _LedChangeDatas;
         }
 
         private void _SendFrameDataToSuit(LedEntityBaseVM ledEntity)
