@@ -109,25 +109,22 @@ namespace Led.ViewModels
         public Command EditLedEntityCommand { get; set; }
         public Command AddEffectCommand { get; set; }
 
-        private EffectListVM _EffectListVM = new EffectListVM();
-
         public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity,
             Views.Controls.MainWindow.EffectProperties effectView,
             Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
-            Views.Controls.MainWindow.AudioUserControl audioUserControl,
-            Views.Controls.MainWindow.EffectList effectList)
+            Views.Controls.MainWindow.AudioUserControl audioUserControl)
         {
             _MainWindow = mainWindow;
             _LedEntityView = ledEntity;
             _LedEntityView.DataContext = _CurrentLedEntity;
 
             _EffectView = effectView;
-            effectList.DataContext = _EffectListVM;
+
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
 
             //_CurrentEffect = new EffectBaseVM();
             //effectView.DataContext = _CurrentEffect;
-            //_TimelineUserControl = timelineUserControl;
+            _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
             audioUserControl.DataContext = AudioUserControlVM;
 

@@ -63,7 +63,7 @@
                     <TextBox Text="{Binding BlinkFrames, Mode=TwoWay}" Margin="3,3,3,3" Grid.Column="1" />
                 </Grid>
                 <ItemsControl ItemsPanel="{StaticResource ITP}"
-                              ItemsSource="{Binding Colors}"
+                              ItemsSource="{Binding Colors}" 
                               Grid.Row="2" />
             </Grid>
         </DataTemplate>
