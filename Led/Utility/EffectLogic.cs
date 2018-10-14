@@ -12,11 +12,8 @@ namespace Led.Utility
     {
         private Color ColorBlack;
 
-        private Controller.ModelController ModelController;
-
-        public EffectLogic(Controller.ModelController ModelController)
+        public EffectLogic()
         {
-            this.ModelController = ModelController;
             ColorBlack = Colors.Black;
         }
 
