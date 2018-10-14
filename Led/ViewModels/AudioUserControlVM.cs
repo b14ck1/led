@@ -117,11 +117,12 @@ namespace Led.ViewModels
             // TODO set waveform size dynamically
             Task.Run(() => Waveform = player.CreateWaveform(1080, 270).ToImageSource());
 
-            updateTimer = new DispatcherTimer()
+            updateTimer = new DispatcherTimer(DispatcherPriority.Send)
             {
                 Interval = TimeSpan.FromMilliseconds(1000 / 30), // refresh with 30fps
                 IsEnabled = false
             };
+            
             updateTimer.Tick += new EventHandler(UpdateTimer_Tick);
 
             player.PlaybackFinished += (sender, args) =>
