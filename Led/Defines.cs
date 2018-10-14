@@ -131,7 +131,7 @@ namespace Led
         }
     }
 
-    class LedGroupIdentifier
+    public class LedGroupIdentifier
     {
         public byte BusID;
         public byte PositionInBus;
@@ -190,6 +190,7 @@ namespace Led
         GroupBusDefinitionsNeedCorrectionChanged,
         TimeLineCollectionChanged,
         TimeLineEffectSelected,
+        AudioControlPlayPause,
         AudioControlCurrentTick        
     }
 
@@ -237,13 +238,25 @@ namespace Led
             }
         }
 
-        public class AudioControlCurrentTickData
+        public class AudioControlPlayPauseData
         {
-            public long CurrentTicks;
+            public long CurrentFrame { get; }
+            public bool Playing { get; }
 
-            public AudioControlCurrentTickData(long currentTicks)
+            public AudioControlPlayPauseData(long currentFrame, bool playing)
             {
-                CurrentTicks = currentTicks;
+                CurrentFrame = currentFrame;
+                Playing = playing;
+            }
+        }
+
+        public class AudioControlCurrentFrameData
+        {
+            public long CurrentFrame { get; }
+
+            public AudioControlCurrentFrameData(long currentFrame)
+            {
+                CurrentFrame = currentFrame;
             }
         }
 
@@ -277,6 +290,8 @@ namespace Led
         public static Brush LedSelectedColor = Brushes.Blue;
 
         public static int MainWindowWidth = 1600;
-        public static int MainWindowHeight = 900;        
+        public static int MainWindowHeight = 900;
+
+        public static byte FramesPerSecond = 40;
     }
 }
