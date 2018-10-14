@@ -201,7 +201,7 @@ namespace Led.ViewModels
             var fileFilter = "*.mp3;*.m4a;*.wav;*.flac";
             string filePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
             if (!string.IsNullOrEmpty(filePath))
-            {
+            {                    
                 Project.AudioProperty = new Model.AudioProperty(filePath, Project.FramesPerSecond);
                 _InitAudioUserControl();
             }
@@ -231,6 +231,8 @@ namespace Led.ViewModels
 
         private void _InitAudioUserControl()
         {
+            if (AudioUserControlVM != null)
+                AudioUserControlVM.Dispose();
             AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
             _AudioUserControl.DataContext = AudioUserControlVM;
         }
