@@ -5,7 +5,7 @@ using System.Windows.Media;
 namespace Led.Model
 {
     [JsonObject]
-    public class LedChangeData : INPC
+    public class LedChangeData
     {
         [JsonProperty]
         public List<Utility.LedModelID> LedIDs { get; set; }

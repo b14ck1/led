@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Led.Model
 {
     [JsonObject]
-    class LedBus : INPC
+    class LedBus
     {
         [JsonProperty]
         public List<LedGroup> LedGroups { get; set; }

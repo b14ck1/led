@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Led.Model
 {
     [JsonObject]
-    class Frame : INPC
+    class Frame
     {
         [JsonProperty]
         private List<LedChangeData> _ledChanges;
