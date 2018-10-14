@@ -23,7 +23,7 @@ namespace Led.Model
             ProjectName = projectName;
             LedEntities = new List<LedEntity>();
 
-            FramesPerSecond = 40;
+            FramesPerSecond = Defines.FramesPerSecond;
         }
     }
 }
