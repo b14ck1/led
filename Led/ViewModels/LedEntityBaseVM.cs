@@ -12,7 +12,7 @@ using Led.Utility;
 
 namespace Led.ViewModels
 {
-    abstract class LedEntityBaseVM : INPC, Interfaces.IParticipant
+    public abstract class LedEntityBaseVM : INPC, Interfaces.IParticipant
     {
         private Services.MediatorService _Mediator;
 
@@ -399,7 +399,7 @@ namespace Led.ViewModels
         public abstract void RecieveMessage(MediatorMessages message, object sender, object data);
     }
 
-    class LedOffset
+    public class LedOffset
     {
         public int Offset { get; set; }
         public int Length { get; set; }

@@ -9,7 +9,7 @@ using System.Windows;
 namespace Led.Model
 {
     [JsonObject]
-    class ImageInfo
+    public class ImageInfo
     {
         [JsonProperty]
         public string Path { get; set; }

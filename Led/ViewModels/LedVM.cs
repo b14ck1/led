@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels
 {
-    class LedVM : INPC
+    public class LedVM : INPC
     {
         private Point _position;
         public Point Position

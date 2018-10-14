@@ -6,7 +6,7 @@ using System.Windows;
 namespace Led.Model
 {
     [JsonObject]
-    class LedEntity
+    public class LedEntity
     {
         [JsonProperty]
         public string LedEntityName { get; set; }

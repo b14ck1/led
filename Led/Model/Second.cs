@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Led.Model
 {
     [JsonObject]
-    class Second
+    public class Second
     {
         [JsonProperty]
         public Frame[] Frames { get; set; }

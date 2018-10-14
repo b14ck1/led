@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace Led.ViewModels
 {
-    class LedEntityCRUDVM : LedEntityBaseVM
+    public class LedEntityCRUDVM : LedEntityBaseVM
     {
         private bool _AddGroup;
         private bool _CreatingGroup;
