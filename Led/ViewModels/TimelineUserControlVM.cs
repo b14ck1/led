@@ -45,7 +45,7 @@ namespace Led.ViewModels
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
-            Debug.WriteLine("TUCVM received message: " + message);
+            //Debug.WriteLine("TUCVM received message: " + message);
             switch (message)
             {
                 case MediatorMessages.TimeLineCollectionChanged:
