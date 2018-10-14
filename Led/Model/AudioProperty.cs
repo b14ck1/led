@@ -1,4 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Led.Controller;
+using NAudio.Wave;
+using Newtonsoft.Json;
+using System;
 
 namespace Led.Model
 {
@@ -6,71 +9,32 @@ namespace Led.Model
     class AudioProperty
     {
         [JsonProperty]
-        private int _seconds;
-        public int Seconds
-        {
-            get => _seconds;
-            set
-            {
-                if (_seconds != value)
-                {
-                    _seconds = value;
-                    RaisePropertyChanged("Seconds");
-                }
-            }
-        }
+        public TimeSpan Length { get; }
 
         [JsonProperty]
-        private int _frames;
-        public int Frames
-        {
-            get => _frames;
-            set
-            {
-                if (_frames != value)
-                {
-                    _frames = value;
-                    RaisePropertyChanged("Frames");
-                }
-            }
-        }
+        public int Frames { get; }
 
-        [JsonProperty]
-        private string _audioName;
         public string AudioName
         {
-            get => _audioName;
-            set
+            get
             {
-                if (_audioName != value)
-                {
-                    _audioName = value;
-                    RaisePropertyChanged("AudioName");
-                }
+                string[] res = FilePath.Split('\\');
+                return res[res.Length - 1].Split('.')[0];
             }
-        }
+        }            
 
         [JsonProperty]
-        private string _filePath;
-        /// <summary>
-        /// Relative file path from the project directory
-        /// </summary>
-        public string FilePath
-        {
-            get => _filePath;
-            set
-            {
-                if (_filePath != value)
-                {
-                    _filePath = value;
-                    RaisePropertyChanged("FilePath");
-                }
-            }
-        }
+        public string FilePath { get; }
 
-        public AudioProperty()
+        public AudioProperty(string filePath, int FramesPerSecond)
         {
+            FilePath = filePath;
 
+            AudioFileReader audioFile = new AudioFileReader(FilePath);
+            Length = audioFile.TotalTime;
+            audioFile.Dispose();
+
+            Frames = (int)(Length.TotalMilliseconds * FramesPerSecond/1000);
         }
     }
 }
