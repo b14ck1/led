@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
+using System.Windows.Threading;
 using Led.ViewModels;
 
 namespace Led.Services
 {
-    class EffectService : IEffectService
+    public class EffectService : IEffectService, Interfaces.IParticipant
     {
         /* The EffectService recieves the AudioTimer Message and updates all Entitys (AudioControlCurrentTick)
          * -> Maybe provide Async Update so the AudioControl won't get disturbed
@@ -26,28 +29,20 @@ namespace Led.Services
          * 
          * Provides functionality to pre render all effects and save them in the model (model/vm?)
          * */
+        private Services.MediatorService _Mediator;
 
         private List<LedEntityBaseVM> _Entities;
-
         private LedEntityBaseVM _CurrentLedEntity;
 
-        private byte _FramesPerSecond;
+        private long _LastTickedFrame;
+        private long _LastRecievedFrame;
+
+        private Timer _DispatcherTimer;
 
         public void RegisterEntity(LedEntityBaseVM ledEntity)
         {
             if (!_Entities.Contains(ledEntity))
                 _Entities.Add(ledEntity);
-        }
-
-        public void Init(LedEntityBaseVM ledEntity, byte framesPerSecond)
-        {
-            _Entities.Clear();
-            _CurrentLedEntity = ledEntity;
-            _FramesPerSecond = framesPerSecond;
-        }
-        public EffectService()
-        {
-            _Entities = new List<LedEntityBaseVM>();
         }
 
         public void RenderEntity(LedEntityBaseVM ledEntity)
@@ -72,11 +67,41 @@ namespace Led.Services
             _Entities.ForEach(x => RenderEntity(x));
         }
 
+        public void Init(LedEntityBaseVM ledEntity)
+        {
+            _Entities.Clear();
+            _CurrentLedEntity = ledEntity;
+        }
+
+        public EffectService()
+        {
+            _Entities = new List<LedEntityBaseVM>();
+
+            _DispatcherTimer = new Timer();
+            _DispatcherTimer.AutoReset = true;
+            _DispatcherTimer.Interval = 1000 / Defines.FramesPerSecond;
+            _DispatcherTimer.Elapsed += _DispatcherTimerTick;
+
+            _Mediator = App.Instance.MediatorService;
+            _Mediator.Register(this);
+        }
+
+        private void _DispatcherTimerTick(object sender, EventArgs e)
+        {
+            _LastTickedFrame += 1;
+            Debug.WriteLine("DispatcherTick: " + _LastTickedFrame.ToString().PadLeft(10));
+        }
+
+        private void _SynchronizeWithMusic()
+        {
+            Debug.WriteLine("MusicTick: " + _LastRecievedFrame.ToString().PadLeft(10));
+        }
+
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)
         {
             //Get refs and compute the current second
-            int currentSecond = (int)(currentFrame / _FramesPerSecond);
-            int currentFramesRespectiveCurrentSecond = (int)(currentFrame % _FramesPerSecond);
+            int currentSecond = (int)(currentFrame / Defines.FramesPerSecond);
+            int currentFramesRespectiveCurrentSecond = (int)(currentFrame % Defines.FramesPerSecond);
             List<Model.Second> seconds = ledEntity.LedEntity.Seconds;
 
             //Just some checking
@@ -94,14 +119,14 @@ namespace Led.Services
             else
             {
                 //When we aren't in the current Second, load the full image
-                if (ledEntity.CurrentFrame / _FramesPerSecond == currentSecond)
+                if (ledEntity.CurrentFrame / Defines.FramesPerSecond == currentSecond)
                 {
                     ledEntity.SetLedColor(ledEntity.LedEntity.Seconds[currentSecond].LedEntityStatus);
                 }
 
                 //After this execute all FrameChanges till the current one
                 List<List<Model.LedChangeData>> _LedChangeDatas = new List<List<Model.LedChangeData>>();
-                for (int i = (int)(ledEntity.CurrentFrame % _FramesPerSecond) + 1; i <= currentFramesRespectiveCurrentSecond; i++)
+                for (int i = (int)(ledEntity.CurrentFrame % Defines.FramesPerSecond) + 1; i <= currentFramesRespectiveCurrentSecond; i++)
                 {
                     _LedChangeDatas.Add(ledEntity.LedEntity.Seconds[currentSecond].Frames[i].LedChanges);
                 }
@@ -144,6 +169,31 @@ namespace Led.Services
         private void _SendFrameDataToSuit(LedEntityBaseVM ledEntity)
         {
 
+        }
+
+        public void RecieveMessage(MediatorMessages message, object sender, object data)
+        {
+            switch (message)
+            {
+                case MediatorMessages.AudioControlPlayPause:
+                    _LastRecievedFrame = (data as MediatorMessageData.AudioControlPlayPauseData).CurrentFrame;
+                    _LastTickedFrame = _LastRecievedFrame;
+                    if ((data as MediatorMessageData.AudioControlPlayPauseData).Playing)
+                        _DispatcherTimer.Start();
+                    else
+                        _DispatcherTimer.Stop();
+                    break;
+                case MediatorMessages.AudioControlCurrentTick:
+                    long _frameRecieved = (data as MediatorMessageData.AudioControlCurrentFrameData).CurrentFrame;
+                    if (_LastRecievedFrame != _frameRecieved)
+                    {
+                        _LastRecievedFrame = _frameRecieved;
+                        _SynchronizeWithMusic();
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
