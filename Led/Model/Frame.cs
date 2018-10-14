@@ -7,19 +7,7 @@ namespace Led.Model
     class Frame
     {
         [JsonProperty]
-        private List<LedChangeData> _ledChanges;
-        public List<LedChangeData> LedChanges
-        {
-            get => _ledChanges;
-            set
-            {
-                if (_ledChanges != value)
-                {
-                    _ledChanges = value;
-                    RaisePropertyChanged("LedChanges");
-                }
-            }
-        }
+        public List<LedChangeData> LedChanges { get; set; }
 
         public Frame()
         {
