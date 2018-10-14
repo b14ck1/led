@@ -63,7 +63,6 @@ namespace Led.ViewModels
         {
             _currentTime = value;
             _progress = _currentTime.Ticks / (double)_length.Ticks;
-            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentTickData(player.CurrentTime.Ticks));
             RaisePropertyChanged(nameof(CurrentTime));
             RaisePropertyChanged(nameof(Progress));
         }
@@ -90,12 +89,14 @@ namespace Led.ViewModels
                 if (IsPlaying)
                 {
                     player.Pause();
-                    updateTimer.Stop();
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), false));
+                    updateTimer.Stop();                    
                 }
                 else
                 {
                     player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
-                    updateTimer.Start();
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
+                    updateTimer.Start();                    
                 }
                 RaisePropertyChanged(playPausePropertyNames);
             }, () => _canExecute);
@@ -154,8 +155,8 @@ namespace Led.ViewModels
         private DispatcherTimer updateTimer;
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            SetCurrentTime(player.CurrentTime);
-            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentTickData(player.CurrentTime.Ticks));
+            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
+            SetCurrentTime(player.CurrentTime);            
         }
 
         private void _SendMessage(MediatorMessages message, object data)
@@ -166,6 +167,12 @@ namespace Led.ViewModels
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
 
+        }
+
+        public void Dispose()
+        {
+            player.Dispose();
+            _mediatorService.Unregister(this);
         }
     }
 }
