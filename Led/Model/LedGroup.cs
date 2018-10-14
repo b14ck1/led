@@ -5,7 +5,7 @@ using System.Windows;
 namespace Led.Model
 {
     [JsonObject]
-    public class LedGroup : INPC
+    public class LedGroup
     {
         /// <summary>
         /// Which bus

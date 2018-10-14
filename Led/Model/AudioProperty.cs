@@ -3,7 +3,7 @@
 namespace Led.Model
 {
     [JsonObject]
-    class AudioProperty : INPC
+    class AudioProperty
     {
         [JsonProperty]
         private int _seconds;

@@ -8,7 +8,7 @@ namespace Led.Model
     /// Saves all relevant information to display a led group
     /// </summary>
     [JsonObject]
-    public class LedGroupViewProperty : INPC
+    public class LedGroupViewProperty
     {
         /// <summary>
         /// On which view (side) is this group located
