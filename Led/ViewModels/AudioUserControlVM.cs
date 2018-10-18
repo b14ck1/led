@@ -94,6 +94,7 @@ namespace Led.ViewModels
                 }
                 else
                 {
+                    _SendMessage(MediatorMessages.EffectServiceRenderAll, null);                    
                     player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
                     _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
                     updateTimer.Start();                    

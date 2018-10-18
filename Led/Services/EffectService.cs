@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,7 @@ using Led.ViewModels;
 
 namespace Led.Services
 {
-    public class EffectService : IEffectService, Interfaces.IParticipant
+    public class EffectService : Interfaces.IParticipant
     {
         /* The EffectService recieves the AudioTimer Message and updates all Entitys (AudioControlCurrentTick)
          * -> Maybe provide Async Update so the AudioControl won't get disturbed
@@ -29,23 +30,47 @@ namespace Led.Services
          * 
          * Provides functionality to pre render all effects and save them in the model (model/vm?)
          * */
+
+            /*
+             * Render MultiFrame Effects
+             * 
+             * Button to render all effects, not everytime we press play
+             * EffectPreviewLedChangeData
+             * 
+             * _UpdateView ForceReload -> Force Load of Full Image
+             * 
+             * */
         private Services.MediatorService _Mediator;
 
         private List<LedEntityBaseVM> _Entities;
         private LedEntityBaseVM _CurrentLedEntity;
 
         private long _LastTickedFrame;
+        private long _LastPreviewedFrame;
         private long _LastRecievedFrame;
 
-        private Timer _DispatcherTimer;
+        private Utility.AccurateTimer _AccurateTimer;
 
-        public void RegisterEntity(LedEntityBaseVM ledEntity)
+        public System.Windows.Window MainWindow;
+
+        public void Init(ObservableCollection<LedEntityBaseVM> entities)
         {
-            if (!_Entities.Contains(ledEntity))
-                _Entities.Add(ledEntity);
+            _Entities.Clear();
+            foreach(var x in entities)
+            {
+                _Entities.Add(x);
+            }
         }
 
-        public void RenderEntity(LedEntityBaseVM ledEntity)
+        public EffectService()
+        {
+            _Entities = new List<LedEntityBaseVM>();
+
+            _Mediator = App.Instance.MediatorService;
+            _Mediator.Register(this);
+        }
+
+        private void _RenderEntity(LedEntityBaseVM ledEntity)
         {
             List<IEffectLogic> _Effects = new List<IEffectLogic>();
             ledEntity.LedEntity.Effects.ForEach(x => _Effects.Add(x as IEffectLogic));
@@ -56,58 +81,76 @@ namespace Led.Services
                 {
                     for (ushort i = Effect.StartFrame; i < Effect.EndFrame; i++)
                     {
-                        ledEntity.LedEntity.Seconds[i / 60].Frames[i % 60].LedChanges.AddRange(Effect.LedChangeDatas);
+                        ledEntity.LedEntity.Seconds[i / Defines.FramesPerSecond].Frames[i % Defines.FramesPerSecond].LedChanges.AddRange(Effect.LedChangeDatas);
                     }
                 }
             }
         }
 
-        public void RenderAllEntities()
+        private void _RenderAllEntities()
         {
-            _Entities.ForEach(x => RenderEntity(x));
+            _Entities.ForEach(x => _RenderEntity(x));
         }
 
-        public void Init(LedEntityBaseVM ledEntity)
+        private void _PreviewEffect(ViewModels.EffectBaseVM effectBaseVM, bool stop)
         {
-            _Entities.Clear();
-            _CurrentLedEntity = ledEntity;
+            if (stop)
+            {
+                _StopTimer();
+                _UpdateView(_CurrentLedEntity, _LastTickedFrame);
+            }
+            else
+            {
+                _LastPreviewedFrame = effectBaseVM.StartFrame - 1;
+                _StartTimer();
+            }
         }
 
-        public EffectService()
+        private void _PlayPreview(ViewModels.EffectBaseVM effectBaseVM)
         {
-            _Entities = new List<LedEntityBaseVM>();
-
-            _DispatcherTimer = new Timer();
-            _DispatcherTimer.AutoReset = true;
-            _DispatcherTimer.Interval = 1000 / Defines.FramesPerSecond;
-            _DispatcherTimer.Elapsed += _DispatcherTimerTick;
-
-            _Mediator = App.Instance.MediatorService;
-            _Mediator.Register(this);
+            effectBaseVM.EffectBase.LedChangeDatas
         }
 
-        private void _DispatcherTimerTick(object sender, EventArgs e)
+        private void _StartTimer(Action callback)
         {
-            _LastTickedFrame += 1;
-            Debug.WriteLine("DispatcherTick: " + _LastTickedFrame.ToString().PadLeft(10));
+            _AccurateTimer = new Utility.AccurateTimer(MainWindow, callback, 1000 / 40);
         }
 
-        private void _SynchronizeWithMusic()
+        private void _StopTimer()
         {
-            Debug.WriteLine("MusicTick: " + _LastRecievedFrame.ToString().PadLeft(10));
+            _AccurateTimer.Stop();
         }
+
+        private void _SynchronizeTimerWithMusic()
+        {
+            if (_LastTickedFrame < _LastRecievedFrame - 1 || _LastTickedFrame > _LastRecievedFrame + 1)
+            {
+                _LastTickedFrame = _LastRecievedFrame;
+                Debug.WriteLine("MusicTick: " + _LastRecievedFrame.ToString().PadLeft(10));
+            }
+        }
+
+        private void _SynchronizeSuit()
+        {
+
+        }
+
+        private void _SetViewChangeData(LedEntityBaseVM ledEntity, y)
 
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)
         {
+            if (ledEntity == null)
+                return;
+
             //Get refs and compute the current second
             int currentSecond = (int)(currentFrame / Defines.FramesPerSecond);
             int currentFramesRespectiveCurrentSecond = (int)(currentFrame % Defines.FramesPerSecond);
-            List<Model.Second> seconds = ledEntity.LedEntity.Seconds;
+            Model.Second[] seconds = ledEntity.LedEntity.Seconds;
 
             //Just some checking
-            if (currentSecond >= seconds.Count)
+            if (currentSecond >= seconds.Length)
             {
-                Console.WriteLine("UpdateFrame out of range. FrameValue: " + currentFrame + " SecondValue: " + currentSecond + "MaxSeconds: " + seconds.Count);
+                Debug.WriteLine("UpdateFrame out of range. FrameValue: " + currentFrame + " SecondValue: " + currentSecond + "MaxSeconds: " + seconds.Length);
                 return;
             }
 
@@ -118,6 +161,8 @@ namespace Led.Services
             }
             else
             {
+                Debug.WriteLine("Out of sync. Updating to Frame: " + _LastTickedFrame + " from Frame: " + ledEntity.CurrentFrame);
+
                 //When we aren't in the current Second, load the full image
                 if (ledEntity.CurrentFrame / Defines.FramesPerSecond == currentSecond)
                 {
@@ -170,26 +215,43 @@ namespace Led.Services
         {
 
         }
+        
+        private void _PlayWithMusic()
+        {
+            Debug.WriteLine(_LastTickedFrame);
+            _UpdateView(_CurrentLedEntity, _LastTickedFrame);
+            _LastTickedFrame++;
+        }
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
             switch (message)
             {
+                case MediatorMessages.LedEntitySelectButtonClicked:
+                    _CurrentLedEntity = (sender as LedEntityBaseVM);
+                    break;
                 case MediatorMessages.AudioControlPlayPause:
                     _LastRecievedFrame = (data as MediatorMessageData.AudioControlPlayPauseData).CurrentFrame;
                     _LastTickedFrame = _LastRecievedFrame;
                     if ((data as MediatorMessageData.AudioControlPlayPauseData).Playing)
-                        _DispatcherTimer.Start();
+                        _StartTimer(_PlayWithMusic);
                     else
-                        _DispatcherTimer.Stop();
+                        _StopTimer();
                     break;
                 case MediatorMessages.AudioControlCurrentTick:
                     long _frameRecieved = (data as MediatorMessageData.AudioControlCurrentFrameData).CurrentFrame;
                     if (_LastRecievedFrame != _frameRecieved)
                     {
                         _LastRecievedFrame = _frameRecieved;
-                        _SynchronizeWithMusic();
+                        _SynchronizeTimerWithMusic();
                     }
+                    break;
+                case MediatorMessages.EffectServiceRenderAll:
+                    _RenderAllEntities();
+                    break;
+                case MediatorMessages.EffectServicePreview:
+                    MediatorMessageData.EffectServicePreviewData effectServicePreviewData = (data as MediatorMessageData.EffectServicePreviewData);
+                    _PreviewEffect(effectServicePreviewData.EffectBaseVM, effectServicePreviewData.Stop);
                     break;
                 default:
                     break;

@@ -14,7 +14,8 @@ namespace Led.Model
         
         public Second()
         {
-
+            Frames = new Frame[Defines.FramesPerSecond];
+            LedEntityStatus = new List<LedChangeData>();
         }
     }
 }

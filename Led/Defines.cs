@@ -191,7 +191,9 @@ namespace Led
         TimeLineCollectionChanged,
         TimeLineEffectSelected,
         AudioControlPlayPause,
-        AudioControlCurrentTick        
+        AudioControlCurrentTick,
+        EffectServiceRenderAll,
+        EffectServicePreview
     }
 
     public class MediatorMessageData
@@ -257,6 +259,19 @@ namespace Led
             public AudioControlCurrentFrameData(long currentFrame)
             {
                 CurrentFrame = currentFrame;
+            }
+        }
+
+        public class EffectServicePreviewData
+        {
+            public ViewModels.EffectBaseVM EffectBaseVM { get; }
+
+            public bool Stop { get; }
+
+            public EffectServicePreviewData(ViewModels.EffectBaseVM effectBaseVM, bool stop = false)
+            {
+                EffectBaseVM = effectBaseVM;
+                Stop = stop;
             }
         }
 

@@ -11,7 +11,7 @@ namespace Led.Model
 
         public Frame()
         {
-
+            LedChanges = new List<LedChangeData>();
         }
     }
 }

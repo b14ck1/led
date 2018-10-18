@@ -94,6 +94,7 @@
     <Compile Include="Interfaces\IParticipant.cs" />
     <Compile Include="Services\EffectService.cs" />
     <Compile Include="Services\MediatorService.cs" />
+    <Compile Include="Utility\AccurateTimer.cs" />
     <Compile Include="Utility\AudioPlayer.cs" />
     <Compile Include="Controllers\TimeController.cs" />
     <Compile Include="Model\Effect\EffectGroup.cs" />

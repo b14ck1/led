@@ -20,8 +20,7 @@ namespace Led.Model
         [JsonProperty]
         public Dictionary<LedEntityView, ImageInfo> ImageInfos { get; set; }
 
-        [JsonProperty]
-        public List<Second> Seconds { get; set; }
+        public Second[] Seconds { get; set; }
 
         public LedEntity()
         {

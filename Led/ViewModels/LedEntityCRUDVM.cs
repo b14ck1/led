@@ -79,26 +79,40 @@ namespace Led.ViewModels
 
         private void _OnNewFrontImmage()
         {
-            string Path = App.Instance.IOService.OpenFileDialog();
-            if (Path != "")
+            try
             {
-                FrontImagePath = Path;
-                BitmapImage Image = new BitmapImage(new Uri(FrontImagePath));
-                LedEntity.ImageInfos[LedEntityView.Front].Size.Width = Image.PixelWidth;
-                LedEntity.ImageInfos[LedEntityView.Front].Size.Height = Image.PixelHeight;
+                string Path = App.Instance.IOService.OpenFileDialog();
+                if (Path != "")
+                {
+                    FrontImagePath = Path;
+                    BitmapImage Image = new BitmapImage(new Uri(FrontImagePath));
+                    LedEntity.ImageInfos[LedEntityView.Front].Size.Width = Image.PixelWidth;
+                    LedEntity.ImageInfos[LedEntityView.Front].Size.Height = Image.PixelHeight;
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
         private void _OnNewBackImmage()
         {
-            string Path = App.Instance.IOService.OpenFileDialog();
-            if (Path != "")
-            { 
-                BackImagePath = Path;
-                BitmapImage Image = new BitmapImage(new Uri(BackImagePath));
-                LedEntity.ImageInfos[LedEntityView.Back].Size.Width = Image.PixelWidth;
-                LedEntity.ImageInfos[LedEntityView.Back].Size.Height = Image.PixelHeight;
+            try
+            {
+                string Path = App.Instance.IOService.OpenFileDialog();
+                if (Path != "")
+                {
+                    BackImagePath = Path;
+                    BitmapImage Image = new BitmapImage(new Uri(BackImagePath));
+                    LedEntity.ImageInfos[LedEntityView.Back].Size.Width = Image.PixelWidth;
+                    LedEntity.ImageInfos[LedEntityView.Back].Size.Height = Image.PixelHeight;
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             AddLedGroupCommand.RaiseCanExecuteChanged();
