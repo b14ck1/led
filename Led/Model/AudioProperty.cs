@@ -6,14 +6,14 @@ using System;
 namespace Led.Model
 {
     [JsonObject]
-    class AudioProperty
+    public class AudioProperty
     {
         [JsonProperty]
         public TimeSpan Length { get; }
 
         [JsonProperty]
         public int Frames { get; }
-
+        
         public string AudioName
         {
             get
