@@ -26,7 +26,7 @@ namespace Led.Model
         public Point PositionInEntity { get; set; }
 
         /// <summary>
-        /// All leds in this group in respect to the wiring of the physical leds
+        /// All leds in this group ordered in respect to the wiring of the physical leds
         /// </summary>
         [JsonProperty]
         public List<Point> Leds { get; set; }
