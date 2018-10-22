@@ -8,6 +8,8 @@ namespace Led
 {
     public interface IEffectLogic
     {
+        EffectType EffectType { get; }
+
         bool Active { get; }
 
         ushort StartFrame { get; }
@@ -16,6 +18,6 @@ namespace Led
 
         ushort EndFrame { get; }
 
-        List<Model.LedChangeData> LedChangeDatas { get; }
+        List<Model.LedChangeData> LedChangeDatas(long frame);
     }
 }
