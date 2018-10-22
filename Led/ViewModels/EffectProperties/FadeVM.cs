@@ -10,6 +10,61 @@ namespace Led.ViewModels.EffectProperties
 {
     public class FadeVM : INPC
     {
+        private Model.Effect.EffectFadeColor _EffectFadeColor { get; }
+
+        public bool Repeat
+        {
+            get => _EffectFadeColor.Repeat;
+            set
+            {
+                if (_EffectFadeColor.Repeat != value)
+                {
+                    _EffectFadeColor.Repeat = value;
+                    RaisePropertyChanged(nameof(Repeat));
+
+                    if (!Repeat)
+                    {
+                        _EffectFadeColor.FramesForOneRepetition = _EffectFadeColor.Dauer;
+                        RaisePropertyChanged(nameof(FramesForOneRepetition));
+                        RaisePropertyChanged(nameof(NumberOfRepetitions));
+                    }
+                }
+            }
+        }
+
+        public int FramesForOneRepetition
+        {
+            get => _EffectFadeColor.FramesForOneRepetition;
+            set
+            {
+                if (_EffectFadeColor.FramesForOneRepetition != value)
+                {
+                    _EffectFadeColor.FramesForOneRepetition = value;
+                    RaisePropertyChanged(nameof(FramesForOneRepetition));
+                    RaisePropertyChanged(nameof(NumberOfRepetitions));
+                }
+            }
+        }
+
+        public double NumberOfRepetitions
+        {
+            get => _EffectFadeColor.Dauer / _EffectFadeColor.FramesForOneRepetition;
+            set
+            {
+                if (_EffectFadeColor.Dauer / _EffectFadeColor.FramesForOneRepetition != value)
+                {
+                    _EffectFadeColor.FramesForOneRepetition = (int)(_EffectFadeColor.Dauer / value);
+                    RaisePropertyChanged(nameof(FramesForOneRepetition));
+                    RaisePropertyChanged(nameof(NumberOfRepetitions));
+                }
+            }
+        }
+
+        public int Dauer
+        {
+            get => _EffectFadeColor.Dauer;
+        }
+
         private ObservableCollection<EffectColorVM> _colors;
         public ObservableCollection<EffectColorVM> Colors
         {
@@ -24,12 +79,14 @@ namespace Led.ViewModels.EffectProperties
             }
         }
 
-        public FadeVM(List<Color> colors)
+        public FadeVM(Model.Effect.EffectFadeColor effectFadeColor)
         {
+            _EffectFadeColor = effectFadeColor;
+
             Colors = new ObservableCollection<EffectColorVM>();
-            for (int i = 0; i < colors.Count; i++)
+            for (int i = 0; i < effectFadeColor.Colors.Count; i++)
             {
-                Colors.Add(new EffectColorVM(colors[i], "Farbe " + (i + 1)));
+                Colors.Add(new EffectColorVM((effectFadeColor as Model.Effect.EffectBase), i));
             }
         }
     }
