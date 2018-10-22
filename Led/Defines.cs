@@ -335,11 +335,12 @@ namespace Led
         public static Brush LedSelectRectangleColor = Brushes.Red;
 
         public static Brush LedColor = Brushes.LimeGreen;
-        public static Brush LedSelectedColor = Brushes.Blue;
+        public static Brush LedSelectingColor = Brushes.Blue;
+        public static Brush LedSelectedColor = Brushes.Red;
 
         public static int MainWindowWidth = 1600;
         public static int MainWindowHeight = 900;
 
-        public static byte FramesPerSecond = 40;
+        public static byte FramesPerSecond = 40;        
     }
 }
