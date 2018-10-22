@@ -79,6 +79,9 @@ namespace Led.ViewModels
                 if (_audioUserControlVM != value)
                 {
                     _audioUserControlVM = value;
+
+                    _SendMessage(MediatorMessages.AudioProperty_NewAudio, new MediatorMessageData.AudioProperty_NewAudio(Project.AudioProperty));
+
                     RaisePropertyChanged();
                 }
             }
@@ -205,9 +208,7 @@ namespace Led.ViewModels
             if (!string.IsNullOrEmpty(filePath))
             {                    
                 Project.AudioProperty = new Model.AudioProperty(filePath, Project.FramesPerSecond);
-                _InitAudioUserControl();
-
-                _InitAllSeconds();
+                _InitAudioUserControl();                
             }
         }
 
@@ -221,7 +222,7 @@ namespace Led.ViewModels
 
             //Add existing shit if there is something
             Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
-            _InitAllSeconds();
+
             if (!string.IsNullOrEmpty(Project.AudioProperty?.FilePath))
                 _InitAudioUserControl();
 
@@ -236,37 +237,12 @@ namespace Led.ViewModels
             AddAudioCommand.RaiseCanExecuteChanged();
         }
 
-        private void _InitAllSeconds()
-        {
-            if (Project.AudioProperty != null)
-            {
-                foreach (var ledEntityBaseVM in _ledEntities)
-                {
-                    _InitSeconds(ledEntityBaseVM);
-                }
-            }
-        }
-
-        private void _InitSeconds(LedEntityBaseVM ledEntityBaseVM)
-        {
-            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[(int)Project.AudioProperty.Length.TotalSeconds];
-            for (int i = 0; i < ledEntityBaseVM.LedEntity.Seconds.Length; i++)
-            {
-                ledEntityBaseVM.LedEntity.Seconds[i] = new Model.Second();
-
-                for (int j = 0; j < Defines.FramesPerSecond; j++)
-                {
-                    ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
-                }
-            }
-        }
-
         private void _InitAudioUserControl()
         {
             if (AudioUserControlVM != null)
                 AudioUserControlVM.Dispose();
             AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
-            _AudioUserControl.DataContext = AudioUserControlVM;
+            _AudioUserControl.DataContext = AudioUserControlVM;            
         }
 
         protected void _SendMessage(MediatorMessages message, object data)

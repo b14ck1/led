@@ -21,6 +21,7 @@ namespace Led.ViewModels
                 if (_effectBase != value)
                 {
                     _effectBase = value;
+                    _SetEffectVMs();
                     RaiseAllPropertyChanged();
                 }
             }
@@ -83,34 +84,6 @@ namespace Led.ViewModels
             }
         }
 
-        public DateTime StartFrameDateTime
-        {
-            get => new DateTime(StartFrame);
-            set
-            {
-                if (StartFrame != (ushort)value.Ticks)
-                    StartFrame = (ushort)value.Ticks;
-            }
-        }
-        public DateTime DauerDateTime
-        {
-            get => new DateTime(Dauer);
-            set
-            {
-                if (Dauer != (ushort)value.Ticks)
-                    Dauer = (ushort)value.Ticks;
-            }
-        }
-        public DateTime EndFrameDateTime
-        {
-            get => new DateTime(EndFrame);
-            set
-            {
-                if (EndFrame != (ushort)value.Ticks)
-                    EndFrame = (ushort)value.Ticks;
-            }
-        }
-
         public EffectType EffectType
         {
             get => EffectBase.EffectType;
@@ -118,33 +91,7 @@ namespace Led.ViewModels
             {
                 if (EffectBase.EffectType != value)
                 {
-                    switch (value)
-                    {
-                        case EffectType.SetColor:
-                            BlinkVMs.Clear();
-                            FadeVMs.Clear();
-                            EffectBase = new Model.Effect.EffectSetColor(StartFrame, EndFrame);
-                            SetColorVMs.Add(new EffectProperties.SetColorVM((EffectBase as Model.Effect.EffectSetColor).Color));
-                            break;
-                        case EffectType.Blink:
-                            SetColorVMs.Clear();
-                            FadeVMs.Clear();
-                            EffectBase = new Model.Effect.EffectBlinkColor(StartFrame, EndFrame);
-                            BlinkVMs.Add(new EffectProperties.BlinkVM((EffectBase as Model.Effect.EffectBlinkColor).Colors));
-                            break;
-                        case EffectType.Fade:
-                            SetColorVMs.Clear();
-                            BlinkVMs.Clear();
-                            EffectBase = new Model.Effect.EffectFadeColor(StartFrame, EndFrame);
-                            FadeVMs.Add(new EffectProperties.FadeVM((EffectBase as Model.Effect.EffectFadeColor).Colors));
-                            break;
-                        case EffectType.Group:
-                            //EffectBase = new Model.Effect.EffectGroup(StartFrame, EndFrame);
-                            break;
-                        default:
-                            break;
-                    }
-
+                    _SendMessage(MediatorMessages.EffectBaseVM_EffectTypeChanged, new MediatorMessageData.EffectBaseVM_EffectTypeChanged(value, _SetEffect_Callback));
                     RaisePropertyChanged(nameof(EffectType));
                 }
             }
@@ -206,10 +153,10 @@ namespace Led.ViewModels
             get => EffectBase.Leds.Count();
         }
 
-        private bool _editingLeds;
+        private bool _EditingLeds;
         public string EditCommandContent
         {
-            get => _editingLeds ? "Save" : "Edit";
+            get => _EditingLeds ? "Save" : "Edit";
         }
         public Command EditCommand { get; set; }
         public Command ClearCommand { get; set; }
@@ -224,23 +171,7 @@ namespace Led.ViewModels
             BlinkVMs = new ObservableCollection<EffectProperties.BlinkVM>();
             FadeVMs = new ObservableCollection<EffectProperties.FadeVM>();
 
-            EffectBase = effectBase;
-            switch (EffectType)
-            {
-                case EffectType.SetColor:
-                    SetColorVMs.Add(new EffectProperties.SetColorVM((EffectBase as Model.Effect.EffectSetColor).Color));
-                    break;
-                case EffectType.Blink:
-                    BlinkVMs.Add(new EffectProperties.BlinkVM((EffectBase as Model.Effect.EffectBlinkColor).Colors));
-                    break;
-                case EffectType.Fade:
-                    FadeVMs.Add(new EffectProperties.FadeVM((EffectBase as Model.Effect.EffectFadeColor).Colors));
-                    break;
-                case EffectType.Group:
-                    break;
-                default:
-                    break;
-            }
+            EffectBase = effectBase;            
 
             EditCommand = new Command(OnEditCommand);
             ClearCommand = new Command(OnClearCommand);
@@ -249,18 +180,64 @@ namespace Led.ViewModels
             _Mediator.Register(this);
         }
 
+        private void _ClearCollections()
+        {
+            SetColorVMs.Clear();
+            BlinkVMs.Clear();
+            FadeVMs.Clear();
+        }
+
+        private void _SetEffectVMs()
+        {
+            _ClearCollections();
+
+            switch (EffectType)
+            {
+                case EffectType.SetColor:
+                    SetColorVMs.Add(new EffectProperties.SetColorVM(EffectBase as Model.Effect.EffectSetColor));
+                    break;
+                case EffectType.Blink:
+                    BlinkVMs.Add(new EffectProperties.BlinkVM(EffectBase as Model.Effect.EffectBlinkColor));
+                    break;
+                case EffectType.Fade:
+                    FadeVMs.Add(new EffectProperties.FadeVM(EffectBase as Model.Effect.EffectFadeColor));
+                    break;
+                case EffectType.Group:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void _SetEffect_Callback(Model.Effect.EffectBase effectBase)
+        {
+            EffectBase = effectBase;
+        }
+
+        private void _SetLeds_Callback(List<Utility.LedModelID> ledModelIDs)
+        {
+            EffectBase.Leds = ledModelIDs;
+
+            //Positionen berechnen
+        }
+
         public void OnEditCommand()
         {
-            _editingLeds = !_editingLeds;
+            _EditingLeds = !_EditingLeds;
             RaisePropertyChanged(nameof(EditCommandContent));
-            _SendMessage(MediatorMessages.EffectVMEditSelectedLedsClicked, new MediatorMessageData.EffectVMEditSelectedLeds(_editingLeds, _effectBase.Leds));
+
+            if (_EditingLeds)
+                _SendMessage(MediatorMessages.EffectBaseVM_EditCommand_Start, new MediatorMessageData.EffectBaseVM_EditCommand_Start(_effectBase.Leds));
+            else
+                _SendMessage(MediatorMessages.EffectBaseVM_EditCommand_Finished, new MediatorMessageData.EffectBaseVM_EditCommand_Finished(_SetLeds_Callback));
         }
 
         public void OnClearCommand()
         {
             SelectedLeds.Clear();
             RaisePropertyChanged(nameof(NumberOfLeds));
-            _SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, null);
+
+            _SendMessage(MediatorMessages.EffectBaseVM_ClearCommand, null);
         }
 
         public void OnPreviewCommand()
@@ -287,13 +264,6 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.EffectVMEditSelectedLedsFinished:
-                    SelectedLeds = (data as MediatorMessageData.EffectVMEditSelectedLeds).SelectedLeds;
-                    break;
-                case MediatorMessages.GroupBusDefinitionsChanged:
-                    break;
-                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
-                    break;
                 default:
                     break;
             }

@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Windows.Media;
+using Newtonsoft.Json;
 
 namespace Led.Model.Effect
 {
+    [JsonObject]
     public class EffectBlinkColor : EffectBase
     {
-        public List<Color> Colors { get; set; }
+        [JsonProperty]
         public ushort BlinkFrames { get; set; }
-        private ushort CurrentColor { get; set; }
 
         public EffectBlinkColor(ushort startFrame = 0, ushort endFrame = 0)
             : base(EffectType.Blink, startFrame, endFrame)
@@ -18,29 +19,25 @@ namespace Led.Model.Effect
                 System.Windows.Media.Colors.Black
             };
             BlinkFrames = 0;
-            CurrentColor = 0;
         }
 
-        public override List<LedChangeData> LedChangeDatas
+        public override List<LedChangeData> LedChangeDatas(long frame)
         {
-            get
-            {
-                List<LedChangeData> res = new List<LedChangeData>();
+            List<LedChangeData> res = new List<LedChangeData>();
 
-                for (int i = 0; i < Dauer; i++)
+            long currFrame = frame - StartFrame;
+            if (currFrame >= 0 && currFrame <= EndFrame)
+            { 
+                if (currFrame % BlinkFrames == 0)
                 {
-                    if (i % BlinkFrames == 0)
-                    {
-                        res.Add(new LedChangeData(Leds, Colors[CurrentColor], 0));
-                        CurrentColor++;
-
-                        if (CurrentColor == Colors.Count)
-                            CurrentColor = 0;
-                    }
+                    int tmp = (int)(currFrame / BlinkFrames);
+                    Leds.ForEach(x => res.Add(new LedChangeData(x, Colors[tmp % Colors.Count], 0)));                    
                 }
 
                 return res;
             }
+
+            return null;
         }
     }
 }

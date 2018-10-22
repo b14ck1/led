@@ -9,41 +9,42 @@ namespace Led.ViewModels.EffectProperties
 {
     public class EffectColorVM : INPC
     {
-        private System.Windows.Media.Color _color;
+        private Model.Effect.EffectBase _EffectBase { get; }
+
         public Color Color
         {
-            get => _color;
+            get => _EffectBase.Colors[Index];
             set
             {
-                if (_color != value)
+                if (_EffectBase.Colors[Index] != value)
                 {
-                    _color = value;
+                    _EffectBase.Colors[Index] = value;
                     RaisePropertyChanged(nameof(ColorAsBrush));
                 }
             }
         }
-        public Brush ColorAsBrush => new SolidColorBrush(_color);
+        public Brush ColorAsBrush => new SolidColorBrush(Color);
 
-        private string _number;
-        public string Number
+        private int _index;
+        public int Index
         {
-            get => _number;
+            get => _index;
             set
             {
-                if (_number != value)
+                if (_index != value)
                 {
-                    _number = value;
-                    RaisePropertyChanged(nameof(Number));
+                    _index = value;
+                    RaisePropertyChanged(nameof(Index));
                 }
             }
         }
 
         public Command PickColorCommand { get; set; }
 
-        public EffectColorVM(Color color, string number)
+        public EffectColorVM(Model.Effect.EffectBase effectBase, int index)
         {
-            Color = color;
-            Number = number;
+            _EffectBase = effectBase;
+            Index = index;
 
             PickColorCommand = new Command(_OnPickColorCommand);
         }

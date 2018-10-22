@@ -31,19 +31,22 @@ namespace Led.Services
          * Provides functionality to pre render all effects and save them in the model (model/vm?)
          * */
 
-            /*
-             * Render MultiFrame Effects
-             * 
-             * Button to render all effects, not everytime we press play
-             * EffectPreviewLedChangeData
-             * 
-             * _UpdateView ForceReload -> Force Load of Full Image
-             * 
-             * */
+        /*
+         * Render MultiFrame Effects
+         * 
+         * Button to render all effects, not everytime we press play
+         * EffectPreviewLedChangeData
+         * 
+         * _UpdateView ForceReload -> Force Load of Full Image
+         * 
+         * */
+
         private Services.MediatorService _Mediator;
 
-        private List<LedEntityBaseVM> _Entities;
+        private List<LedEntityBaseVM> _LedEntityBaseVMs;
         private LedEntityBaseVM _CurrentLedEntity;
+
+        private Model.AudioProperty _AudioProperty;
 
         private long _LastTickedFrame;
         private long _LastPreviewedFrame;
@@ -53,43 +56,124 @@ namespace Led.Services
 
         public System.Windows.Window MainWindow;
 
-        public void Init(ObservableCollection<LedEntityBaseVM> entities)
+        public void Init(ObservableCollection<LedEntityBaseVM> ledEntityBaseVMs)
         {
-            _Entities.Clear();
-            foreach(var x in entities)
+            _LedEntityBaseVMs.Clear();
+            foreach (var x in ledEntityBaseVMs)
             {
-                _Entities.Add(x);
+                _LedEntityBaseVMs.Add(x);
             }
+        }
+
+        public List<Model.LedStatus> GetState(long frame, List<Utility.LedModelID> ledModelIDs, Model.Effect.EffectBase effectBase)
+        {
+            throw new NotImplementedException();
         }
 
         public EffectService()
         {
-            _Entities = new List<LedEntityBaseVM>();
+            _LedEntityBaseVMs = new List<LedEntityBaseVM>();
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
         }
 
-        private void _RenderEntity(LedEntityBaseVM ledEntity)
-        {
-            List<IEffectLogic> _Effects = new List<IEffectLogic>();
-            ledEntity.LedEntity.Effects.ForEach(x => _Effects.Add(x as IEffectLogic));
 
-            foreach (var Effect in _Effects)
+        private void _InitAllSeconds()
+        {
+            if (_AudioProperty != null)
             {
-                if (Effect.Active)
+                foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
                 {
-                    for (ushort i = Effect.StartFrame; i < Effect.EndFrame; i++)
-                    {
-                        ledEntity.LedEntity.Seconds[i / Defines.FramesPerSecond].Frames[i % Defines.FramesPerSecond].LedChanges.AddRange(Effect.LedChangeDatas);
-                    }
+                    _InitSeconds(ledEntityBaseVM);
+                }
+            }
+        }
+
+        private void _InitSeconds(LedEntityBaseVM ledEntityBaseVM)
+        {
+            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[(int)_AudioProperty.Length.TotalSeconds];
+            for (int i = 0; i < ledEntityBaseVM.LedEntity.Seconds.Length; i++)
+            {
+                ledEntityBaseVM.LedEntity.Seconds[i] = new Model.Second();
+
+                for (int j = 0; j < Defines.FramesPerSecond; j++)
+                {
+                    ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
                 }
             }
         }
 
         private void _RenderAllEntities()
         {
-            _Entities.ForEach(x => _RenderEntity(x));
+            _LedEntityBaseVMs.ForEach(x => _RenderEntity(x));
+        }
+
+        private void _RenderEntity(LedEntityBaseVM ledEntity)
+        {
+            _InitSeconds(ledEntity);
+
+            List<IEffectLogic> _Effects = new List<IEffectLogic>();
+            ledEntity.LedEntity.Effects.ForEach(x => _Effects.Add(x as IEffectLogic));
+
+            //Sort the List after StartFrame, if two Effects got the same StartFrame order the Fade-Effects Last
+            _Effects.Sort(delegate (IEffectLogic x, IEffectLogic y)
+            {
+                if (x.StartFrame != y.StartFrame)
+                    return x.StartFrame.CompareTo(y.StartFrame);
+                else if (x.EffectType == EffectType.Fade && y.EffectType != EffectType.Fade)
+                    return 1;
+                else if (x.EffectType != EffectType.Fade && y.EffectType == EffectType.Fade)
+                    return -1;
+                else
+                    return 0;
+
+            });
+
+            //Render every Effect one after another
+            foreach (var Effect in _Effects)
+            {
+                if (Effect.Active)
+                {
+                    for (ushort i = Effect.StartFrame; i < Effect.EndFrame; i++)
+                    {
+                        List<Model.LedChangeData> ledChangeDatas = Effect.LedChangeDatas(i);
+                        if (ledChangeDatas != null)
+                            ledEntity.LedEntity.Seconds[i / Defines.FramesPerSecond].Frames[i % Defines.FramesPerSecond].LedChanges.AddRange(ledChangeDatas);
+                        else
+                            Debug.WriteLine(this + ": Something went wrong. Null Exception while rendering Entity.");
+                    }
+                }
+            }
+
+            //Save the FullImages (LedStatus) for every second
+            //Start with writing every existing Led in the first Status
+
+            ledEntity.LedEntity.Seconds[0].LedEntityStatus.Clear();
+            ledEntity.LedEntity.AllLedIDs.ForEach(x => ledEntity.LedEntity.Seconds[0].LedEntityStatus.Add(new Model.LedChangeData(x, System.Windows.Media.Colors.Black, 0)));
+
+            List<List<Model.LedChangeData>> ledChangeDatasForFirstFrame = new List<List<Model.LedChangeData>>();
+            ledChangeDatasForFirstFrame.Add(ledEntity.LedEntity.Seconds[0].LedEntityStatus);
+
+            for (int i = 0; i < ledEntity.LedEntity.Seconds.Length; i++)
+            {
+                List<List<Model.LedChangeData>> _ledChangeDatas = new List<List<Model.LedChangeData>>();
+                if (i == 0)
+                {
+                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i].LedEntityStatus);
+                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i].Frames[0].LedChanges);
+                }
+                else
+                {
+                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i - 1].LedEntityStatus);
+
+                    for (int j = 0; j < Defines.FramesPerSecond; j++)
+                    {
+                        _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i-1].Frames[j].LedChanges);
+                    }
+                }
+                ledEntity.LedEntity.Seconds[i].LedEntityStatus = _CumulateLedChangeDatas(_ledChangeDatas);
+            }
         }
 
         private void _PreviewEffect(ViewModels.EffectBaseVM effectBaseVM, bool stop)
@@ -102,13 +186,13 @@ namespace Led.Services
             else
             {
                 _LastPreviewedFrame = effectBaseVM.StartFrame - 1;
-                _StartTimer();
+                //_StartTimer();
             }
         }
 
         private void _PlayPreview(ViewModels.EffectBaseVM effectBaseVM)
         {
-            effectBaseVM.EffectBase.LedChangeDatas
+            //effectBaseVM.EffectBase.LedChangeDatas
         }
 
         private void _StartTimer(Action callback)
@@ -135,7 +219,10 @@ namespace Led.Services
 
         }
 
-        private void _SetViewChangeData(LedEntityBaseVM ledEntity, y)
+        private void _SetViewChangeData(LedEntityBaseVM ledEntity)
+        {
+
+        }
 
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)
         {
@@ -190,32 +277,41 @@ namespace Led.Services
         /// <summary>
         /// Cumulates ledChangeDatas so that every LED is refreshed only once.
         /// </summary>
-        /// <param name="ledChangeDatas">New list of ledChangeDatas starting with the latest.</param>
+        /// <param name="ledChangeDatas">New list of ledChangeDatas starting with the earliest.</param>
         /// <returns></returns>
         private List<Model.LedChangeData> _CumulateLedChangeDatas(List<List<Model.LedChangeData>> ledChangeDatas)
         {
-            List<Model.LedChangeData> _LedChangeDatas = new List<Model.LedChangeData>();
-            List<Utility.LedModelID> _LedIDs = new List<Utility.LedModelID>();
+            ledChangeDatas.Reverse();
+
+            List<Model.LedChangeData> _res = new List<Model.LedChangeData>();
+            List<Utility.LedModelID> _ledIDs = new List<Utility.LedModelID>();
+
             for (int i = 0; i < ledChangeDatas.Count; i++)
             {
-                ledChangeDatas[i].ForEach(x => _LedIDs.AddRange(x.LedIDs));
+                _ledIDs.Clear();
+                ledChangeDatas[i].ForEach(x => _ledIDs.Add(x.LedID));
 
-                for (int j = 0; j < ledChangeDatas.Count - i; j++)
+                for (int j = 1; j < ledChangeDatas.Count - i; j++)
                 {
-                    ledChangeDatas[i + j].ForEach(x => x.LedIDs.RemoveAll(LedID => _LedIDs.Contains(LedID)));
+                    //bool tmp;
+                    //if (i == 19 && j == 21)
+                    //    tmp = _ledIDs.Contains(new Utility.LedModelID(0, 0, 0));
+
+
+                    ledChangeDatas[i + j].RemoveAll(x => _ledIDs.Contains(x.LedID));
                 }
 
-                _LedChangeDatas.AddRange(ledChangeDatas[i]);
+                _res.AddRange(ledChangeDatas[i]);
             }
 
-            return _LedChangeDatas;
+            return _res;
         }
 
         private void _SendFrameDataToSuit(LedEntityBaseVM ledEntity)
         {
 
         }
-        
+
         private void _PlayWithMusic()
         {
             Debug.WriteLine(_LastTickedFrame);
@@ -245,6 +341,10 @@ namespace Led.Services
                         _LastRecievedFrame = _frameRecieved;
                         _SynchronizeTimerWithMusic();
                     }
+                    break;
+                case MediatorMessages.AudioProperty_NewAudio:
+                    _AudioProperty = (data as MediatorMessageData.AudioProperty_NewAudio).AudioProperty;
+                    _RenderAllEntities();
                     break;
                 case MediatorMessages.EffectServiceRenderAll:
                     _RenderAllEntities();
