@@ -4,7 +4,7 @@ using System.Windows.Media;
 namespace Led.Model
 {
     [JsonObject]
-    class LedStatus : INPC
+    public class LedStatus : INPC
     {
         [JsonProperty]
         public Utility.LedModelID LedModelID { get; set; }
