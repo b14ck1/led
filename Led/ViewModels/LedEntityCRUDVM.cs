@@ -359,10 +359,6 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.LedEntitySelectButtonClicked:
-                    break;
-                case MediatorMessages.EffectVMEditSelectedLedsClicked:
-                    break;
                 case MediatorMessages.GroupBusDefinitionsChanged:
                     _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
                     break;
