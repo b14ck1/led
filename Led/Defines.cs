@@ -183,30 +183,53 @@ namespace Led
     public enum MediatorMessages
     {
         LedEntitySelectButtonClicked,
-        EffectVMEditSelectedLedsClicked,
-        EffectVMEditSelectedLedsFinished,
-        EffectVMEditSelectedLedsClear,
+        EffectBaseVM_EffectTypeChanged,
+        EffectBaseVM_EditCommand_Start,
+        EffectBaseVM_EditCommand_Finished,
+        EffectBaseVM_ClearCommand,
         GroupBusDefinitionsChanged,
         GroupBusDefinitionsNeedCorrectionChanged,
         TimeLineCollectionChanged,
         TimeLineEffectSelected,
         AudioControlPlayPause,
         AudioControlCurrentTick,
+        AudioProperty_NewAudio,
         EffectServiceRenderAll,
         EffectServicePreview
     }
 
     public class MediatorMessageData
     {
-        public class EffectVMEditSelectedLeds
+        public class EffectBaseVM_EffectTypeChanged
         {
-            public bool Edit { get; }
+            public EffectType NewEffectType { get; }
+
+            public Action<Model.Effect.EffectBase> SetEffect;
+
+            public EffectBaseVM_EffectTypeChanged(EffectType newEffectType, Action<Model.Effect.EffectBase> action)
+            {
+                NewEffectType = newEffectType;
+                SetEffect = action;
+            }
+        }
+
+        public class EffectBaseVM_EditCommand_Start
+        {
             public List<Utility.LedModelID> SelectedLeds { get; }
 
-            public EffectVMEditSelectedLeds(bool edit, List<Utility.LedModelID> selectedLeds)
+            public EffectBaseVM_EditCommand_Start(List<Utility.LedModelID> selectedLeds)
             {
-                Edit = edit;
                 SelectedLeds = selectedLeds;
+            }
+        }
+
+        public class EffectBaseVM_EditCommand_Finished
+        {
+            public Action<List<Utility.LedModelID>> SetLeds;
+
+            public EffectBaseVM_EditCommand_Finished(Action<List<Utility.LedModelID>> action)
+            {
+                SetLeds = action;
             }
         }
 
@@ -259,6 +282,16 @@ namespace Led
             public AudioControlCurrentFrameData(long currentFrame)
             {
                 CurrentFrame = currentFrame;
+            }
+        }
+
+        public class AudioProperty_NewAudio
+        {
+            public Model.AudioProperty AudioProperty { get; }
+
+            public AudioProperty_NewAudio(Model.AudioProperty audioProperty)
+            {
+                AudioProperty = audioProperty;
             }
         }
 
