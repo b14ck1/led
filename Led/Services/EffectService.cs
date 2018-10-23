@@ -137,7 +137,7 @@ namespace Led.Services
 
                     //Check if there is more than one group with this y-value
                     //If yes gather the value which is larger
-                    _ledGroupsBeforeX.Where(y => y.PositionInEntity.Y == i).ToList().ForEach(z =>
+                    _ledGroupsBeforeY.Where(y => y.PositionInEntity.Y == i).ToList().ForEach(z =>
                     {
                         if (_maxGroupLeds[z].Y > _offsetY)
                             _offsetY = _maxGroupLeds[z].Y;
