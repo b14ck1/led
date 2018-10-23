@@ -218,7 +218,7 @@ namespace Led.ViewModels
         {
             EffectBase.Leds = ledModelIDs;
 
-            //Positionen berechnen
+            EffectBase.LedPositions = App.Instance.EffectService.CalculateRelativeLedPosition(ledModelIDs, this);
         }
 
         public void OnEditCommand()

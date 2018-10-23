@@ -71,24 +71,97 @@ namespace Led.Services
             throw new NotImplementedException();
         }
 
-        public Point GetLedPosition(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
+        public Model.LedGroup GetLedGroup(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
         {
             foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
             {
                 if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
-                    return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus).Leds[ledID.Led];
+                    return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus);
             }
-            throw new Exception();
+
+            return null;
         }
 
-        public Point GetGroupPosition(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
+        public List<Point> CalculateRelativeLedPosition(List<Utility.LedModelID> ledModelIDs, EffectBaseVM effectBaseVM)
         {
-            foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
+            //Get all LedPositionIdentifiers to the corresponding LedIDs
+            List<Utility.LedPositionIdentifier> LedPositions = new List<Utility.LedPositionIdentifier>();
+            ledModelIDs.ForEach(x => LedPositions.Add(new Utility.LedPositionIdentifier(x, effectBaseVM)));
+
+            //Map all Groups to their corresponding number of MaxLeds in x- and y-direction
+            Dictionary<Model.LedGroup, Point> _maxGroupLeds = new Dictionary<Model.LedGroup, Point>();
+            LedPositions.ForEach(x =>
             {
-                if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
-                    return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus).PositionInEntity;
-            }
-            throw new Exception();
+                if (!_maxGroupLeds.ContainsKey(x.LedGroup))
+                    _maxGroupLeds.Add(x.LedGroup, x.LedGroup.MaxLeds);
+            });
+
+            //Map all Groups to their corresponding offset for their Leds
+            Dictionary<Model.LedGroup, Point> _groupOffsets = new Dictionary<Model.LedGroup, Point>();
+            _maxGroupLeds.Keys.ToList().ForEach(x =>
+            {
+                Point _offset = new Point(0, 0);
+
+                //Identify all groups which are "before" the current group (before in x- and y-direction)
+                List<Model.LedGroup> _ledGroupsBeforeX = new List<Model.LedGroup>();
+                List<Model.LedGroup> _ledGroupsBeforeY = new List<Model.LedGroup>();
+                _maxGroupLeds.Keys.Where(y => !y.Equals(x)).ToList().ForEach(z =>
+                {
+                    if (z.PositionInEntity.X < x.PositionInEntity.X && z.PositionInEntity.Y <= x.PositionInEntity.Y)
+                        _ledGroupsBeforeX.Add(z);
+                    if (z.PositionInEntity.X <= x.PositionInEntity.X && z.PositionInEntity.Y < x.PositionInEntity.Y)
+                        _ledGroupsBeforeY.Add(z);
+                });
+
+                //Loop over all groups which are before in x-direction starting with the nearest stopping with x=0
+                for (int i = (int)x.PositionInEntity.X - 1; i >= 0; i--)
+                {
+                    double _offsetX = 0;
+
+                    //Check if there is more than one group with this x-value
+                    //If yes gather the value which is larger
+                    _ledGroupsBeforeX.Where(y => y.PositionInEntity.X == i).ToList().ForEach(z =>
+                    {
+                        if (_maxGroupLeds[z].X > _offsetX)
+                            _offsetX = _maxGroupLeds[z].X;
+                    });
+
+                    //Add it to the x-offset
+                    _offset.X += _offsetX;
+                }
+
+                //Loop over all groups which are before in y-direction starting with the nearest stopping with y=0
+                for (int i = (int)x.PositionInEntity.Y - 1; i >= 0; i--)
+                {
+                    double _offsetY = 0;
+
+                    //Check if there is more than one group with this y-value
+                    //If yes gather the value which is larger
+                    _ledGroupsBeforeX.Where(y => y.PositionInEntity.Y == i).ToList().ForEach(z =>
+                    {
+                        if (_maxGroupLeds[z].Y > _offsetY)
+                            _offsetY = _maxGroupLeds[z].Y;
+                    });
+
+                    //Add it to the y-offset
+                    _offset.Y += _offsetY;
+                }
+
+                //Save the calculatet offset
+                _groupOffsets.Add(x, _offset);
+            });
+
+            //Iterate all LedIDs and add the corresponding offsets
+            List<Point> res = new List<Point>();
+            LedPositions.ForEach(x =>
+            {
+                Point _positionWithOffset = x.LedGroup.Leds[x.LedID.Led];
+                _positionWithOffset.X += _groupOffsets[x.LedGroup].X;
+                _positionWithOffset.Y += _groupOffsets[x.LedGroup].Y;
+                res.Add(_positionWithOffset);
+            });
+
+            return res;
         }
 
         public EffectService()
@@ -190,7 +263,7 @@ namespace Led.Services
 
                     for (int j = 0; j < Defines.FramesPerSecond; j++)
                     {
-                        _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i-1].Frames[j].LedChanges);
+                        _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i - 1].Frames[j].LedChanges);
                     }
                 }
                 ledEntity.LedEntity.Seconds[i].LedEntityStatus = _CumulateLedChangeDatas(_ledChangeDatas);
