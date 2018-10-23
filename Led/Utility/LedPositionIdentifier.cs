@@ -8,17 +8,17 @@ namespace Led.Utility
 {
     public class LedPositionIdentifier
     {
-        public System.Drawing.Point LedPosition { get; }
+        public System.Windows.Point LedPosition { get; }
 
-        public System.Drawing.Point GroupPosition { get; }
+        public System.Windows.Point GroupPosition { get; }
 
         public LedModelID LedID { get; }
 
-        public LedPositionIdentifier(LedModelID ledID, Model.Effect.EffectBase effectBase)
+        public LedPositionIdentifier(LedModelID ledID, ViewModels.EffectBaseVM effectBaseVM)
         {
             LedID = ledID;
-            LedPosition = App.Instance.EffectService.GetLedPosition(LedID, effectBase);
-            GroupPosition = App.Instance.EffectService.GetGroupPosition(LedID, effectBase);
+            LedPosition = App.Instance.EffectService.GetLedPosition(LedID, effectBaseVM);
+            GroupPosition = App.Instance.EffectService.GetGroupPosition(LedID, effectBaseVM);
         }
     }
 }
