@@ -71,6 +71,12 @@ namespace Led.Services
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Finds the corresponding LedGroup to given inputs.
+        /// </summary>
+        /// <param name="ledID">LedID to search the group for.</param>
+        /// <param name="effectBaseVM">The EffectBaseVM which holds the LedID, to find the corresponding LedEntity.</param>
+        /// <returns>Ref. to the LedGroup.</returns>
         public Model.LedGroup GetLedGroup(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
         {
             foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
@@ -82,6 +88,13 @@ namespace Led.Services
             return null;
         }
 
+        /// <summary>
+        /// Calculates the relative Positions of all given ledModelIDs. Not finished yet. Doesn't take the pixel size of the groups into account.
+        /// Only the position in the overall X-Y-Grid.
+        /// </summary>
+        /// <param name="ledModelIDs">LedModelIDs to calculate the positions for.</param>
+        /// <param name="effectBaseVM">The EffectBaseVM which holds the LedModelIDs, to find the corresponding LedEntity.</param>
+        /// <returns>List of relative Led Positions ordered as input ledModelIDs.</returns>
         public List<Point> CalculateRelativeLedPosition(List<Utility.LedModelID> ledModelIDs, EffectBaseVM effectBaseVM)
         {
             //Get all LedPositionIdentifiers to the corresponding LedIDs
