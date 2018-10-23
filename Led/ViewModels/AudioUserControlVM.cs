@@ -88,16 +88,16 @@ namespace Led.ViewModels
             {
                 if (IsPlaying)
                 {
-                    player.Pause();
-                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), false));
-                    updateTimer.Stop();                    
+                    _Player.Pause();
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), false));
+                    _UpdateTimer.Stop();
                 }
                 else
                 {
-                    _SendMessage(MediatorMessages.EffectServiceRenderAll, null);                    
-                    player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
-                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
-                    updateTimer.Start();
+                    _SendMessage(MediatorMessages.EffectServiceRenderAll, null);
+                    _Player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
+                    _UpdateTimer.Start();
                 }
                 RaisePropertyChanged(playPausePropertyNames);
             }, () => _CanExecute);
@@ -123,9 +123,9 @@ namespace Led.ViewModels
             {
                 Interval = TimeSpan.FromMilliseconds(1000 / 30), // refresh with 30fps
                 IsEnabled = false
-            };            
+            };
             _UpdateTimer.Tick += new EventHandler(UpdateTimer_Tick);
-            
+
             _Player.PlaybackFinished += (sender, args) =>
             {
                 _UpdateTimer.Stop();
@@ -155,8 +155,8 @@ namespace Led.ViewModels
         private DispatcherTimer _UpdateTimer;
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
-            SetCurrentTime(player.CurrentTime);            
+            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
+            SetCurrentTime(_Player.CurrentTime);
         }
 
         private void _SendMessage(MediatorMessages message, object data)
@@ -171,8 +171,8 @@ namespace Led.ViewModels
 
         public void Dispose()
         {
-            player.Dispose();
-            _mediatorService.Unregister(this);
+            _Player.Dispose();
+            _MediatorService.Unregister(this);
         }
     }
 }
