@@ -105,6 +105,7 @@
     <Compile Include="Utility\EffectLogic.cs" />
     <Compile Include="Utility\ImageUtil.cs" />
     <Compile Include="Utility\LedModelID.cs" />
+    <Compile Include="Utility\LedPositionIdentifier.cs" />
     <Compile Include="Utility\Logger.cs" />
     <Compile Include="Model\Effect\EffectBlinkColor.cs" />
     <Compile Include="Model\Effect\EffectFadeColor.cs" />
