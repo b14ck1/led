@@ -198,8 +198,7 @@ namespace Led.ViewModels
 
         private void _OnAddEffectCommand()
         {           
-            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();
-            _EffectView.DataContext = _CurrentEffect;
+            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();            
         }
 
         private void _OnAddAudioCommand()
@@ -263,7 +262,9 @@ namespace Led.ViewModels
                     AddEffectCommand.RaiseCanExecuteChanged();
                     break;
                 case MediatorMessages.TimeLineEffectSelected:
-                    _CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;
+                    _CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;                    
+                    break;
+                case MediatorMessages.LedEntitySelectVM_CurrentEffectChanged:
                     _EffectView.DataContext = _CurrentEffect;
                     break;
                 default:

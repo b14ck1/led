@@ -77,6 +77,7 @@ namespace Led.ViewModels
                     
 
                     RaisePropertyChanged(nameof(CurrentEffect));
+                    _SendMessage(MediatorMessages.LedEntitySelectVM_CurrentEffectChanged, null);
                 }
             }
         }
