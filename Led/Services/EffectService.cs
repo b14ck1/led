@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Windows;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,6 +69,26 @@ namespace Led.Services
         public List<Model.LedStatus> GetState(long frame, List<Utility.LedModelID> ledModelIDs, Model.Effect.EffectBase effectBase)
         {
             throw new NotImplementedException();
+        }
+
+        public Point GetLedPosition(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
+        {
+            foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
+            {
+                if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
+                    return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus).Leds[ledID.Led];
+            }
+            throw new Exception();
+        }
+
+        public Point GetGroupPosition(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
+        {
+            foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
+            {
+                if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
+                    return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus).PositionInEntity;
+            }
+            throw new Exception();
         }
 
         public EffectService()
