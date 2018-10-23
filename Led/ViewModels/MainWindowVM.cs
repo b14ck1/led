@@ -20,23 +20,8 @@ namespace Led.ViewModels
             get => _project;
             set
             {
-                LedEntities.Clear();
-                _CurrentLedEntity = null;
-                _LedEntityView.DataContext = null;
-                _LedEntityView.DataContext = _CurrentLedEntity;
-                EditLedEntityCommand.RaiseCanExecuteChanged();
-                AddEffectCommand.RaiseCanExecuteChanged();
-
                 _project = value;
-
-                Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
-
-                _InitAudioUserControl();
-
-                RaiseAllPropertyChanged();
-                SaveProjectCommand.RaiseCanExecuteChanged();
-                NewLedEntityCommand.RaiseCanExecuteChanged();
-                AddAudioCommand.RaiseCanExecuteChanged();
+                _InitProject();
             }
         }
 
@@ -94,6 +79,9 @@ namespace Led.ViewModels
                 if (_audioUserControlVM != value)
                 {
                     _audioUserControlVM = value;
+
+                    _SendMessage(MediatorMessages.AudioProperty_NewAudio, new MediatorMessageData.AudioProperty_NewAudio(Project.AudioProperty));
+
                     RaisePropertyChanged();
                 }
             }
@@ -114,20 +102,21 @@ namespace Led.ViewModels
             Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
             Views.Controls.MainWindow.AudioUserControl audioUserControl)
         {
-            _MainWindow = mainWindow;
-            _LedEntityView = ledEntity;
-            _LedEntityView.DataContext = _CurrentLedEntity;
-
-            _EffectView = effectView;
-
+            //Init
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
 
-            //_CurrentEffect = new EffectBaseVM();
-            //effectView.DataContext = _CurrentEffect;
+            //Get Refs
+            _MainWindow = mainWindow;
+            _LedEntityView = ledEntity;
+            _EffectView = effectView;
             _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
-            audioUserControl.DataContext = AudioUserControlVM;
 
+            //Set DataContexts
+            _AudioUserControl.DataContext = AudioUserControlVM;
+            _LedEntityView.DataContext = _CurrentLedEntity;
+
+            //Init Commands
             SaveProjectCommand = new Command(_OnSaveProjectCommand, () => Project != null);
             LoadProjectCommand = new Command(_OnLoadProjectCommand);
 
@@ -137,6 +126,7 @@ namespace Led.ViewModels
             AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null);
             AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
+            //Init Mediator
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
         }
@@ -189,6 +179,8 @@ namespace Led.ViewModels
 
         private void _OnEditLedEntityCommand()
         {
+            Project.LedEntities.ForEach(x => x.Seconds = new Model.Second[(int)Project.AudioProperty.Length.TotalSeconds]);
+            
             Views.CRUDs.LedEntityCRUD ledEntityCRUDView = new Views.CRUDs.LedEntityCRUD();
             Views.Controls.CRUDs.LedEntityGroupProperties _ledGroupProperties = new Views.Controls.CRUDs.LedEntityGroupProperties();
             ledEntityCRUDView.InnerGrid.Children.Add(_ledGroupProperties);
@@ -206,35 +198,51 @@ namespace Led.ViewModels
 
         private void _OnAddEffectCommand()
         {           
-            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();
+            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();            
         }
-
-        //private void OnSelectedLedEntity(object sender, EventArgs e)
-        //{
-        //    //LedEntitySelectViewModel test = new LedEntitySelectViewModel(((LedEntityViewModel)sender).LedEntity);
-        //    //_ledEntityView.DataContext = test;
-        //    _currentLedEntity = (LedEntityBaseVM)sender;
-        //    _ledEntityView.DataContext = (LedEntityBaseVM)sender;         
-        //}
 
         private void _OnAddAudioCommand()
         {
             var fileFilter = "*.mp3;*.m4a;*.wav;*.flac";
+            string filePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
+            if (!string.IsNullOrEmpty(filePath))
+            {                    
+                Project.AudioProperty = new Model.AudioProperty(filePath, Project.FramesPerSecond);
+                _InitAudioUserControl();                
+            }
+        }
 
-            Project.AudioProperty = new Model.AudioProperty();
-            Project.AudioProperty.FilePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
+        private void _InitProject()
+        {
+            //Clear all old values
+            LedEntities.Clear();
+            _CurrentLedEntity = null;
+            _LedEntityView.DataContext = null;
+            _LedEntityView.DataContext = _CurrentLedEntity;
 
-            _InitAudioUserControl();
+            //Add existing shit if there is something
+            Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
+
+            if (!string.IsNullOrEmpty(Project.AudioProperty?.FilePath))
+                _InitAudioUserControl();
+
+            App.Instance.EffectService.Init(_ledEntities);
+            
+            //Update the View and all Commands
+            RaiseAllPropertyChanged();
+            EditLedEntityCommand.RaiseCanExecuteChanged();
+            AddEffectCommand.RaiseCanExecuteChanged();            
+            SaveProjectCommand.RaiseCanExecuteChanged();
+            NewLedEntityCommand.RaiseCanExecuteChanged();
+            AddAudioCommand.RaiseCanExecuteChanged();
         }
 
         private void _InitAudioUserControl()
         {
-            var audioFilePath = Project.AudioProperty?.FilePath;
-            if (audioFilePath != null && !audioFilePath.Equals(string.Empty))
-            {
-                AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
-                _AudioUserControl.DataContext = AudioUserControlVM;
-            }
+            if (AudioUserControlVM != null)
+                AudioUserControlVM.Dispose();
+            AudioUserControlVM = new AudioUserControlVM(Project.AudioProperty.FilePath);
+            _AudioUserControl.DataContext = AudioUserControlVM;            
         }
 
         protected void _SendMessage(MediatorMessages message, object data)
@@ -252,6 +260,12 @@ namespace Led.ViewModels
                     _EffectView.DataContext = _CurrentEffect;
                     EditLedEntityCommand.RaiseCanExecuteChanged();
                     AddEffectCommand.RaiseCanExecuteChanged();
+                    break;
+                case MediatorMessages.TimeLineEffectSelected:
+                    _CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;                    
+                    break;
+                case MediatorMessages.LedEntitySelectVM_CurrentEffectChanged:
+                    _EffectView.DataContext = _CurrentEffect;
                     break;
                 default:
                     break;

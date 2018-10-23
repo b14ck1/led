@@ -10,18 +10,20 @@ namespace Led.Model
         public string ProjectName { get; set; }
 
         [JsonProperty]
-        public byte FramesPerSecond { get; set; }
+        public byte FramesPerSecond { get; }
 
         [JsonProperty]
         public AudioProperty AudioProperty { get; set; }
 
         [JsonProperty]
-        public List<LedEntity> LedEntities { get; set; }
+        public List<LedEntity> LedEntities { get; }
 
         public Project(string projectName)
         {
             ProjectName = projectName;
             LedEntities = new List<LedEntity>();
+
+            FramesPerSecond = Defines.FramesPerSecond;
         }
     }
 }

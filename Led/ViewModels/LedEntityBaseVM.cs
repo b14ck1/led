@@ -12,7 +12,7 @@ using Led.Utility;
 
 namespace Led.ViewModels
 {
-    abstract class LedEntityBaseVM : INPC, Interfaces.IParticipant
+    public abstract class LedEntityBaseVM : INPC, Interfaces.IParticipant
     {
         private Services.MediatorService _Mediator;
 
@@ -113,8 +113,8 @@ namespace Led.ViewModels
         /// so on another update call we can check if we maybe jumped a frame or smth else went wrong
         /// </summary>
         public long CurrentFrame;
-        private EffectBaseVM _currentEffect;
-        public EffectBaseVM CurrentEffect
+        protected EffectBaseVM _currentEffect;
+        public virtual EffectBaseVM CurrentEffect
         {
             get => _currentEffect;
             set
@@ -140,6 +140,7 @@ namespace Led.ViewModels
                 }
             }
         }
+        protected Dictionary<EffectBaseVM, Model.Effect.EffectBase> _EffectBaseVMMapping { get; }
 
         public virtual Cursor FrontCursor => Cursors.Arrow;
         public virtual Cursor BackCursor => Cursors.Arrow;
@@ -161,12 +162,13 @@ namespace Led.ViewModels
         {
             LedGroups = new List<LedGroupPropertiesVM>();
             Effects = new ObservableCollection<EffectBaseVM>();
+            _EffectBaseVMMapping = new Dictionary<EffectBaseVM, Model.Effect.EffectBase>();
             LedEntity = ledEntity ?? throw new ArgumentNullException();
 
             _Init();
 
             //Don't map effects in init function because it will get called every update and is a waste of time
-            LedEntity.Effects.ForEach(Effect => Effects.Add(new EffectBaseVM(Effect)));            
+            LedEntity.Effects.ForEach(Effect => { Effects.Add(new EffectBaseVM(Effect)); _EffectBaseVMMapping.Add(Effects.Last(), Effect); });
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
@@ -328,10 +330,15 @@ namespace Led.ViewModels
 
         protected void _SetLedColor(List<int> leds, Color color)
         {
+            _SetLedColor(leds, new SolidColorBrush(color));
+        }
+
+        protected void _SetLedColor(List<int> leds, Brush brush)
+        {
             foreach (int ID in leds)
             {
                 if (Leds.Count > ID && ID >= 0)
-                    Leds[ID].Brush = new SolidColorBrush(color);
+                    Leds[ID].Brush = brush;
             }
         }
 
@@ -339,27 +346,15 @@ namespace Led.ViewModels
         /// Sets the color of the specified leds.
         /// </summary>
         /// <param name="ledChangeData"></param>
-        public void SetLedColor(Model.LedChangeData ledChangeData)
+        public void SetLedColor(List<Model.LedChangeData> ledChangeDatas)
         {
-            foreach (Utility.LedModelID ID in ledChangeData.LedIDs)
+            foreach (var changeData in ledChangeDatas)
             {
-                LedGroupIdentifier identifier = new LedGroupIdentifier(ID.BusID, ID.PositionInBus);
+                LedGroupIdentifier identifier = new LedGroupIdentifier(changeData.LedID.BusID, changeData.LedID.PositionInBus);
                 if (_LedIDToGroupVM.ContainsKey(identifier))
-                    Leds[ID.Led + _LedOffsets[_LedIDToGroupVM[identifier]].Offset].Brush = new SolidColorBrush(ledChangeData.Color);
+                    Leds[changeData.LedID.Led + _LedOffsets[_LedIDToGroupVM[identifier]].Offset].Brush = new SolidColorBrush(changeData.Color);
                 else
                     Console.WriteLine("LedGroup with BusID: {0} and Position: {1} was not indexed.", identifier.BusID, identifier.PositionInBus);
-            }
-        }
-
-        /// <summary>
-        /// Sets the color of the specified leds.
-        /// </summary>
-        /// <param name="ledChangeData"></param>
-        public void SetLedColor(List<Model.LedChangeData> ledChangeData)
-        {
-            foreach (Model.LedChangeData changeData in ledChangeData)
-            {
-                SetLedColor(changeData);
             }
         }
 
@@ -399,7 +394,7 @@ namespace Led.ViewModels
         public abstract void RecieveMessage(MediatorMessages message, object sender, object data);
     }
 
-    class LedOffset
+    public class LedOffset
     {
         public int Offset { get; set; }
         public int Length { get; set; }

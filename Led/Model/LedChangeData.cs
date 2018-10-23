@@ -5,10 +5,10 @@ using System.Windows.Media;
 namespace Led.Model
 {
     [JsonObject]
-    public class LedChangeData : INPC
+    public class LedChangeData
     {
         [JsonProperty]
-        public List<Utility.LedModelID> LedIDs { get; set; }
+        public Utility.LedModelID LedID { get; set; }
 
         [JsonProperty]
         public Color Color { get; set; }
@@ -16,9 +16,9 @@ namespace Led.Model
         [JsonProperty]
         public ushort EffectID { get; set; }
 
-        public LedChangeData(List<Utility.LedModelID> ledIDs, Color color, ushort effectID)
+        public LedChangeData(Utility.LedModelID ledID, Color color, ushort effectID)
         {
-            LedIDs = ledIDs;
+            LedID = ledID;
             Color = color;
             EffectID = effectID;
         }

@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace Led.ViewModels
 {
-    class LedEntityCRUDVM : LedEntityBaseVM
+    public class LedEntityCRUDVM : LedEntityBaseVM
     {
         private bool _AddGroup;
         private bool _CreatingGroup;
@@ -79,26 +79,40 @@ namespace Led.ViewModels
 
         private void _OnNewFrontImmage()
         {
-            string Path = App.Instance.IOService.OpenFileDialog();
-            if (Path != "")
+            try
             {
-                FrontImagePath = Path;
-                BitmapImage Image = new BitmapImage(new Uri(FrontImagePath));
-                LedEntity.ImageInfos[LedEntityView.Front].Size.Width = Image.PixelWidth;
-                LedEntity.ImageInfos[LedEntityView.Front].Size.Height = Image.PixelHeight;
+                string Path = App.Instance.IOService.OpenFileDialog();
+                if (Path != "")
+                {
+                    FrontImagePath = Path;
+                    BitmapImage Image = new BitmapImage(new Uri(FrontImagePath));
+                    LedEntity.ImageInfos[LedEntityView.Front].Size.Width = Image.PixelWidth;
+                    LedEntity.ImageInfos[LedEntityView.Front].Size.Height = Image.PixelHeight;
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             AddLedGroupCommand.RaiseCanExecuteChanged();
         }
         private void _OnNewBackImmage()
         {
-            string Path = App.Instance.IOService.OpenFileDialog();
-            if (Path != "")
-            { 
-                BackImagePath = Path;
-                BitmapImage Image = new BitmapImage(new Uri(BackImagePath));
-                LedEntity.ImageInfos[LedEntityView.Back].Size.Width = Image.PixelWidth;
-                LedEntity.ImageInfos[LedEntityView.Back].Size.Height = Image.PixelHeight;
+            try
+            {
+                string Path = App.Instance.IOService.OpenFileDialog();
+                if (Path != "")
+                {
+                    BackImagePath = Path;
+                    BitmapImage Image = new BitmapImage(new Uri(BackImagePath));
+                    LedEntity.ImageInfos[LedEntityView.Back].Size.Width = Image.PixelWidth;
+                    LedEntity.ImageInfos[LedEntityView.Back].Size.Height = Image.PixelHeight;
+                }
+            }
+            catch (Exception)
+            {
+
             }
 
             AddLedGroupCommand.RaiseCanExecuteChanged();
@@ -345,10 +359,6 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.LedEntitySelectButtonClicked:
-                    break;
-                case MediatorMessages.EffectVMEditSelectedLedsClicked:
-                    break;
                 case MediatorMessages.GroupBusDefinitionsChanged:
                     _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
                     break;

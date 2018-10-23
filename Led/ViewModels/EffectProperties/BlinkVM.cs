@@ -10,15 +10,16 @@ namespace Led.ViewModels.EffectProperties
 {
     public class BlinkVM : INPC
     {
-        private ushort _blinkFrames;
+        private Model.Effect.EffectBlinkColor _EffectBlinkColor { get; }
+
         public ushort BlinkFrames
         {
-            get => _blinkFrames;
+            get => _EffectBlinkColor.BlinkFrames;
             set
             {
-                if (_blinkFrames  != value)
+                if (_EffectBlinkColor.BlinkFrames != value)
                 {
-                    _blinkFrames  = value;
+                    _EffectBlinkColor.BlinkFrames = value;
                     RaisePropertyChanged(nameof(BlinkFrames));
                 }
             }
@@ -35,15 +36,18 @@ namespace Led.ViewModels.EffectProperties
                     _colors = value;
                     RaisePropertyChanged(nameof(Colors));
                 }
-            }            
+            }
         }
 
-        public BlinkVM(List<Color> colors)
+        public BlinkVM(Model.Effect.EffectBlinkColor effectBlinkColor)
         {
+            _EffectBlinkColor = effectBlinkColor;
+;
+
             Colors = new ObservableCollection<EffectColorVM>();
-            for (int i = 0; i < colors.Count; i++)
+            for (int i = 0; i < effectBlinkColor.Colors.Count; i++)
             {
-                Colors.Add(new EffectColorVM(colors[i], "Farbe " + (i + 1)));
+                Colors.Add(new EffectColorVM(effectBlinkColor as Model.Effect.EffectBase, i));
             }
         }
     }

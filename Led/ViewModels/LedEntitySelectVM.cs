@@ -39,25 +39,56 @@ namespace Led.ViewModels
             }
         }
 
-        private List<int> _selectedLeds;
+        private List<int> _SelectedLeds;
         public List<LedModelID> SelectedLeds
-        {
+        {            
             get
             {
                 List<LedModelID> res = new List<LedModelID>();
-                foreach (int index in _selectedLeds)
+                foreach (int index in _SelectedLeds)
                 {
                     res.Add(_IndexToLedID(index));
                 }
 
                 return res;
             }
+            set
+            {
+                _SelectedLeds.Clear();
+                foreach (LedModelID ID in value)
+                {
+                    _SelectedLeds.Add(_LedIDToIndex(ID));
+                }
+
+                _SetLedColor(_SelectedLeds, Defines.LedSelectedColor);
+            }
+        }
+
+        public override EffectBaseVM CurrentEffect
+        {
+            get => _currentEffect;
+            set
+            {
+                if (_currentEffect != value)
+                {
+                    _SetLedColor(_SelectedLeds, Defines.LedColor);
+                    _currentEffect = value;
+
+                    if (_currentEffect != null)
+                        SelectedLeds = _currentEffect.SelectedLeds;
+                    else
+                        _SelectedLeds.Clear();
+
+                    RaisePropertyChanged(nameof(CurrentEffect));
+                    _SendMessage(MediatorMessages.LedEntitySelectVM_CurrentEffectChanged, null);
+                }
+            }
         }
 
         public LedEntitySelectVM(Model.LedEntity ledEntity)
             : base(ledEntity)
         {
-            _selectedLeds = new List<int>();
+            _SelectedLeds = new List<int>();
 
             FrontImageMouseDownCommand = new Command<MouseEventArgs>(_OnFrontImageMouseDownCommand);
             FrontImageMouseMoveCommand = new Command<MouseEventArgs>(_OnFrontImageMouseMoveCommand);
@@ -67,7 +98,7 @@ namespace Led.ViewModels
 
             ImageMouseUpCommand = new Command<MouseEventArgs>(_OnImageMouseUpCommand);
 
-            _UpdateAllLedPositions(true);            
+            _UpdateAllLedPositions(true);
         }
 
         private void _OnFrontImageMouseDownCommand(MouseEventArgs e)
@@ -103,10 +134,10 @@ namespace Led.ViewModels
             _SelectingLeds = false;
             if (_Selection != null)
             {
-                foreach(var ID in _ScanForLeds())
+                foreach (var ID in _ScanForLeds())
                 {
-                    if (!_selectedLeds.Contains(ID))
-                        _selectedLeds.Add(ID);
+                    if (!_SelectedLeds.Contains(ID))
+                        _SelectedLeds.Add(ID);
                 }
             }
 
@@ -115,8 +146,16 @@ namespace Led.ViewModels
             RaisePropertyChanged(nameof(BackLedGroups));
         }
 
+        private void _UpdateCurrentEffect()
+        {
+            if (Effects.Count > 0)
+                CurrentEffect = Effects.Last();
+            else
+                CurrentEffect = null;
+        }
+
         private void _CreateSelectGroup(MouseEventArgs e, LedEntityView view)
-        {                        
+        {
             Point mousePosition = e.GetPosition((IInputElement)e.Source);
             mousePosition = _ScalePoint(mousePosition);
 
@@ -131,7 +170,7 @@ namespace Led.ViewModels
             if (!_SelectingLeds)
                 return;
 
-            Point mousePosition = e.GetPosition((IInputElement)e.Source);            
+            Point mousePosition = e.GetPosition((IInputElement)e.Source);
             mousePosition = _ScalePoint(mousePosition);
 
             double deltaX = mousePosition.X - _Selection.X;
@@ -147,7 +186,7 @@ namespace Led.ViewModels
 
             _ScanForLeds();
         }
-        
+
         private List<int> _ScanForLeds()
         {
             List<int> ledIndices = new List<int>();
@@ -160,9 +199,9 @@ namespace Led.ViewModels
                 if (led.View == _SelectGroupView && led.Position.X <= end.X && led.Position.X >= start.X && led.Position.Y <= end.Y && led.Position.Y >= start.Y)
                 {
                     ledIndices.Add(i);
-                    led.Brush = Defines.LedSelectedColor;
+                    led.Brush = Defines.LedSelectingColor;
                 }
-                else if (!_selectedLeds.Contains(i))
+                else if (!_SelectedLeds.Contains(i))
                     led.Brush = Defines.LedColor;
             }
 
@@ -184,46 +223,136 @@ namespace Led.ViewModels
             return ID.Led + _LedOffsets[_LedIDToGroupVM[new LedGroupIdentifier(ID.BusID, ID.PositionInBus)]].Offset;
         }
 
-        public void AddEffect(ushort startFrame = 0)
+        public void AddEffect(ushort startFrame = 0, ushort endFrame = 0, EffectType effectType = EffectType.SetColor)
         {
-            LedEntity.Effects.Add(new Model.Effect.EffectSetColor(startFrame, startFrame));
+            switch (effectType)
+            {
+                case EffectType.SetColor:
+                    LedEntity.Effects.Add(new Model.Effect.EffectSetColor(startFrame, endFrame));
+                    break;
+                case EffectType.Blink:
+                    LedEntity.Effects.Add(new Model.Effect.EffectBlinkColor(startFrame, endFrame));
+                    break;
+                case EffectType.Fade:
+                    LedEntity.Effects.Add(new Model.Effect.EffectFadeColor(startFrame, endFrame));
+                    break;
+                case EffectType.Group:
+                    break;
+                default:
+                    break;
+            }
+            
             Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
+            _EffectBaseVMMapping.Add(Effects.Last(), LedEntity.Effects.Last());
 
-            CurrentEffect = Effects.Last();
+            _UpdateCurrentEffect();
+        }
+
+        public bool DeleteEffect(EffectBaseVM effectBaseVM)
+        {
+            if (_EffectBaseVMMapping.ContainsKey(effectBaseVM))
+            {
+                LedEntity.Effects.Remove(_EffectBaseVMMapping[effectBaseVM]);
+                Effects.Remove(effectBaseVM);
+                _EffectBaseVMMapping.Remove(effectBaseVM);
+
+                _UpdateCurrentEffect();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool ChangeEffectType(EffectBaseVM effectBaseVM, EffectType newEffectType)
+        {
+            if (_EffectBaseVMMapping.ContainsKey(effectBaseVM))            
+            {
+                ushort _startFrame = effectBaseVM.StartFrame;
+                ushort _endFrame = effectBaseVM.EndFrame;
+
+                LedEntity.Effects.Remove(_EffectBaseVMMapping[effectBaseVM]);
+                switch (newEffectType)
+                {
+                    case EffectType.SetColor:                        
+                        LedEntity.Effects.Add(new Model.Effect.EffectSetColor(effectBaseVM.StartFrame, effectBaseVM.EndFrame));
+                        goto default;                       
+                    case EffectType.Blink:
+                        LedEntity.Effects.Add(new Model.Effect.EffectBlinkColor(effectBaseVM.StartFrame, effectBaseVM.EndFrame));
+                        goto default;
+                    case EffectType.Fade:
+                        LedEntity.Effects.Add(new Model.Effect.EffectFadeColor(effectBaseVM.StartFrame, effectBaseVM.EndFrame));
+                        goto default;
+                    case EffectType.Group:
+                        LedEntity.Effects.Add(new Model.Effect.EffectGroup(effectBaseVM.StartFrame, effectBaseVM.EndFrame));
+                        goto default;
+                    default:
+                        _EffectBaseVMMapping[effectBaseVM] = LedEntity.Effects.Last();
+                        return true;                        
+                }                
+            }
+
+            return false;
         }
 
         public override void RecieveMessage(MediatorMessages message, object sender, object data)
-        {
+        {   
             switch (message)
             {
-                case MediatorMessages.EffectVMEditSelectedLedsClicked:
-                    MediatorMessageData.EffectVMEditSelectedLeds effectVMEditSelectedLedsClicked = (data as MediatorMessageData.EffectVMEditSelectedLeds);
-                    if (effectVMEditSelectedLedsClicked.Edit)
-                    {
-                        if (effectVMEditSelectedLedsClicked.SelectedLeds != null)
-                        {
-                            foreach (var ID in effectVMEditSelectedLedsClicked.SelectedLeds)
-                            {
-                                if (!_selectedLeds.Contains(_LedIDToIndex(ID)))
-                                {
-                                    _selectedLeds.Add(_LedIDToIndex(ID));                                                                        
-                                }
-                            }
-                            _SetLedColor(_selectedLeds, Colors.Blue);
-                        }
-                        _AllowSelectLeds = true;
-                    }
-                    else
-                    {
-                        _AllowSelectLeds = false;
-                        _SelectingLeds = false;
-                        _SendMessage(MediatorMessages.EffectVMEditSelectedLedsFinished, new MediatorMessageData.EffectVMEditSelectedLeds(false, SelectedLeds));
-                        _SetLedColor(_selectedLeds, System.Windows.Media.Colors.Red);
-                    }
+                case MediatorMessages.EffectBaseVM_EffectTypeChanged:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    MediatorMessageData.EffectBaseVM_EffectTypeChanged effectBaseVM_EffectTypeChanged = (data as MediatorMessageData.EffectBaseVM_EffectTypeChanged);
+
+                    if (ChangeEffectType(sender as EffectBaseVM, effectBaseVM_EffectTypeChanged.NewEffectType))
+                        effectBaseVM_EffectTypeChanged.SetEffect(_EffectBaseVMMapping[sender as EffectBaseVM]);
+                    
                     break;
-                case MediatorMessages.EffectVMEditSelectedLedsFinished:
-                    _SetLedColor(_selectedLeds, Colors.LimeGreen);
-                    _selectedLeds.Clear();
+                case MediatorMessages.EffectBaseVM_EditCommand_Start:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    MediatorMessageData.EffectBaseVM_EditCommand_Start effectBaseVM_EditCommand_Start = (data as MediatorMessageData.EffectBaseVM_EditCommand_Start);
+
+                    if (effectBaseVM_EditCommand_Start.SelectedLeds != null)
+                    {
+                        foreach (var ID in effectBaseVM_EditCommand_Start.SelectedLeds)
+                        {
+                            if (!_SelectedLeds.Contains(_LedIDToIndex(ID)))
+                            {
+                                _SelectedLeds.Add(_LedIDToIndex(ID));
+                            }
+                        }
+                        _SetLedColor(_SelectedLeds, Defines.LedSelectingColor);
+                    }
+                    _AllowSelectLeds = true;
+                    break;
+                case MediatorMessages.EffectBaseVM_EditCommand_Finished:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    MediatorMessageData.EffectBaseVM_EditCommand_Finished effectBaseVM_EditCommand_Finished = (data as MediatorMessageData.EffectBaseVM_EditCommand_Finished);
+
+                    _AllowSelectLeds = false;
+                    _SelectingLeds = false;
+
+                    effectBaseVM_EditCommand_Finished.SetLeds(SelectedLeds);
+                    
+                    _SetLedColor(_SelectedLeds, Defines.LedSelectedColor);
+                    break;
+                case MediatorMessages.EffectBaseVM_ClearCommand:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    _SetLedColor(_SelectedLeds, Defines.LedColor);
+                    _SelectedLeds.Clear();
+                    break;
+                case MediatorMessages.EffectBaseVM_DeleteCommand:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    DeleteEffect(sender as EffectBaseVM);
                     break;
                 default:
                     break;

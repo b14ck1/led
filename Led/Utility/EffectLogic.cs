@@ -12,11 +12,8 @@ namespace Led.Utility
     {
         private Color ColorBlack;
 
-        private Controller.ModelController ModelController;
-
-        public EffectLogic(Controller.ModelController ModelController)
+        public EffectLogic()
         {
-            this.ModelController = ModelController;
             ColorBlack = Colors.Black;
         }
 
@@ -68,35 +65,35 @@ namespace Led.Utility
             return cache.GetData();
         }
 
-        public List<Model.LedChangeData> SetColorLogic(EffectSetColor Data, int Frame)
-        {
-            List<Model.LedChangeData> temp = new List<Model.LedChangeData>(Data.Leds.Count);
-            foreach (var x in Data.Leds)
-            {
-                //temp.Add(new Model.LedChangeData(x.LedID, Data.ID, Data.Color));
-            }
-            return temp;
-        }
+        //public List<Model.LedChangeData> SetColorLogic(EffectSetColor Data, int Frame)
+        //{
+        //    List<Model.LedChangeData> temp = new List<Model.LedChangeData>(Data.Leds.Count);
+        //    foreach (var x in Data.Leds)
+        //    {
+        //        //temp.Add(new Model.LedChangeData(x.LedID, Data.ID, Data.Color));
+        //    }
+        //    return temp;
+        //}
 
-        public List<Model.LedChangeData> BlinkColorLogic(EffectBlinkColor Data, int ActFrame)
-        {
-            List<Model.LedChangeData> temp = new List<Model.LedChangeData>(Data.Leds.Count);
-            int Frame = ActFrame - Data.StartFrame;
+        //public List<Model.LedChangeData> BlinkColorLogic(EffectBlinkColor Data, int ActFrame)
+        //{
+        //    List<Model.LedChangeData> temp = new List<Model.LedChangeData>(Data.Leds.Count);
+        //    int Frame = ActFrame - Data.StartFrame;
 
-            if (Frame % Data.BlinkFrames == 0)
-            {
-                foreach (var x in Data.Leds)
-                {
-                    //temp.Add(new Model.LedChangeData(x.LedID, Data.ID, Data.Color[Data.CurrColor]));
-                }
+        //    if (Frame % Data.BlinkFrames == 0)
+        //    {
+        //        foreach (var x in Data.Leds)
+        //        {
+        //            //temp.Add(new Model.LedChangeData(x.LedID, Data.ID, Data.Color[Data.CurrColor]));
+        //        }
 
-                if (Data.CurrentColor == Data.Colors.Count - 1)
-                    Data.CurrentColor = 0;
-                else
-                    Data.CurrentColor++;
-            }
-            return temp;
-        }
+        //        if (Data.CurrentColor == Data.Colors.Count - 1)
+        //            Data.CurrentColor = 0;
+        //        else
+        //            Data.CurrentColor++;
+        //    }
+        //    return temp;
+        //}
 
         public List<Model.LedChangeData> FadeColorLogic(EffectFadeColor Data, int Frame)
         {

@@ -4,17 +4,24 @@ using System.Collections.Generic;
 namespace Led.Model
 {
     [JsonObject]
-    class Second
+    public class Second
     {
+        /// <summary>
+        /// Represents the state changed of each Led in each Frame of this Second.
+        /// </summary>
         [JsonProperty]
         public Frame[] Frames { get; set; }
 
+        /// <summary>
+        /// Represents the state of all Leds at the beginning of this Second.
+        /// </summary>
         [JsonProperty]        
-        public List<LedStatus> LedEntityStatus { get; set; }
+        public List<LedChangeData> LedEntityStatus { get; set; }
         
         public Second()
         {
-            LedEntityStatus = new List<LedStatus>();
+            Frames = new Frame[Defines.FramesPerSecond];
+            LedEntityStatus = new List<LedChangeData>();
         }
     }
 }
