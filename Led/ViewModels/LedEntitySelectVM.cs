@@ -73,8 +73,11 @@ namespace Led.ViewModels
                 {
                     _SetLedColor(_SelectedLeds, Defines.LedColor);
                     _currentEffect = value;
-                    SelectedLeds = _currentEffect.SelectedLeds;
-                    
+
+                    if (_currentEffect != null)
+                        SelectedLeds = _currentEffect.SelectedLeds;
+                    else
+                        _SelectedLeds.Clear();
 
                     RaisePropertyChanged(nameof(CurrentEffect));
                     _SendMessage(MediatorMessages.LedEntitySelectVM_CurrentEffectChanged, null);
@@ -141,6 +144,14 @@ namespace Led.ViewModels
             _Selection = null;
             RaisePropertyChanged(nameof(FrontLedGroups));
             RaisePropertyChanged(nameof(BackLedGroups));
+        }
+
+        private void _UpdateCurrentEffect()
+        {
+            if (Effects.Count > 0)
+                CurrentEffect = Effects.Last();
+            else
+                CurrentEffect = null;
         }
 
         private void _CreateSelectGroup(MouseEventArgs e, LedEntityView view)
@@ -234,7 +245,7 @@ namespace Led.ViewModels
             Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
             _EffectBaseVMMapping.Add(Effects.Last(), LedEntity.Effects.Last());
 
-            CurrentEffect = Effects.Last();
+            _UpdateCurrentEffect();
         }
 
         public bool DeleteEffect(EffectBaseVM effectBaseVM)
@@ -245,7 +256,7 @@ namespace Led.ViewModels
                 Effects.Remove(effectBaseVM);
                 _EffectBaseVMMapping.Remove(effectBaseVM);
 
-                CurrentEffect = Effects.Last();
+                _UpdateCurrentEffect();
 
                 return true;
             }
