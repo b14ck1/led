@@ -336,6 +336,12 @@ namespace Led.ViewModels
                     _SetLedColor(_SelectedLeds, Defines.LedColor);
                     _SelectedLeds.Clear();
                     break;
+                case MediatorMessages.EffectBaseVM_DeleteCommand:
+                    if (sender as EffectBaseVM != CurrentEffect)
+                        break;
+
+                    DeleteEffect(sender as EffectBaseVM);
+                    break;
                 default:
                     break;
             }

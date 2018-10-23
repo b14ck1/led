@@ -196,7 +196,7 @@
                 </Grid.ColumnDefinitions>
 
                 <Button Content="Vorschau" Grid.Column="0" Margin="3,3,3,3" />
-                <Button Content="Löschen" Grid.Column="1" Margin="3,3,3,3" />
+                <Button Content="Löschen" Command="{Binding DeleteCommand}" Grid.Column="1" Margin="3,3,3,3" />
                 <Button Content="Aktualisieren" Grid.Column="2" Margin="3,3,3,3" />
             </Grid>
         </Grid>
