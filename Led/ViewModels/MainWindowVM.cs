@@ -199,6 +199,7 @@ namespace Led.ViewModels
         private void _OnAddEffectCommand()
         {           
             (_CurrentLedEntity as LedEntitySelectVM).AddEffect();
+            _EffectView.DataContext = _CurrentEffect;
         }
 
         private void _OnAddAudioCommand()
