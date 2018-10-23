@@ -15,10 +15,10 @@ namespace Led.ViewModels
 {
     public class AudioUserControlVM : INPC, Interfaces.IParticipant
     {
-        private AudioPlayer player;
-        private Services.MediatorService _mediatorService;
+        private AudioPlayer _Player;
+        private Services.MediatorService _MediatorService;
 
-        public bool IsPlaying => player.IsPlaying;
+        public bool IsPlaying => _Player.IsPlaying;
 
         private ImageSource _waveform;
         public ImageSource Waveform
@@ -45,10 +45,10 @@ namespace Led.ViewModels
         public double MaxVolume { get => 100; }
         public double Volume
         {
-            get => player.Volume * MaxVolume;
+            get => _Player.Volume * MaxVolume;
             set
             {
-                player.Volume = (float)(value / MaxVolume);
+                _Player.Volume = (float)(value / MaxVolume);
                 RaisePropertyChanged();
             }
         }
@@ -82,7 +82,7 @@ namespace Led.ViewModels
 
         public AudioUserControlVM(string filePath)
         {
-            player = new AudioPlayer(filePath);
+            _Player = new AudioPlayer(filePath);
 
             PlayPauseCommand = new Command(() =>
             {
@@ -97,50 +97,49 @@ namespace Led.ViewModels
                     _SendMessage(MediatorMessages.EffectServiceRenderAll, null);                    
                     player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
                     _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
-                    updateTimer.Start();                    
+                    updateTimer.Start();
                 }
                 RaisePropertyChanged(playPausePropertyNames);
-            }, () => _canExecute);
+            }, () => _CanExecute);
             ChangeTimeCommand = new Command<double>(progress =>
             {
                 Debug.WriteLine("clicked waveform");
-                var time = TimeSpan.FromTicks((long)(player.Length.Ticks * progress));
+                var time = TimeSpan.FromTicks((long)(_Player.Length.Ticks * progress));
                 Debug.WriteLine("clicked time: " + time);
                 if (!IsPlaying)
                 {
                     // set current time because it's used to start playback after pause
                     SetCurrentTime(time);
                 }
-                player.ChangeTime(time);
+                _Player.ChangeTime(time);
             });
 
-            var theLength = player.Length;
+            var theLength = _Player.Length;
             SetLength(theLength);
             // TODO set waveform size dynamically
-            Task.Run(() => Waveform = player.CreateWaveform(1080, 270).ToImageSource());
+            Task.Run(() => Waveform = _Player.CreateWaveform(1080, 270).ToImageSource());
 
-            updateTimer = new DispatcherTimer(DispatcherPriority.Send)
+            _UpdateTimer = new DispatcherTimer(DispatcherPriority.Send)
             {
                 Interval = TimeSpan.FromMilliseconds(1000 / 30), // refresh with 30fps
                 IsEnabled = false
-            };
+            };            
+            _UpdateTimer.Tick += new EventHandler(UpdateTimer_Tick);
             
-            updateTimer.Tick += new EventHandler(UpdateTimer_Tick);
-
-            player.PlaybackFinished += (sender, args) =>
+            _Player.PlaybackFinished += (sender, args) =>
             {
-                updateTimer.Stop();
-                SetCurrentTime(player.CurrentTime);
+                _UpdateTimer.Stop();
+                SetCurrentTime(_Player.CurrentTime);
                 RaisePropertyChanged(playPausePropertyNames);
             };
 
-            _mediatorService = App.Instance.MediatorService;
-            _mediatorService.Register(this);
+            _MediatorService = App.Instance.MediatorService;
+            _MediatorService.Register(this);
         }
 
-        private static readonly ImageSource playImage = Properties.Resources.IconPlay.ToImageSource();
-        private static readonly ImageSource pauseImage = Properties.Resources.IconPause.ToImageSource();
-        public ImageSource PlayPauseImage => IsPlaying ? pauseImage : playImage;
+        private static readonly ImageSource _PlayImage = Properties.Resources.IconPlay.ToImageSource();
+        private static readonly ImageSource _PauseImage = Properties.Resources.IconPause.ToImageSource();
+        public ImageSource PlayPauseImage => IsPlaying ? _PauseImage : _PlayImage;
         public string PlayPauseToolTipValue => IsPlaying ? "Pause" : "Play";
         private readonly string[] playPausePropertyNames = new[] {
             nameof(PlayPauseImage),
@@ -151,9 +150,9 @@ namespace Led.ViewModels
         public ICommand ChangeTimeCommand { get; }
         public ICommand LoadWaveformCommand { get; }
 
-        private bool _canExecute = true;
+        private bool _CanExecute = true;
 
-        private DispatcherTimer updateTimer;
+        private DispatcherTimer _UpdateTimer;
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
             _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((long)(player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
@@ -162,7 +161,7 @@ namespace Led.ViewModels
 
         private void _SendMessage(MediatorMessages message, object data)
         {
-            _mediatorService.BroadcastMessage(message, this, data);
+            _MediatorService.BroadcastMessage(message, this, data);
         }
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)

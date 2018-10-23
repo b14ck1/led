@@ -24,7 +24,7 @@ namespace Led.Views.Controls.MainWindow
             InitializeComponent();
         }
 
-        private double? clickedProgress;
+        private double? _ClickedProgress;
         private void RepeatButton_Click(object sender, RoutedEventArgs e)
         {
             if (ClickCommand != null)
@@ -32,7 +32,7 @@ namespace Led.Views.Controls.MainWindow
                 var mouseX = Mouse.GetPosition(PART_Grid).X;
                 // save the clicked progress instead of setting Progress directly since Progress might be overriden
                 // before MouseLeftButtonUp is triggered
-                clickedProgress = mouseX / PART_Grid.ActualWidth;
+                _ClickedProgress = mouseX / PART_Grid.ActualWidth;
             }
         }
 
@@ -40,11 +40,11 @@ namespace Led.Views.Controls.MainWindow
         {
             // check if clicked progress has been set while holding down the mouse button (just in case)
             // and set it back to null afterwards.
-            if (clickedProgress != null)
+            if (_ClickedProgress != null)
             {
-                ClickCommand?.Execute(clickedProgress);
-                Progress = clickedProgress.Value;
-                clickedProgress = null;
+                ClickCommand?.Execute(_ClickedProgress);
+                Progress = _ClickedProgress.Value;
+                _ClickedProgress = null;
             }
         }
 

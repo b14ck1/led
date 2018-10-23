@@ -16,7 +16,6 @@ using Led.ViewModels;
 
 namespace Led.Utility.Timeline
 {
-
     public enum TimeLineManipulationMode { Linked, Free }
     internal enum TimeLineAction { Move, StretchStart, StretchEnd }
 
@@ -25,8 +24,7 @@ namespace Led.Utility.Timeline
         public TimeLineManipulationMode Mode { get; set; }
         public TimeLineAction Action { get; set; }
         public TimeSpan DeltaTime { get; set; }
-        public Double DeltaX { get; set; }
-
+        public double DeltaX { get; set; }
     }
 
     internal class TimeLineDragAdorner : Adorner
@@ -122,9 +120,9 @@ namespace Led.Utility.Timeline
             return new TimeSpan(ticks);
         }
 
-        private Double _bumpThreshold = 1.5;
-        private ScrollViewer _scrollViewer;
-        private Canvas _gridCanvas;
+        private double _BumpThreshold = 1.5;
+        private ScrollViewer _ScrollViewer;
+        private Canvas _GridCanvas;
         static TimeLineDragAdorner _dragAdorner;
         static TimeLineDragAdorner DragAdorner
         {
@@ -139,25 +137,14 @@ namespace Led.Utility.Timeline
                 _dragAdorner = value;
             }
         }
-        private Boolean _synchedWithSiblings = true;
-        public Boolean SynchedWithSiblings
-        {
-            get
-            {
-                return _synchedWithSiblings;
-            }
-            set
-            {
-                _synchedWithSiblings = value;
-            }
-        }
-        internal Boolean _isSynchInstigator = false;
-        internal Double SynchWidth = 0;
+        public bool SynchedWithSiblings { get; set; } = true;
+        internal bool _isSynchInstigator = false;
+        internal double SynchWidth = 0;
 
-        Boolean _itemsInitialized = false;
+        bool _itemsInitialized = false;
 
-        Boolean _unitSizeInitialized = false;
-        Boolean _startDateInitialized = false;
+        bool _unitSizeInitialized = false;
+        bool _startDateInitialized = false;
 
 
         #region dependency properties
@@ -179,34 +166,33 @@ namespace Led.Utility.Timeline
             {
                 tc.ScrollToItem(e.NewValue as EffectBaseVM);
             }
-
         }
 
         private void ScrollToItem(EffectBaseVM target)
         {
-            Double tgtNewWidth = 0;
-            Double maxUnitSize = 450;//28000;
-            Double minUnitSize = 1;
-            if (_scrollViewer != null)
+            double tgtNewWidth = 0;
+            double maxUnitSize = 450;//28000;
+            double minUnitSize = 1;
+            if (_ScrollViewer != null)
             {
                 for (int i = 1; i < Children.Count; i++)
                 {
                     var ctrl = Children[i] as TimeLineItemControl;
                     if (ctrl != null && ctrl.DataContext == target)
                     {
-                        Double curW = ctrl.Width;
+                        double curW = ctrl.Width;
                         if (curW < 5)
                         {
                             tgtNewWidth = 50;
                         }
-                        else if (curW > _scrollViewer.ViewportWidth)
+                        else if (curW > _ScrollViewer.ViewportWidth)
                         {
-                            tgtNewWidth = _scrollViewer.ViewportWidth / 3;
+                            tgtNewWidth = _ScrollViewer.ViewportWidth / 3;
                         }
 
                         if (tgtNewWidth != 0)
                         {
-                            Double newUnitSize = (UnitSize * tgtNewWidth) / curW;
+                            double newUnitSize = (UnitSize * tgtNewWidth) / curW;
                             if (newUnitSize > maxUnitSize)
                                 newUnitSize = maxUnitSize;
                             else if (newUnitSize < minUnitSize)
@@ -224,15 +210,15 @@ namespace Led.Utility.Timeline
 
 
         #region minwidth
-        public Double MinWidth
+        public double MinWidth
         {
-            get { return (Double)GetValue(MinWidthProperty); }
+            get { return (double)GetValue(MinWidthProperty); }
             set { SetValue(MinWidthProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MinWidth.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MinWidthProperty =
-            DependencyProperty.Register("MinWidth", typeof(Double), typeof(TimeLineControl), new UIPropertyMetadata(0.0));
+            DependencyProperty.Register("MinWidth", typeof(double), typeof(TimeLineControl), new UIPropertyMetadata(0.0));
         #endregion
 
         #region maxwidth
@@ -248,57 +234,57 @@ namespace Led.Utility.Timeline
         #endregion
 
         #region minheight
-        public Double MinHeight
+        public double MinHeight
         {
-            get { return (Double)GetValue(MinHeightProperty); }
+            get { return (double)GetValue(MinHeightProperty); }
             set { SetValue(MinHeightProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MinHeight.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MinHeightProperty =
-            DependencyProperty.Register("MinHeight", typeof(Double), typeof(TimeLineControl), new UIPropertyMetadata(0.0));
+            DependencyProperty.Register("MinHeight", typeof(double), typeof(TimeLineControl), new UIPropertyMetadata(0.0));
         #endregion
 
         #region background and grid dependency properties
         #region minimum unit width
-        public Double MinimumUnitWidth
+        public double MinimumUnitWidth
         {
-            get { return (Double)GetValue(MinimumUnitWidthProperty); }
+            get { return (double)GetValue(MinimumUnitWidthProperty); }
             set { SetValue(MinimumUnitWidthProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MinimumUnitWidth.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MinimumUnitWidthProperty =
-            DependencyProperty.Register("MinimumUnitWidth", typeof(Double), typeof(TimeLineControl),
+            DependencyProperty.Register("MinimumUnitWidth", typeof(double), typeof(TimeLineControl),
                 new UIPropertyMetadata(10.0,
                     new PropertyChangedCallback(OnBackgroundValueChanged)));
         #endregion
 
         #region snap to grid
-        public Boolean SnapToGrid
+        public bool SnapToGrid
         {
-            get { return (Boolean)GetValue(SnapToGridProperty); }
+            get { return (bool)GetValue(SnapToGridProperty); }
             set { SetValue(SnapToGridProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for SnapToGrid.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SnapToGridProperty =
-            DependencyProperty.Register("SnapToGrid", typeof(Boolean), typeof(TimeLineControl),
+            DependencyProperty.Register("SnapToGrid", typeof(bool), typeof(TimeLineControl),
                 new UIPropertyMetadata(null));
         //new UIPropertyMetadata(false,
         //new PropertyChangedCallback(OnBackgroundValueChanged)));
         #endregion
 
         #region draw time grid
-        public Boolean DrawTimeGrid
+        public bool DrawTimeGrid
         {
-            get { return (Boolean)GetValue(DrawTimeGridProperty); }
+            get { return (bool)GetValue(DrawTimeGridProperty); }
             set { SetValue(DrawTimeGridProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for DrawTimeGrid.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DrawTimeGridProperty =
-            DependencyProperty.Register("DrawTimeGrid", typeof(Boolean), typeof(TimeLineControl),
+            DependencyProperty.Register("DrawTimeGrid", typeof(bool), typeof(TimeLineControl),
                 new UIPropertyMetadata(false,
                     new PropertyChangedCallback(OnDrawTimeGridChanged)));
         #endregion
@@ -329,7 +315,7 @@ namespace Led.Utility.Timeline
             DependencyProperty.Register("MajorUnitThickness", typeof(int), typeof(TimeLineControl),
                 new UIPropertyMetadata(3, new PropertyChangedCallback(OnBackgroundValueChanged)));
         #endregion
-        private static byte _defC = 80;
+        private static byte _DefC = 80;
 
         #region day line brush
         public Brush DayLineBrush
@@ -341,7 +327,7 @@ namespace Led.Utility.Timeline
         // Using a DependencyProperty as the backing store for DayLineBrush.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty DayLineBrushProperty =
             DependencyProperty.Register("DayLineBrush", typeof(Brush), typeof(TimeLineControl),
-                new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _defC, G = _defC, B = _defC, A = 255 }),
+                new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _DefC, G = _DefC, B = _DefC, A = 255 }),
                     new PropertyChangedCallback(OnBackgroundValueChanged)));
         #endregion
 
@@ -356,7 +342,7 @@ namespace Led.Utility.Timeline
         // Using a DependencyProperty as the backing store for HourLineBrush.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HourLineBrushProperty =
             DependencyProperty.Register("HourLineBrush", typeof(Brush), typeof(TimeLineControl),
-            new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _defC, G = _defC, B = _defC, A = 255 / 2 }),
+            new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _DefC, G = _DefC, B = _DefC, A = 255 / 2 }),
                 new PropertyChangedCallback(OnBackgroundValueChanged)));
 
         #endregion
@@ -371,7 +357,7 @@ namespace Led.Utility.Timeline
         // Using a DependencyProperty as the backing store for MinuteLineBrush.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MinuteLineBrushProperty =
             DependencyProperty.Register("MinuteLineBrush", typeof(Brush), typeof(TimeLineControl),
-            new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _defC, G = _defC, B = _defC, A = 255 / 3 }),
+            new UIPropertyMetadata(new SolidColorBrush(new Color() { R = _DefC, G = _DefC, B = _DefC, A = 255 / 3 }),
                 new PropertyChangedCallback(OnBackgroundValueChanged)));
         #endregion
         private static void OnDrawTimeGridChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -394,7 +380,7 @@ namespace Led.Utility.Timeline
         #endregion
 
         #region item template
-        private DataTemplate _template;
+        private DataTemplate _Template;
         public DataTemplate ItemTemplate
         {
             get { return (DataTemplate)GetValue(ItemTemplateProperty); }
@@ -423,7 +409,8 @@ namespace Led.Utility.Timeline
         public ObservableCollection<EffectBaseVM> Items
         {
             get { return (ObservableCollection<EffectBaseVM>)GetValue(ItemsProperty); }
-            set {
+            set
+            {
                 Debug.WriteLine("TLC Items set");
                 SetValue(ItemsProperty, value);
             }
@@ -467,24 +454,22 @@ namespace Led.Utility.Timeline
             if (tc != null)
             {
                 tc.UpdateViewLevel((TimeLineViewLevel)e.NewValue);
-
             }
-
         }
         #endregion
 
         #region unitsize
 
 
-        public Double UnitSize
+        public double UnitSize
         {
-            get { return (Double)GetValue(UnitSizeProperty); }
+            get { return (double)GetValue(UnitSizeProperty); }
             set { SetValue(UnitSizeProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for UnitSize.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty UnitSizeProperty =
-            DependencyProperty.Register("UnitSize", typeof(Double), typeof(TimeLineControl),
+            DependencyProperty.Register("UnitSize", typeof(double), typeof(TimeLineControl),
             new UIPropertyMetadata(5.0,
                 new PropertyChangedCallback(OnUnitSizeChanged)));
         private static void OnUnitSizeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -493,8 +478,7 @@ namespace Led.Utility.Timeline
             if (tc != null)
             {
                 tc._unitSizeInitialized = true;
-                tc.UpdateUnitSize((Double)e.NewValue);
-
+                tc.UpdateUnitSize((double)e.NewValue);
             }
         }
 
@@ -541,8 +525,8 @@ namespace Led.Utility.Timeline
 
         public TimeLineControl()
         {
-            _gridCanvas = new Canvas();
-            Children.Add(_gridCanvas);
+            _GridCanvas = new Canvas();
+            Children.Add(_GridCanvas);
             Focusable = true;
             KeyDown += OnKeyDown;
             KeyUp += OnKeyUp;
@@ -557,18 +541,13 @@ namespace Led.Utility.Timeline
 
             AllowDrop = true;
 
-
-            _scrollViewer = GetParentScrollViewer();
-
-
-
+            _ScrollViewer = GetParentScrollViewer();
         }
         #region control life cycle events
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            _scrollViewer = GetParentScrollViewer();
-
+            _ScrollViewer = GetParentScrollViewer();
         }
 
 
@@ -619,7 +598,7 @@ namespace Led.Utility.Timeline
 
         private void SetTemplate(DataTemplate dataTemplate)
         {
-            _template = dataTemplate;
+            _Template = dataTemplate;
             for (int i = 0; i < Children.Count; i++)
             {
                 TimeLineItemControl titem = Children[i] as TimeLineItemControl;
@@ -633,7 +612,7 @@ namespace Led.Utility.Timeline
             if (observableCollection == null)
                 return;
             this.Children.Clear();
-            Children.Add(_gridCanvas);
+            Children.Add(_GridCanvas);
 
             foreach (EffectBaseVM data in observableCollection)
             {
@@ -653,25 +632,25 @@ namespace Led.Utility.Timeline
                 var itm = e.NewItems[0] as EffectBaseVM;
                 //if (itm.StartTime.HasValue && itm.StartTime > long.MinValue)
                 //{//newly created item isn't a drop in so we need to instantiate and place its control.
-                    //long duration = itm.EndTime.Value - itm.StartTime.Value;
-                    //if (Items.Count == 1)//this is the first one added
-                    //{
-                    //    itm.StartTime = 0;
-                    //    itm.EndTime = duration;
-                    //}
-                    //else
-                    //{
-                    //    var last = Items.OrderBy(i => i.StartTime.Value).LastOrDefault();
-                    //    if (last != null)
-                    //    {
-                    //        itm.StartTime = last.EndTime;
-                    //        itm.EndTime = itm.StartTime.Value + duration;
-                    //    }
-                    //}
-                    var ctrl = CreateTimeLineItemControl(itm);
-                    //The index if Items.Count-1 because of zero indexing.
-                    //however our children is 1 indexed because 0 is our canvas grid.
-                    Children.Insert(Items.Count, ctrl);
+                //long duration = itm.EndTime.Value - itm.StartTime.Value;
+                //if (Items.Count == 1)//this is the first one added
+                //{
+                //    itm.StartTime = 0;
+                //    itm.EndTime = duration;
+                //}
+                //else
+                //{
+                //    var last = Items.OrderBy(i => i.StartTime.Value).LastOrDefault();
+                //    if (last != null)
+                //    {
+                //        itm.StartTime = last.EndTime;
+                //        itm.EndTime = itm.StartTime.Value + duration;
+                //    }
+                //}
+                var ctrl = CreateTimeLineItemControl(itm);
+                //The index if Items.Count-1 because of zero indexing.
+                //however our children is 1 indexed because 0 is our canvas grid.
+                Children.Insert(Items.Count, ctrl);
                 //}
             }
             if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove)
@@ -719,20 +698,20 @@ namespace Led.Utility.Timeline
             adder.SetBinding(TimeLineItemControl.EndTimeProperty, endBinding);
             //adder.SetBinding(TimeLineItemControl.IsExpandedProperty, expandedBinding);
 
-            if (_template != null)
+            if (_Template != null)
             {
-                adder.ContentTemplate = _template;
+                adder.ContentTemplate = _Template;
             }
 
             /*adder.PreviewMouseLeftButtonDown += item_PreviewEditButtonDown;
             adder.MouseMove += item_MouseMove;
             adder.PreviewMouseLeftButtonUp += item_PreviewEditButtonUp;*/
-            adder.PreviewMouseRightButtonDown += item_PreviewEditButtonDown;
-            adder.MouseMove += item_MouseMove;
-            adder.PreviewMouseRightButtonUp += item_PreviewEditButtonUp;
+            adder.PreviewMouseRightButtonDown += Item_PreviewEditButtonDown;
+            adder.MouseMove += Item_MouseMove;
+            adder.PreviewMouseRightButtonUp += Item_PreviewEditButtonUp;
 
-            adder.PreviewMouseLeftButtonUp += item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown += item_PreviewDragButtonDown;
+            adder.PreviewMouseLeftButtonUp += Item_PreviewDragButtonUp;
+            adder.PreviewMouseLeftButtonDown += Item_PreviewDragButtonDown;
             adder.UnitSize = UnitSize;
             return adder;
         }
@@ -757,11 +736,9 @@ namespace Led.Utility.Timeline
                 return;
             for (int i = 0; i < Items.Count; i++)
             {
-
                 var templatedControl = GetTimeLineItemControlAt(i);
                 if (templatedControl != null)
                     templatedControl.ViewLevel = lvl;
-
             }
             ReDrawChildren();
             //Now we go back and have to detect if things have been collapsed
@@ -777,9 +754,9 @@ namespace Led.Utility.Timeline
                 return;
             }
             DateTime start = (DateTime)GetValue(StartDateProperty);
-            Double w = 0;
-            Double s = 0;
-            Double e = 0;
+            double w = 0;
+            double s = 0;
+            double e = 0;
             for (int i = 0; i < Items.Count; i++)
             {
                 var mover = GetTimeLineItemControlAt(i);
@@ -791,7 +768,6 @@ namespace Led.Utility.Timeline
                     mover.PlaceOnCanvas();
                     mover.GetPlacementInfo(ref s, ref w, ref e);
                 }
-
             }
             //find our background rectangle and set its width;
             DrawBackGround();
@@ -799,33 +775,31 @@ namespace Led.Utility.Timeline
         #endregion
 
         #region background and grid methods
-        private void DrawBackGround(Boolean isDrawGridUpdate = false)
+        private void DrawBackGround(bool isDrawGridUpdate = false)
         {
             Brush b = Background;
             double setWidth = MinWidth;
-            if (_gridCanvas.Children.Count <= 0)
+            if (_GridCanvas.Children.Count <= 0)
             {
-                _gridCanvas.Children.Add(new System.Windows.Shapes.Rectangle());
+                _GridCanvas.Children.Add(new System.Windows.Shapes.Rectangle());
             }
-            System.Windows.Shapes.Rectangle bg = _gridCanvas.Children[0] as System.Windows.Shapes.Rectangle;
+            System.Windows.Shapes.Rectangle bg = _GridCanvas.Children[0] as System.Windows.Shapes.Rectangle;
             if (!_startDateInitialized ||
                 !_unitSizeInitialized ||
                 !_itemsInitialized ||
                 Items == null)
             {
-
                 setWidth = Math.Max(MinWidth, GetMyWidth());
                 setWidth = Math.Max(setWidth, SynchWidth);
                 bg.Width = setWidth;
                 bg.Height = Math.Max(DesiredSize.Height, Height);
-                if (Double.IsNaN(bg.Height) || bg.Height < MinHeight)
+                if (double.IsNaN(bg.Height) || bg.Height < MinHeight)
                 {
                     bg.Height = MinHeight;
                 }
                 bg.Fill = b;
                 Width = bg.Width;
                 Height = bg.Height;
-
             }
             else
             {
@@ -844,7 +818,7 @@ namespace Led.Utility.Timeline
                 setWidth = Math.Max(setWidth, SynchWidth);
                 bg.Width = setWidth;
                 bg.Height = Math.Max(DesiredSize.Height, Height);
-                if (Double.IsNaN(bg.Height) || bg.Height < MinHeight)
+                if (double.IsNaN(bg.Height) || bg.Height < MinHeight)
                 {
                     bg.Height = MinHeight;
                 }
@@ -860,19 +834,18 @@ namespace Led.Utility.Timeline
                 {
                     ClearTimeGridExecute();
                 }
-                if ((oldW != Width) && (_scrollViewer != null))//if we are at min width then we need to redraw our time grid when unit sizes change
+                if ((oldW != Width) && (_ScrollViewer != null))//if we are at min width then we need to redraw our time grid when unit sizes change
                 {
-                    var available = LayoutInformation.GetLayoutSlot(_scrollViewer);
+                    var available = LayoutInformation.GetLayoutSlot(_ScrollViewer);
                     Size s = new Size(available.Width, available.Height);
-                    _scrollViewer.Measure(s);
-                    _scrollViewer.Arrange(available);
+                    _ScrollViewer.Measure(s);
+                    _ScrollViewer.Arrange(available);
                 }
             }
 
-
-
         }
-        internal Double GetMyWidth()
+
+        internal double GetMyWidth()
         {
             //if (Items == null)
             //{
@@ -882,21 +855,22 @@ namespace Led.Utility.Timeline
 
             //if (lastItem == null)
             //    return MinWidth;
-            //Double l = 0;
-            //Double w = 0;
-            //Double e = 0;
+            //double l = 0;
+            //double w = 0;
+            //double e = 0;
             //lastItem.GetPlacementInfo(ref l, ref w, ref e);
             //return Math.Max(MinWidth, e);
             return ConvertTotalFramesToDistance();
         }
+
         // based on ConvertTimeToDistance in TimeLineItemControl
-        private Double ConvertTotalFramesToDistance()
+        private double ConvertTotalFramesToDistance()
         {
             ushort totalFrames = (ushort)GetValue(TotalFramesProperty);
             TimeSpan span = TimeSpan.FromMinutes(totalFrames);
             TimeLineViewLevel lvl = (TimeLineViewLevel)GetValue(ViewLevelProperty);
-            Double unitSize = (Double)GetValue(UnitSizeProperty);
-            Double value = unitSize;
+            double unitSize = (double)GetValue(UnitSizeProperty);
+            double value = unitSize;
             switch (lvl)
             {
                 case TimeLineViewLevel.Minutes:
@@ -921,9 +895,8 @@ namespace Led.Utility.Timeline
                     break;
             }
             return value;
-
-
         }
+
         private void SynchronizeSiblings()
         {
             if (!SynchedWithSiblings)
@@ -940,9 +913,9 @@ namespace Led.Utility.Timeline
                 var pnl = current as ItemsControl;
                 //this is called on updates for all siblings so it could easily
                 //end up infinitely looping if each time tried to synch its siblings
-                Boolean isSynchInProgress = false;
+                bool isSynchInProgress = false;
                 //is there a synch instigator
-                Double maxWidth = GetMyWidth();
+                double maxWidth = GetMyWidth();
 
                 var siblings = TimeLineControl.FindAllTimeLineControlsInsidePanel(current);
 
@@ -953,13 +926,12 @@ namespace Led.Utility.Timeline
                     {
                         if (tcSib._isSynchInstigator)
                             isSynchInProgress = true;
-                        Double sibW = tcSib.GetMyWidth();
+                        double sibW = tcSib.GetMyWidth();
                         if (sibW > maxWidth)
                         {
                             maxWidth = sibW;
                         }
                     }
-
                 }
                 SynchWidth = maxWidth;
                 if (!isSynchInProgress)
@@ -980,6 +952,7 @@ namespace Led.Utility.Timeline
                 _isSynchInstigator = false;
             }
         }
+
         //helper to let a panel find all children of a given type
         private static IEnumerable<TimeLineControl> FindAllTimeLineControlsInsidePanel(DependencyObject depObj)
         {
@@ -1000,10 +973,11 @@ namespace Led.Utility.Timeline
                 }
             }
         }
+
         private void ClearTimeGridExecute()
         {
-            if (_gridCanvas.Children.Count == 2)
-                _gridCanvas.Children.RemoveAt(1);
+            if (_GridCanvas.Children.Count == 2)
+                _GridCanvas.Children.RemoveAt(1);
         }
 
         private void DrawTimeGridExecute()
@@ -1012,26 +986,25 @@ namespace Led.Utility.Timeline
                 return;
             if (StartDate == DateTime.MinValue)
                 return;
-            if (_gridCanvas.Children.Count < 2)
+            if (_GridCanvas.Children.Count < 2)
             {
-                _gridCanvas.Children.Add(new Canvas());
+                _GridCanvas.Children.Add(new Canvas());
             }
-            Canvas grid = _gridCanvas.Children[1] as Canvas;
+            Canvas grid = _GridCanvas.Children[1] as Canvas;
             grid.Children.Clear();
-            Double hourSize = UnitSize;
-
-
+            double hourSize = UnitSize;
 
             //place our gridlines
             DrawDayLines(grid);
             DrawHourLines(grid);
             DrawMinuteLines(grid);
         }
+
         private void DrawMinuteLines(Canvas grid)
         {
-            Double halfHourSize = UnitSize / 2;
-            Double fifteenMinSize = UnitSize / 4;
-            Double minuteSize = UnitSize / 60;
+            double halfHourSize = UnitSize / 2;
+            double fifteenMinSize = UnitSize / 4;
+            double minuteSize = UnitSize / 60;
             int startMinute = StartDate.Minute;
             int startSecond = StartDate.Second;
             int remainingMinutes = 60 - startMinute;
@@ -1054,9 +1027,8 @@ namespace Led.Utility.Timeline
 
                 TimeSpan nextFifteenGap = new TimeSpan(0, remainingMinutes, remainingSeconds);
                 DateTime nextFifteenDate = StartDate.Add(nextFifteenGap);
-                Double nextFifteenDistance = nextFifteenGap.TotalHours * UnitSize;
+                double nextFifteenDistance = nextFifteenGap.TotalHours * UnitSize;
                 DrawIncrementLines(grid, nextFifteenDate, nextFifteenDistance, new TimeSpan(0, 15, 0), fifteenMinSize, MinuteLineBrush, 0);
-
             }
             else if (halfHourSize >= MinimumUnitWidth)
             {
@@ -1066,15 +1038,15 @@ namespace Led.Utility.Timeline
                     remainingMinutes--;
                 TimeSpan nextHalfGap = new TimeSpan(0, remainingMinutes, remainingSeconds);
                 DateTime nextHalfDate = StartDate.Add(nextHalfGap);
-                Double nextHalfDistance = nextHalfGap.TotalHours * UnitSize;
+                double nextHalfDistance = nextHalfGap.TotalHours * UnitSize;
                 DrawIncrementLines(grid, nextHalfDate, nextHalfDistance, new TimeSpan(0, 30, 0), halfHourSize, MinuteLineBrush, 0);
             }
-
         }
+
         private void DrawHourLines(Canvas grid)
         {
-            Double hourSize = UnitSize;
-            Double halfDaySize = hourSize * 12;
+            double hourSize = UnitSize;
+            double halfDaySize = hourSize * 12;
             int startMinute = StartDate.Minute;
             int remainingMinutes = 60 - startMinute;
             int startSecond = StartDate.Second;
@@ -1095,7 +1067,7 @@ namespace Led.Utility.Timeline
                 //time to our next hour
                 TimeSpan firstHourGap = new TimeSpan(0, remainingMinutes, remainingSeconds);
                 DateTime nextHour = StartDate.Add(firstHourGap);
-                Double firstHourDistance = firstHourGap.TotalHours * hourSize;
+                double firstHourDistance = firstHourGap.TotalHours * hourSize;
                 DrawIncrementLines(grid, nextHour, firstHourDistance,
                                     new TimeSpan(1, 0, 0), hourSize, HourLineBrush, 12, remainingToMajor);
             }
@@ -1113,14 +1085,14 @@ namespace Led.Utility.Timeline
 
                 TimeSpan nextHalfGap = new TimeSpan(remainingHours, remainingMinutes, remainingSeconds);
                 DateTime nextHalfDay = StartDate.Add(nextHalfGap);
-                Double nextHalfDistance = nextHalfGap.TotalHours * hourSize;
+                double nextHalfDistance = nextHalfGap.TotalHours * hourSize;
                 DrawIncrementLines(grid, nextHalfDay, nextHalfDistance, new TimeSpan(12, 0, 0), halfDaySize, HourLineBrush, -1);
-
             }
         }
+
         private void DrawDayLines(Canvas grid)
         {
-            Double daySize = UnitSize * 24;
+            double daySize = UnitSize * 24;
 
 
             if (daySize >= MinimumUnitWidth)
@@ -1142,21 +1114,20 @@ namespace Led.Utility.Timeline
                     remainingSeconds = 0;
 
 
-
                 TimeSpan firstDayGap = new TimeSpan(remainingHours, remainingMinutes, remainingSeconds);
-                Double firstDayDistance = (firstDayGap.TotalHours * UnitSize);
+                double firstDayDistance = (firstDayGap.TotalHours * UnitSize);
                 DateTime nextDay = StartDate.Add(new TimeSpan(remainingHours, remainingMinutes, 0));
 
 
                 DrawIncrementLines(grid, nextDay, firstDayDistance,
                                     increment, daySize, DayLineBrush, 7);
             }
-
         }
-        private void DrawIncrementLines(Canvas grid, DateTime firstLineDate, Double firstLineDistance,
-                TimeSpan timeStep, Double unitSize, Brush brush, int majorEvery, int majorEveryOffset = 0)
+
+        private void DrawIncrementLines(Canvas grid, DateTime firstLineDate, double firstLineDistance,
+                TimeSpan timeStep, double unitSize, Brush brush, int majorEvery, int majorEveryOffset = 0)
         {
-            Double curX = firstLineDistance;
+            double curX = firstLineDistance;
             DateTime curDate = firstLineDate;
             int curLine = 0;
             while (curX < Width)
@@ -1195,37 +1166,35 @@ namespace Led.Utility.Timeline
         #endregion
 
         #region drag events and fields
-        private Boolean _dragging = false;
-        private Point _dragStartPosition = new Point(double.MinValue, double.MinValue);
+        private bool _Dragging = false;
+        private Point _DragStartPosition = new Point(double.MinValue, double.MinValue);
         /// <summary>
         /// When we drag something from an external control over this I need a temp control
         /// that lets me adorn those accordingly as well
         /// </summary>
-        private TimeLineItemControl _tmpDraggAdornerControl;
+        private TimeLineItemControl _TmpDragAdornerControl;
 
-        TimeLineItemControl _dragObject = null;
-        void item_PreviewDragButtonDown(object sender, MouseButtonEventArgs e)
+        TimeLineItemControl _DragObject = null;
+        void Item_PreviewDragButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _dragStartPosition = Mouse.GetPosition(null);
-            _dragObject = sender as TimeLineItemControl;
+            _DragStartPosition = Mouse.GetPosition(null);
+            _DragObject = sender as TimeLineItemControl;
 
             // send message about selected effect
-            var data = new MediatorMessageData.TimeLineEffectSelectedData((EffectBaseVM)_dragObject.Content);
+            var data = new MediatorMessageData.TimeLineEffectSelectedData((EffectBaseVM)_DragObject.Content);
             App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TimeLineEffectSelected, this, data);
         }
 
-        void item_PreviewDragButtonUp(object sender, MouseButtonEventArgs e)
+        void Item_PreviewDragButtonUp(object sender, MouseButtonEventArgs e)
         {
-            _dragStartPosition.X = double.MinValue;
-            _dragStartPosition.Y = double.MinValue;
-            _dragObject = null;
+            _DragStartPosition.X = double.MinValue;
+            _DragStartPosition.Y = double.MinValue;
+            _DragObject = null;
         }
 
 
         void TimeLineControl_DragOver(object sender, DragEventArgs e)
         {
-
-
             //throw new NotImplementedException();
             TimeLineItemControl d = e.Data.GetData(typeof(TimeLineItemControl)) as TimeLineItemControl;
             if (d != null)
@@ -1239,11 +1208,9 @@ namespace Led.Utility.Timeline
                 }
                 DragAdorner.MousePosition = e.GetPosition(d);
                 DragAdorner.InvalidateVisual();
-
             }
             else
             {//GongSolutions.Wpf.DragDrop
-
                 var d2 = e.Data.GetData("GongSolutions.Wpf.DragDrop");
                 if (d2 != null)
                 {
@@ -1251,33 +1218,31 @@ namespace Led.Utility.Timeline
                     if (DragAdorner == null)
                     {
                         //we are dragging from an external source and we don't have a timeline item control of any sort
-                        Children.Remove(_tmpDraggAdornerControl);
+                        Children.Remove(_TmpDragAdornerControl);
                         //in order to get an adornment layer the control has to be somewhere
-                        _tmpDraggAdornerControl = new TimeLineItemControl();
-                        _tmpDraggAdornerControl.UnitSize = UnitSize;
-                        Children.Add(_tmpDraggAdornerControl);
-                        Canvas.SetLeft(_tmpDraggAdornerControl, -1000000);
-                        _tmpDraggAdornerControl.DataContext = d2;
-                        _tmpDraggAdornerControl.StartTime = StartDate;
-                        _tmpDraggAdornerControl.InitializeDefaultLength();
-                        _tmpDraggAdornerControl.ContentTemplate = ItemTemplate;
+                        _TmpDragAdornerControl = new TimeLineItemControl();
+                        _TmpDragAdornerControl.UnitSize = UnitSize;
+                        Children.Add(_TmpDragAdornerControl);
+                        Canvas.SetLeft(_TmpDragAdornerControl, -1000000);
+                        _TmpDragAdornerControl.DataContext = d2;
+                        _TmpDragAdornerControl.StartTime = StartDate;
+                        _TmpDragAdornerControl.InitializeDefaultLength();
+                        _TmpDragAdornerControl.ContentTemplate = ItemTemplate;
 
-                        _dragAdorner = new TimeLineDragAdorner(_tmpDraggAdornerControl, ItemTemplate);
+                        _dragAdorner = new TimeLineDragAdorner(_TmpDragAdornerControl, ItemTemplate);
                     }
-                    DragAdorner.MousePosition = e.GetPosition(_tmpDraggAdornerControl);
+                    DragAdorner.MousePosition = e.GetPosition(_TmpDragAdornerControl);
                     DragAdorner.InvalidateVisual();
                 }
             }
             DragScroll(e);
-
-
         }
 
         void TimeLineControL_DragLeave(object sender, DragEventArgs e)
         {
             DragAdorner = null;
-            Children.Remove(_tmpDraggAdornerControl);
-            _tmpDraggAdornerControl = null;
+            Children.Remove(_TmpDragAdornerControl);
+            _TmpDragAdornerControl = null;
         }
 
         void TimeLineControl_Drop(object sender, DragEventArgs e)
@@ -1303,8 +1268,8 @@ namespace Led.Utility.Timeline
                     dropper = CreateTimeLineItemControl(dropData);
                     dropper.StartTime = StartDate;
                     dropper.InitializeDefaultLength();
-                    Children.Remove(_tmpDraggAdornerControl);
-                    _tmpDraggAdornerControl = null;
+                    Children.Remove(_TmpDragAdornerControl);
+                    _TmpDragAdornerControl = null;
 
                 }
             }
@@ -1335,12 +1300,9 @@ namespace Led.Utility.Timeline
                     InsertTimeLineItemControlAt(newIndex, dropper);
                     dropper.MoveToNewStartTime(start);
                     MakeRoom(newIndex, dropper.Width);
-
-
                 }
                 else//we are moving this after something.
                 {
-
                     //find out if we are moving the existing one back or forward.
                     var placeAfter = GetTimeLineItemControlAt(newIndex - 1);
                     if (placeAfter != null)
@@ -1377,40 +1339,42 @@ namespace Led.Utility.Timeline
             if (Items.Contains(Data))
                 return;
 
-            adder.PreviewMouseRightButtonDown -= item_PreviewEditButtonDown;
-            adder.MouseMove -= item_MouseMove;
-            adder.PreviewMouseRightButtonUp -= item_PreviewEditButtonUp;
+            adder.PreviewMouseRightButtonDown -= Item_PreviewEditButtonDown;
+            adder.MouseMove -= Item_MouseMove;
+            adder.PreviewMouseRightButtonUp -= Item_PreviewEditButtonUp;
 
-            adder.PreviewMouseLeftButtonUp -= item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown -= item_PreviewDragButtonDown;
+            adder.PreviewMouseLeftButtonUp -= Item_PreviewDragButtonUp;
+            adder.PreviewMouseLeftButtonDown -= Item_PreviewDragButtonDown;
 
-            adder.PreviewMouseRightButtonDown += item_PreviewEditButtonDown;
-            adder.MouseMove += item_MouseMove;
-            adder.PreviewMouseRightButtonUp += item_PreviewEditButtonUp;
+            adder.PreviewMouseRightButtonDown += Item_PreviewEditButtonDown;
+            adder.MouseMove += Item_MouseMove;
+            adder.PreviewMouseRightButtonUp += Item_PreviewEditButtonUp;
 
-            adder.PreviewMouseLeftButtonUp += item_PreviewDragButtonUp;
-            adder.PreviewMouseLeftButtonDown += item_PreviewDragButtonDown;
+            adder.PreviewMouseLeftButtonUp += Item_PreviewDragButtonUp;
+            adder.PreviewMouseLeftButtonDown += Item_PreviewDragButtonDown;
             //child 0 is our grid and we want to keep that there.
             Children.Insert(index + 1, adder);
             Items.Insert(index, Data);
         }
+
         private void RemoveTimeLineItemControl(TimeLineItemControl remover)
         {
             var curData = remover.DataContext as EffectBaseVM;
-            remover.PreviewMouseRightButtonDown -= item_PreviewEditButtonDown;
-            remover.MouseMove -= item_MouseMove;
-            remover.PreviewMouseRightButtonUp -= item_PreviewEditButtonUp;
+            remover.PreviewMouseRightButtonDown -= Item_PreviewEditButtonDown;
+            remover.MouseMove -= Item_MouseMove;
+            remover.PreviewMouseRightButtonUp -= Item_PreviewEditButtonUp;
 
-            remover.PreviewMouseLeftButtonUp -= item_PreviewDragButtonUp;
-            remover.PreviewMouseLeftButtonDown -= item_PreviewDragButtonDown;
+            remover.PreviewMouseLeftButtonUp -= Item_PreviewDragButtonUp;
+            remover.PreviewMouseLeftButtonDown -= Item_PreviewDragButtonDown;
             Items.Remove(curData);
             Children.Remove(remover);
         }
-        private int GetDroppedNewIndex(Double dropX)
+
+        private int GetDroppedNewIndex(double dropX)
         {
-            Double s = 0;
-            Double w = 0;
-            Double e = 0;
+            double s = 0;
+            double w = 0;
+            double e = 0;
             for (int i = 0; i < Items.Count(); i++)
             {
                 var checker = GetTimeLineItemControlAt(i);
@@ -1423,8 +1387,8 @@ namespace Led.Utility.Timeline
                 }
                 if (s < dropX && e > dropX)
                 {
-                    Double distStart = Math.Abs(dropX - s);
-                    Double distEnd = Math.Abs(dropX - e);
+                    double distStart = Math.Abs(dropX - s);
+                    double distEnd = Math.Abs(dropX - e);
                     if (distStart < distEnd)//we dropped closer to the start of this item
                     {
                         return i;
@@ -1442,25 +1406,25 @@ namespace Led.Utility.Timeline
                 }
             }
             return Items.Count;
-
         }
-        private void MakeRoom(int newIndex, Double width)
+
+        private void MakeRoom(int newIndex, double width)
         {
             int moveIndex = newIndex + 1;
             //get our forward chain and gap
-            Double chainGap = 0;
+            double chainGap = 0;
 
             //because the grid is child 0 and we are essentially indexing as if it wasn't there
             //the child index of add after is our effective index of next
             var nextCtrl = GetTimeLineItemControlAt(moveIndex);
             if (nextCtrl != null)
             {
-                Double nL = 0;
-                Double nW = 0;
-                Double nE = 0;
+                double nL = 0;
+                double nW = 0;
+                double nE = 0;
                 nextCtrl.GetPlacementInfo(ref nL, ref nW, ref nE);
 
-                Double droppedIntoSpace = 0;
+                double droppedIntoSpace = 0;
                 if (newIndex == 0)
                 {
                     droppedIntoSpace = nL;
@@ -1470,14 +1434,14 @@ namespace Led.Utility.Timeline
                     var previousControl = GetTimeLineItemControlAt(newIndex - 1);
                     if (previousControl != null)
                     {
-                        Double aL = 0;
-                        Double aW = 0;
-                        Double aE = 0;
+                        double aL = 0;
+                        double aW = 0;
+                        double aE = 0;
                         previousControl.GetPlacementInfo(ref aL, ref aW, ref aE);
                         droppedIntoSpace = nL - aE;
                     }
                 }
-                Double neededSpace = width - droppedIntoSpace;
+                double neededSpace = width - droppedIntoSpace;
                 if (neededSpace <= 0)
                     return;
 
@@ -1490,7 +1454,7 @@ namespace Led.Utility.Timeline
                     while (neededSpace > 0)
                     {
                         //move it to the smaller of our values -gap or remaning space
-                        Double move = Math.Min(chainGap, neededSpace);
+                        double move = Math.Min(chainGap, neededSpace);
                         foreach (var tictrl in forwardChain)
                         {
                             tictrl.MoveMe(move);
@@ -1507,7 +1471,6 @@ namespace Led.Utility.Timeline
                         tictrl.MoveMe(neededSpace);
                     }
                 }
-
             }//if next ctrl is null we are adding to the very end and there is no work to do to make room.
         }
         #endregion
@@ -1518,34 +1481,34 @@ namespace Led.Utility.Timeline
         //NOT WORKING YET AND I DON'T KNOW WHY 8(
         private void DragScroll(DragEventArgs e)
         {
-            if (_scrollViewer == null)
+            if (_ScrollViewer == null)
             {
-                _scrollViewer = GetParentScrollViewer();
+                _ScrollViewer = GetParentScrollViewer();
             }
-            if (_scrollViewer != null)
+            if (_ScrollViewer != null)
             {
                 var available = LayoutInformation.GetLayoutSlot(this);
-                Point scrollPos = e.GetPosition(_scrollViewer);
-                Double scrollMargin = 50;
-                var actualW = _scrollViewer.ActualWidth;
+                Point scrollPos = e.GetPosition(_ScrollViewer);
+                double scrollMargin = 50;
+                var actualW = _ScrollViewer.ActualWidth;
                 if (scrollPos.X >= actualW - scrollMargin &&
-                    _scrollViewer.HorizontalOffset <= _scrollViewer.ExtentWidth - _scrollViewer.ViewportWidth)
+                    _ScrollViewer.HorizontalOffset <= _ScrollViewer.ExtentWidth - _ScrollViewer.ViewportWidth)
                 {
-                    _scrollViewer.LineRight();
+                    _ScrollViewer.LineRight();
                 }
-                else if (scrollPos.X < scrollMargin && _scrollViewer.HorizontalOffset > 0)
+                else if (scrollPos.X < scrollMargin && _ScrollViewer.HorizontalOffset > 0)
                 {
-                    _scrollViewer.LineLeft();
+                    _ScrollViewer.LineLeft();
                 }
-                Double actualH = _scrollViewer.ActualHeight;
+                double actualH = _ScrollViewer.ActualHeight;
                 if (scrollPos.Y >= actualH - scrollMargin &&
-                    _scrollViewer.VerticalOffset <= _scrollViewer.ExtentHeight - _scrollViewer.ViewportHeight)
+                    _ScrollViewer.VerticalOffset <= _ScrollViewer.ExtentHeight - _ScrollViewer.ViewportHeight)
                 {
-                    _scrollViewer.LineDown();
+                    _ScrollViewer.LineDown();
                 }
-                else if (scrollPos.Y < scrollMargin && _scrollViewer.VerticalOffset >= 0)
+                else if (scrollPos.Y < scrollMargin && _ScrollViewer.VerticalOffset >= 0)
                 {
-                    _scrollViewer.LineUp();
+                    _ScrollViewer.LineUp();
                 }
             }
         }
@@ -1556,15 +1519,15 @@ namespace Led.Utility.Timeline
 
 
         #region edit events etc
-        private Double _curX = 0;
+        private double _CurX = 0;
         private TimeLineAction _action;
-        void item_PreviewEditButtonUp(object sender, MouseButtonEventArgs e)
+        void Item_PreviewEditButtonUp(object sender, MouseButtonEventArgs e)
         {
             (sender as TimeLineItemControl).ReleaseMouseCapture();
             Keyboard.Focus(this);
         }
 
-        void item_PreviewEditButtonDown(object sender, MouseButtonEventArgs e)
+        void Item_PreviewEditButtonDown(object sender, MouseButtonEventArgs e)
         {
             var ctrl = sender as TimeLineItemControl;
 
@@ -1575,32 +1538,31 @@ namespace Led.Utility.Timeline
 
 
         #region key down and up
-        Boolean _rightCtrlDown = false;
-        Boolean _leftCtrlDown = false;
-        protected void OnKeyDown(Object sender, KeyEventArgs e)
+        bool _RightCtrlDown = false;
+        bool _LeftCtrlDown = false;
+        protected void OnKeyDown(object sender, KeyEventArgs e)
         {
             base.OnKeyDown(e);
             if (e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl)
             {
-                _rightCtrlDown = e.Key == Key.RightCtrl;
-                _leftCtrlDown = e.Key == Key.LeftCtrl;
+                _RightCtrlDown = e.Key == Key.RightCtrl;
+                _LeftCtrlDown = e.Key == Key.LeftCtrl;
                 ManipulationMode = TimeLineManipulationMode.Linked;
             }
         }
-        protected void OnKeyUp(Object sender, KeyEventArgs e)
+        protected void OnKeyUp(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.LeftCtrl)
-                _leftCtrlDown = false;
+                _LeftCtrlDown = false;
             if (e.Key == Key.RightCtrl)
-                _rightCtrlDown = false;
-            if (!_leftCtrlDown && !_rightCtrlDown)
+                _RightCtrlDown = false;
+            if (!_LeftCtrlDown && !_RightCtrlDown)
                 ManipulationMode = TimeLineManipulationMode.Linked;
         }
 
         internal void HandleItemManipulation(TimeLineItemControl ctrl, TimeLineItemChangedEventArgs e)
         {
-
-            Boolean doStretch = false;
+            bool doStretch = false;
             TimeSpan deltaT = e.DeltaTime;
             TimeSpan zeroT = new TimeSpan();
             int direction = deltaT.CompareTo(zeroT);
@@ -1617,10 +1579,10 @@ namespace Led.Utility.Timeline
                 after.ReadyToDraw = false;
             if (ctrl != null)
                 ctrl.ReadyToDraw = false;
-            Double useDeltaX = e.DeltaX;
-            Double cLeft = 0;
-            Double cWidth = 0;
-            Double cEnd = 0;
+            double useDeltaX = e.DeltaX;
+            double cLeft = 0;
+            double cWidth = 0;
+            double cEnd = 0;
             ctrl.GetPlacementInfo(ref cLeft, ref cWidth, ref cEnd);
 
             switch (e.Action)
@@ -1628,7 +1590,7 @@ namespace Led.Utility.Timeline
                 case TimeLineAction.Move:
                     #region move
 
-                    Double chainGap = Double.MaxValue;
+                    double chainGap = double.MaxValue;
                     if (direction > 0)
                     {
                         //find chain connecteds that are after this one
@@ -1656,7 +1618,7 @@ namespace Led.Utility.Timeline
                     }
                     if (direction < 0)
                     {
-                        Boolean previousBackToStart = false;
+                        bool previousBackToStart = false;
                         List<TimeLineItemControl> previousChain = GetTimeLineBackwardsChain(ctrl, previousIndex, ref previousBackToStart, ref chainGap);
                         if (-chainGap > useDeltaX)
                         {
@@ -1682,18 +1644,18 @@ namespace Led.Utility.Timeline
 
                         case TimeLineManipulationMode.Linked:
                             #region linked
-                            Double gap = Double.MaxValue;
+                            double gap = double.MaxValue;
                             if (previous != null)
                             {
-                                Double pLeft = 0;
-                                Double pWidth = 0;
-                                Double pEnd = 0;
+                                double pLeft = 0;
+                                double pWidth = 0;
+                                double pEnd = 0;
                                 previous.GetPlacementInfo(ref pLeft, ref pWidth, ref pEnd);
                                 gap = cLeft - pEnd;
                             }
-                            if (direction < 0 && Math.Abs(gap) < Math.Abs(useDeltaX) && Math.Abs(gap) > _bumpThreshold)//if we are negative and not linked, but about to bump
+                            if (direction < 0 && Math.Abs(gap) < Math.Abs(useDeltaX) && Math.Abs(gap) > _BumpThreshold)//if we are negative and not linked, but about to bump
                                 useDeltaX = -gap;
-                            if (Math.Abs(gap) < _bumpThreshold)
+                            if (Math.Abs(gap) < _BumpThreshold)
                             {//we are linked
                                 if (ctrl.CanDelta(0, useDeltaX) && previous.CanDelta(1, useDeltaX))
                                 {
@@ -1708,10 +1670,10 @@ namespace Led.Utility.Timeline
 
 
                             break;
-                            #endregion
+                        #endregion
                         case TimeLineManipulationMode.Free:
                             #region free
-                            gap = Double.MaxValue;
+                            gap = double.MaxValue;
                             doStretch = direction > 0;
                             if (direction < 0)
                             {
@@ -1719,13 +1681,11 @@ namespace Led.Utility.Timeline
 
                                 if (previous != null)
                                 {
-                                    Double pLeft = 0;
-                                    Double pWidth = 0;
-                                    Double pEnd = 0;
+                                    double pLeft = 0;
+                                    double pWidth = 0;
+                                    double pEnd = 0;
                                     previous.GetPlacementInfo(ref pLeft, ref pWidth, ref pEnd);
                                     gap = cLeft - pEnd;
-
-
                                 }
 
                                 else
@@ -1734,7 +1694,7 @@ namespace Led.Utility.Timeline
                                     DateTime s = (DateTime)GetValue(StartDateProperty);
                                     gap = cLeft;
                                 }
-                                doStretch = gap > _bumpThreshold;
+                                doStretch = gap > _BumpThreshold;
                                 if (gap < useDeltaX)
                                 {
                                     useDeltaX = gap;
@@ -1751,7 +1711,7 @@ namespace Led.Utility.Timeline
                             break;
                         default:
                             break;
-                        #endregion
+                            #endregion
                     }
                     break;
                 case TimeLineAction.StretchEnd:
@@ -1760,19 +1720,19 @@ namespace Led.Utility.Timeline
                         #region stretchend
                         case TimeLineManipulationMode.Linked:
                             #region linked
-                            Double gap = Double.MaxValue;
+                            double gap = double.MaxValue;
                             if (after != null)
                             {
-                                Double aLeft = 0;
-                                Double aWidth = 0;
-                                Double aEnd = 0;
+                                double aLeft = 0;
+                                double aWidth = 0;
+                                double aEnd = 0;
                                 after.GetPlacementInfo(ref aLeft, ref aWidth, ref aEnd);
                                 gap = aLeft - cEnd;
                             }
 
-                            if (direction > 0 && gap > _bumpThreshold && gap < useDeltaX)//if we are positive, not linked but about to bump
+                            if (direction > 0 && gap > _BumpThreshold && gap < useDeltaX)//if we are positive, not linked but about to bump
                                 useDeltaX = -gap;
-                            if (gap < _bumpThreshold)
+                            if (gap < _BumpThreshold)
                             {//we are linked
                                 if (ctrl.CanDelta(1, useDeltaX) && after.CanDelta(0, useDeltaX))
                                 {
@@ -1785,20 +1745,20 @@ namespace Led.Utility.Timeline
                                 ctrl.MoveEndTime(useDeltaX);
                             }
                             break;
-                            #endregion
+                        #endregion
                         case TimeLineManipulationMode.Free:
                             #region free
-                            Double nextGap = Double.MaxValue;
+                            double nextGap = double.MaxValue;
                             doStretch = true;
                             if (direction > 0 && after != null)
                             {
                                 //disallow us from free stretching into another item
-                                Double nLeft = 0;
-                                Double nWidth = 0;
-                                Double nEnd = 0;
+                                double nLeft = 0;
+                                double nWidth = 0;
+                                double nEnd = 0;
                                 after.GetPlacementInfo(ref nLeft, ref nWidth, ref nEnd);
                                 nextGap = nLeft - cEnd;
-                                doStretch = nextGap > _bumpThreshold;
+                                doStretch = nextGap > _BumpThreshold;
                                 if (nextGap < useDeltaX)
                                     useDeltaX = nextGap;
                             }
@@ -1811,10 +1771,10 @@ namespace Led.Utility.Timeline
                             }
 
                             break;
-                            #endregion
+                        #endregion
                         default:
                             break;
-                        #endregion
+                            #endregion
                     }
                     break;
                 default:
@@ -1824,15 +1784,15 @@ namespace Led.Utility.Timeline
 
         private void BringChainIntoView(TimeLineItemControl first, TimeLineItemControl last, int direction)
         {
-            Double l1 = 0;
-            Double l2 = 0;
-            Double w = 0;
-            Double w2 = 0;
-            Double end = 0;
+            double l1 = 0;
+            double l2 = 0;
+            double w = 0;
+            double w2 = 0;
+            double end = 0;
             first.GetPlacementInfo(ref l1, ref w, ref end);
             last.GetPlacementInfo(ref l2, ref w2, ref end);
-            Double chainW = end - l1;
-            Double leadBuffer = 4 * UnitSize;
+            double chainW = end - l1;
+            double leadBuffer = 4 * UnitSize;
             chainW += leadBuffer;
             if (direction > 0)
             {
@@ -1854,7 +1814,7 @@ namespace Led.Utility.Timeline
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void item_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
+        void Item_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             #region drag - left click and move
             TimeLineItemControl ctrl = sender as TimeLineItemControl;
@@ -1866,11 +1826,11 @@ namespace Led.Utility.Timeline
                 if (ctrl.IsExpanded)
                     return;
                 var position = Mouse.GetPosition(null);
-                if (Math.Abs(position.X - _dragStartPosition.X) > SystemParameters.MinimumHorizontalDragDistance ||
-                    Math.Abs(position.Y - _dragStartPosition.Y) > SystemParameters.MinimumVerticalDragDistance)
+                if (Math.Abs(position.X - _DragStartPosition.X) > SystemParameters.MinimumHorizontalDragDistance ||
+                    Math.Abs(position.Y - _DragStartPosition.Y) > SystemParameters.MinimumVerticalDragDistance)
                 {
                     DragDrop.DoDragDrop(this, ctrl, DragDropEffects.Move | DragDropEffects.Scroll);
-                    _dragging = true;
+                    _Dragging = true;
 
 
                 }
@@ -1883,12 +1843,12 @@ namespace Led.Utility.Timeline
             #region edits - right click and move
             if (Mouse.Captured != ctrl)
             {
-                _curX = Mouse.GetPosition(null).X;
+                _CurX = Mouse.GetPosition(null).X;
                 return;
             }
 
-            Double mouseX = Mouse.GetPosition(null).X;
-            Double deltaX = mouseX - _curX;
+            double mouseX = Mouse.GetPosition(null).X;
+            double deltaX = mouseX - _CurX;
             TimeSpan deltaT = ctrl.GetDeltaTime(deltaX);
             var curMode = (TimeLineManipulationMode)GetValue(ManipulationModeProperty);
             HandleItemManipulation(ctrl, new TimeLineItemChangedEventArgs()
@@ -1900,14 +1860,14 @@ namespace Led.Utility.Timeline
             });
 
             DrawBackGround();
-            _curX = mouseX;
+            _CurX = mouseX;
 
             //When we pressed, this lost focus and we therefore didn't capture any changes to the key status
             //so we check it again after our manipulation finishes.  That way we can be linked and go out of or back into it while dragging
             ManipulationMode = TimeLineManipulationMode.Free;
-            _leftCtrlDown = Keyboard.IsKeyDown(Key.LeftCtrl);
-            _rightCtrlDown = Keyboard.IsKeyDown(Key.RightCtrl);
-            if (_leftCtrlDown || _rightCtrlDown)
+            _LeftCtrlDown = Keyboard.IsKeyDown(Key.LeftCtrl);
+            _RightCtrlDown = Keyboard.IsKeyDown(Key.RightCtrl);
+            if (_LeftCtrlDown || _RightCtrlDown)
             {
                 ManipulationMode = TimeLineManipulationMode.Linked;
             }
@@ -1924,10 +1884,10 @@ namespace Led.Utility.Timeline
         /// </summary>
         /// <param name="current"></param>
         /// <returns></returns>
-        private List<TimeLineItemControl> GetTimeLineForwardChain(TimeLineItemControl current, int afterIndex, ref Boolean ChainsToTotalFrames, ref Double chainGap)
+        private List<TimeLineItemControl> GetTimeLineForwardChain(TimeLineItemControl current, int afterIndex, ref bool ChainsToTotalFrames, ref double chainGap)
         {
             List<TimeLineItemControl> returner = new List<TimeLineItemControl>() { current };
-            Double left = 0, width = 0, end = 0;
+            double left = 0, width = 0, end = 0;
             current.GetPlacementInfo(ref left, ref width, ref end);
             DateTime endTime = current.EndTime;
             DateTime maxTime = (DateTime)new UshortDateConverter().Convert(TotalFrames, null, null, null);
@@ -1935,12 +1895,12 @@ namespace Led.Utility.Timeline
             if (afterIndex < 0)
             {
                 //we are on the end of the list so there is no limit. -> LOL, no, now there is
-                chainGap = Double.MaxValue;
+                chainGap = double.MaxValue;
                 ChainsToTotalFrames = endTime.CompareTo(maxTime) >= 0;
                 return returner;
             }
-            Double bumpThreshold = _bumpThreshold;
-            Double lastAddedEnd = end;
+            double bumpThreshold = _BumpThreshold;
+            double lastAddedEnd = end;
             while (afterIndex < Items.Count)
             {
                 left = width = end = 0;
@@ -1949,7 +1909,7 @@ namespace Led.Utility.Timeline
                 {
                     checker.GetPlacementInfo(ref left, ref width, ref end);
                     endTime = checker.EndTime;
-                    Double gap = left - lastAddedEnd;
+                    double gap = left - lastAddedEnd;
                     if (gap > bumpThreshold)
                     {
                         chainGap = gap;
@@ -1959,35 +1919,33 @@ namespace Led.Utility.Timeline
                     returner.Add(checker);
                     lastAddedEnd = end;
                 }
-
             }
             //we have chained off to the end and thus have no need to worry about our gap -> We do though, the end is near
             ChainsToTotalFrames = endTime.CompareTo(maxTime) >= 0;
-            chainGap = Double.MaxValue;
+            chainGap = double.MaxValue;
             return returner;
         }
 
         /// <summary>
         /// Returns a list of all timeline controls starting with the current one and moving backwoards
         /// so long as they are contiguous.  If the chain reaches back to the start time of the timeline then the
-        /// ChainsBackToStart boolean is modified to reflect that.
+        /// ChainsBackToStart bool is modified to reflect that.
         /// </summary>
         /// <param name="current"></param>
         /// <returns></returns>
-        private List<TimeLineItemControl> GetTimeLineBackwardsChain(TimeLineItemControl current, int prevIndex, ref Boolean ChainsBackToStart, ref Double chainGap)
+        private List<TimeLineItemControl> GetTimeLineBackwardsChain(TimeLineItemControl current, int prevIndex, ref bool ChainsBackToStart, ref double chainGap)
         {
-
             List<TimeLineItemControl> returner = new List<TimeLineItemControl>() { current };
-            Double left = 0, width = 0, end = 0;
+            double left = 0, width = 0, end = 0;
             current.GetPlacementInfo(ref left, ref width, ref end);
             if (prevIndex < 0)
             {
-                chainGap = Double.MaxValue;
+                chainGap = double.MaxValue;
                 ChainsBackToStart = left == 0;
                 return returner;
             }
 
-            Double lastAddedLeft = left;
+            double lastAddedLeft = left;
             while (prevIndex >= 0)
             {
                 left = width = end = 0;
@@ -1996,7 +1954,7 @@ namespace Led.Utility.Timeline
                 if (checker != null)
                 {
                     checker.GetPlacementInfo(ref left, ref width, ref end);
-                    if (lastAddedLeft - end > _bumpThreshold)
+                    if (lastAddedLeft - end > _BumpThreshold)
                     {
                         //our chain just broke;
                         chainGap = lastAddedLeft - end;
@@ -2006,12 +1964,10 @@ namespace Led.Utility.Timeline
                     returner.Add(checker);
                     lastAddedLeft = left;
                 }
-
             }
             ChainsBackToStart = lastAddedLeft == 0;
             chainGap = lastAddedLeft;//gap between us and zero;
             return returner;
-
         }
 
         private TimeLineItemControl GetTimeLineItemControlStartingBefore(DateTime dateTime, ref int index)
@@ -2055,8 +2011,5 @@ namespace Led.Utility.Timeline
         }
 
         #endregion
-
-
-
     }
 }
