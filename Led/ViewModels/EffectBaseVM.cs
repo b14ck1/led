@@ -175,6 +175,7 @@ namespace Led.ViewModels
 
             EditCommand = new Command(OnEditCommand);
             ClearCommand = new Command(OnClearCommand);
+            DeleteCommand = new Command(OnDeleteCommand);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
@@ -247,7 +248,7 @@ namespace Led.ViewModels
 
         public void OnDeleteCommand()
         {
-
+            _SendMessage(MediatorMessages.EffectBaseVM_DeleteCommand, null);
         }
 
         public void OnRefreshCommand()

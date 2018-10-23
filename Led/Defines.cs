@@ -187,6 +187,7 @@ namespace Led
         EffectBaseVM_EditCommand_Start,
         EffectBaseVM_EditCommand_Finished,
         EffectBaseVM_ClearCommand,
+        EffectBaseVM_DeleteCommand,        
         GroupBusDefinitionsChanged,
         GroupBusDefinitionsNeedCorrectionChanged,
         TimeLineCollectionChanged,
