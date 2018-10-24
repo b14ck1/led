@@ -189,8 +189,10 @@ namespace Led
         EffectBaseVM_ClearCommand,
         EffectBaseVM_DeleteCommand,
         LedEntitySelectVM_CurrentEffectChanged,
-        GroupBusDefinitionsChanged,
-        GroupBusDefinitionsNeedCorrectionChanged,
+        LedEntityCRUDVM_GroupBusDefinitionsChanged,
+        LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged,
+        LedEntityCRUDVM_GroupPositionChanged,
+        LedEntityCRUDVM_GroupPositionNeedCorrectionChanged,
         TimeLineCollectionChanged,
         TimeLineEffectSelected,
         AudioControlPlayPause,
@@ -237,11 +239,21 @@ namespace Led
             }
         }
 
-        public class GroupBusDefinitionsNeedCorrectionChanged
+        public class LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged
         {
             public Dictionary<ViewModels.LedGroupPropertiesVM, bool> NeedCorrection { get; }
             
-            public GroupBusDefinitionsNeedCorrectionChanged(Dictionary<ViewModels.LedGroupPropertiesVM, bool> needCorrection)
+            public LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged(Dictionary<ViewModels.LedGroupPropertiesVM, bool> needCorrection)
+            {
+                NeedCorrection = needCorrection;
+            }
+        }
+
+        public class LedEntityCRUDVM_GroupPositionNeedCorrectionChanged
+        {
+            public Dictionary<ViewModels.LedGroupPropertiesVM, bool> NeedCorrection { get; }
+
+            public LedEntityCRUDVM_GroupPositionNeedCorrectionChanged(Dictionary<ViewModels.LedGroupPropertiesVM, bool> needCorrection)
             {
                 NeedCorrection = needCorrection;
             }
