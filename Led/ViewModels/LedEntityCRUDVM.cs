@@ -222,6 +222,11 @@ namespace Led.ViewModels
                 MessageBox.Show("They are some groups which bus definitions are overlapping.");
                 return false;
             }
+            if (_CheckPositions().NeedCorrection.Values.Any(x => x))
+            {
+                MessageBox.Show("They are some groups which positions are overlapping.");
+                return false;
+            }
             return true;
         }
 
@@ -254,7 +259,8 @@ namespace Led.ViewModels
                 View = view
             });
             CurrentLedGroup = LedGroups.Last();
-            _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
+            _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
+            _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged, _CheckPositions());
             _CreatingGroup = true;            
         }
 
@@ -359,17 +365,41 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.GroupBusDefinitionsChanged:
-                    _SendMessage(MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
+                case MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsChanged:
+                    _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged, _CheckBusDefinitions());
                     break;
-                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
+                case MediatorMessages.LedEntityCRUDVM_GroupPositionChanged:
+                    _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged, _CheckPositions());
                     break;
                 default:
                     break;
             }
         }
 
-        private MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged _CheckBusDefinitions()
+        private MediatorMessageData.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged _CheckPositions()
+        {
+            List<LedGroupPropertiesVM> temp = new List<LedGroupPropertiesVM>();
+            foreach (var Group in LedGroups)
+            {
+                if ((LedGroups.FindAll(x => x.PositionInEntityX == Group.PositionInEntityX && x.PositionInEntityY == Group.PositionInEntityY).Count > 1))
+                {
+                    temp.AddRange(LedGroups.FindAll(x => x.PositionInEntityX == Group.PositionInEntityX && x.PositionInEntityY == Group.PositionInEntityY));
+                }
+            }
+            temp = temp.Distinct().ToList();
+
+            Dictionary<LedGroupPropertiesVM, bool> res = new Dictionary<LedGroupPropertiesVM, bool>();
+            foreach (var Group in LedGroups)
+            {
+                if (temp.Contains(Group))
+                    res.Add(Group, true);
+                else
+                    res.Add(Group, false);
+            }
+            return new MediatorMessageData.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged(res);
+        }
+
+        private MediatorMessageData.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged _CheckBusDefinitions()
         {
             List<LedGroupPropertiesVM> temp = new List<LedGroupPropertiesVM>();
             foreach (var Group in LedGroups)
@@ -389,7 +419,7 @@ namespace Led.ViewModels
                 else
                     res.Add(Group, false);
             }
-            return new MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged(res);            
+            return new MediatorMessageData.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged(res);            
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Led.ViewModels
                 {
                     _ledGroup.BusID = value;
                     RaisePropertyChanged(nameof(BusID));
-                    _SendMessage(MediatorMessages.GroupBusDefinitionsChanged, null);
+                    _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsChanged, null);
                 }
             }
         }
@@ -74,13 +74,16 @@ namespace Led.ViewModels
                 {
                     _ledGroup.PositionInBus = value;
                     RaisePropertyChanged(nameof(PositionInBus));
-                    _SendMessage(MediatorMessages.GroupBusDefinitionsChanged, null);
+                    _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsChanged, null);
                 }
 
             }
         }
-        private bool _NeedCorrection;
-        public Brush BusBorder => _NeedCorrection ? Defines.LedGroupColorWrong : SystemColors.ControlDarkBrush;        
+        private bool _NeedCorrectionBusDefinitions;        
+        public Brush BusBorder => _NeedCorrectionBusDefinitions ? Defines.LedGroupColorWrong : SystemColors.ControlDarkBrush;
+
+        private bool _NeedCorrectionPosition;
+        public Brush PositionBorder => _NeedCorrectionPosition ? Defines.LedGroupColorWrong : SystemColors.ControlDarkBrush;
 
         /// <summary>
         /// Which x-y-position does this group have in the whole entity
@@ -92,6 +95,7 @@ namespace Led.ViewModels
             {
                 _ledGroup.PositionInEntity = new System.Windows.Point(value, _ledGroup.PositionInEntity.Y);
                 RaisePropertyChanged(nameof(PositionInEntityX));
+                _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupPositionChanged, null);
             }
         }
         /// <summary>
@@ -104,6 +108,7 @@ namespace Led.ViewModels
             {
                 _ledGroup.PositionInEntity = new System.Windows.Point(_ledGroup.PositionInEntity.X, value);
                 RaisePropertyChanged(nameof(PositionInEntityY));
+                _SendMessage(MediatorMessages.LedEntityCRUDVM_GroupPositionChanged, null);
             }
         }
 
@@ -442,6 +447,14 @@ namespace Led.ViewModels
                 RaisePropertyChanged(nameof(WiringLine));
         }
 
+        private void _SetRectangleBorder()
+        {
+            if(_NeedCorrectionBusDefinitions || _NeedCorrectionPosition)
+                Rectangle.Stroke = Defines.LedGroupColorWrong;
+            else
+                Rectangle.Stroke = Defines.LedGroupColor;
+        }
+
         private void _SendMessage(MediatorMessages message, object data)
         {
             _Mediator.BroadcastMessage(message, this, data);
@@ -451,16 +464,21 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.GroupBusDefinitionsNeedCorrectionChanged:
-                    if ((data as MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection.ContainsKey(this))
+                case MediatorMessages.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged:
+                    if ((data as MediatorMessageData.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection.ContainsKey(this))
                     {
-                        _NeedCorrection = (data as MediatorMessageData.GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection[this];
-                        if (_NeedCorrection)
-                            Rectangle.Stroke = Defines.LedGroupColorWrong;
-                        else
-                            Rectangle.Stroke = Defines.LedGroupColor;
+                        _NeedCorrectionBusDefinitions = (data as MediatorMessageData.LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged).NeedCorrection[this];
+                        _SetRectangleBorder();
                         RaisePropertyChanged(nameof(BusBorder));
                     }                    
+                    break;
+                case MediatorMessages.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged:
+                    if ((data as MediatorMessageData.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged).NeedCorrection.ContainsKey(this))
+                    {
+                        _NeedCorrectionPosition = (data as MediatorMessageData.LedEntityCRUDVM_GroupPositionNeedCorrectionChanged).NeedCorrection[this];
+                        _SetRectangleBorder();
+                        RaisePropertyChanged(nameof(PositionBorder));
+                    }
                     break;
                 default:
                     break;
