@@ -386,15 +386,41 @@ namespace Led.ViewModels
         {
             LedGroup = ledGroup ?? (LedGroup = new Model.LedGroup());
             Rectangle = new Utility.Rectangle(0, 0, Defines.LedGroupColor);
-            CloseWindowCommand = new Command(_OnCloseWindowCommand);
+            CloseWindowCommand = new Command(_OnCloseWindowCommand, _CanExecuteClosing);
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);            
         }
 
+        private bool _CanExecuteClosing()
+        {
+            if (_ProcessSelectedLeds().Count < _CountStatusLeds())
+            {
+                MessageBox.Show("There are not hard wired leds. Please fix this before closing.");
+                return false;
+            }
+
+            return true;
+        }
+
         private void _OnCloseWindowCommand()
         {
-            _ledGroup.Leds = new List<Point>();
+            LedGroup.Leds = _ProcessSelectedLeds();
+            LedGroup.View.GridLedStartOffset = _MinLedPosition;
+
+            App.Instance.WindowService.CloseWindow(this);
+        }
+
+        private int _CountStatusLeds()
+        {
+            int count = 0;
+            LedGrid.ForEach(x => { if (x.Status) count++; });
+            return count;
+        }
+
+        private List<Point> _ProcessSelectedLeds()
+        {
+            List<Point> _leds = new List<Point>();
             Point _minLeds = _MinLedPosition;
             bool[,] done = new bool[GridRangeX, GridRangeY];
 
@@ -411,7 +437,7 @@ namespace Led.ViewModels
 
                 if (_ledGroup.View.LedGrid[i, j].Status && !done[i, j] && Direction != LedViewArrowDirection.None)
                 {
-                    _ledGroup.Leds.Add(new Point(i - _minLeds.X, j - _minLeds.Y));
+                    _leds.Add(new Point(i - _minLeds.X, j - _minLeds.Y));
                     done[i, j] = true;
                 }
 
@@ -436,9 +462,8 @@ namespace Led.ViewModels
 
                 iterations++;
             }
-            _ledGroup.View.GridLedStartOffset = _minLeds;
 
-            App.Instance.WindowService.CloseWindow(this);
+            return _leds;
         }
 
         private void _LedGroupViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
