@@ -196,8 +196,10 @@ namespace Led
         AudioControlPlayPause,
         AudioControlCurrentTick,
         AudioProperty_NewAudio,
-        EffectServiceRenderAll,
-        EffectServicePreview
+        EffectService_RenderAll,
+        EffectService_Preview,
+        EffectService_AskCurrentLedEntities,
+        EffectService_RecieveCurrentLedEntities
     }
 
     public class MediatorMessageData
@@ -297,16 +299,26 @@ namespace Led
             }
         }
 
-        public class EffectServicePreviewData
+        public class EffectServicePreview
         {
             public ViewModels.EffectBaseVM EffectBaseVM { get; }
 
             public bool Stop { get; }
 
-            public EffectServicePreviewData(ViewModels.EffectBaseVM effectBaseVM, bool stop = false)
+            public EffectServicePreview(ViewModels.EffectBaseVM effectBaseVM, bool stop = false)
             {
                 EffectBaseVM = effectBaseVM;
                 Stop = stop;
+            }
+        }
+
+        public class EffectService_RecieveCurrentLedEntities
+        {
+            public ObservableCollection<ViewModels.LedEntityBaseVM> LedEntityBaseVMs { get; }
+
+            public EffectService_RecieveCurrentLedEntities(ObservableCollection<ViewModels.LedEntityBaseVM> ledEntityBaseVMs)
+            {
+                LedEntityBaseVMs = ledEntityBaseVMs;
             }
         }
 

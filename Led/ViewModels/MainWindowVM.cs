@@ -225,8 +225,6 @@ namespace Led.ViewModels
 
             if (!string.IsNullOrEmpty(Project.AudioProperty?.FilePath))
                 _InitAudioUserControl();
-
-            App.Instance.EffectService.Init(_ledEntities);
             
             //Update the View and all Commands
             RaiseAllPropertyChanged();
@@ -266,6 +264,9 @@ namespace Led.ViewModels
                     break;
                 case MediatorMessages.LedEntitySelectVM_CurrentEffectChanged:
                     _EffectView.DataContext = _CurrentEffect;
+                    break;
+                case MediatorMessages.EffectService_AskCurrentLedEntities:
+                    _SendMessage(MediatorMessages.EffectService_RecieveCurrentLedEntities, new MediatorMessageData.EffectService_RecieveCurrentLedEntities(LedEntities));
                     break;
                 default:
                     break;

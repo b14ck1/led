@@ -217,7 +217,7 @@ namespace Led.ViewModels
 
         private void _SetLeds_Callback(List<Utility.LedModelID> ledModelIDs)
         {
-            EffectBase.Leds = ledModelIDs;
+            SelectedLeds = ledModelIDs;
 
             EffectBase.LedPositions = App.Instance.EffectService.CalculateRelativeLedPosition(ledModelIDs, this);
         }

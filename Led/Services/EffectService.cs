@@ -43,8 +43,15 @@ namespace Led.Services
          * */
 
         private Services.MediatorService _Mediator;
-
-        private List<LedEntityBaseVM> _LedEntityBaseVMs;
+        private List<LedEntityBaseVM> _ledEntityBaseVMs;
+        public List<LedEntityBaseVM> LedEntityBaseVMs
+        {
+            get
+            {
+                _SendMessage(MediatorMessages.EffectService_AskCurrentLedEntities, null);
+                return _ledEntityBaseVMs;
+            }
+        }
         private LedEntityBaseVM _CurrentLedEntity;
 
         private Model.AudioProperty _AudioProperty;
@@ -56,15 +63,6 @@ namespace Led.Services
         private Utility.AccurateTimer _AccurateTimer;
 
         public System.Windows.Window MainWindow;
-
-        public void Init(ObservableCollection<LedEntityBaseVM> ledEntityBaseVMs)
-        {
-            _LedEntityBaseVMs.Clear();
-            foreach (var x in ledEntityBaseVMs)
-            {
-                _LedEntityBaseVMs.Add(x);
-            }
-        }
 
         public List<Model.LedStatus> GetState(long frame, List<Utility.LedModelID> ledModelIDs, Model.Effect.EffectBase effectBase)
         {
@@ -79,7 +77,7 @@ namespace Led.Services
         /// <returns>Ref. to the LedGroup.</returns>
         public Model.LedGroup GetLedGroup(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
         {
-            foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
+            foreach (var ledEntityBaseVM in LedEntityBaseVMs)
             {
                 if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
                     return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus);
@@ -179,7 +177,7 @@ namespace Led.Services
 
         public EffectService()
         {
-            _LedEntityBaseVMs = new List<LedEntityBaseVM>();
+            _ledEntityBaseVMs = new List<LedEntityBaseVM>();
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
@@ -190,7 +188,7 @@ namespace Led.Services
         {
             if (_AudioProperty != null)
             {
-                foreach (var ledEntityBaseVM in _LedEntityBaseVMs)
+                foreach (var ledEntityBaseVM in LedEntityBaseVMs)
                 {
                     _InitSeconds(ledEntityBaseVM);
                 }
@@ -213,7 +211,7 @@ namespace Led.Services
 
         private void _RenderAllEntities()
         {
-            _LedEntityBaseVMs.ForEach(x => _RenderEntity(x));
+            LedEntityBaseVMs.ForEach(x => _RenderEntity(x));
         }
 
         private void _RenderEntity(LedEntityBaseVM ledEntity)
@@ -426,6 +424,11 @@ namespace Led.Services
             _LastTickedFrame++;
         }
 
+        private void _SendMessage(MediatorMessages mediatorMessages, object data)
+        {
+            _Mediator.BroadcastMessage(mediatorMessages, this, data);
+        }
+
         public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
             switch (message)
@@ -453,12 +456,19 @@ namespace Led.Services
                     _AudioProperty = (data as MediatorMessageData.AudioProperty_NewAudio).AudioProperty;
                     _RenderAllEntities();
                     break;
-                case MediatorMessages.EffectServiceRenderAll:
+                case MediatorMessages.EffectService_RenderAll:
                     _RenderAllEntities();
                     break;
-                case MediatorMessages.EffectServicePreview:
-                    MediatorMessageData.EffectServicePreviewData effectServicePreviewData = (data as MediatorMessageData.EffectServicePreviewData);
+                case MediatorMessages.EffectService_Preview:
+                    MediatorMessageData.EffectServicePreview effectServicePreviewData = (data as MediatorMessageData.EffectServicePreview);
                     _PreviewEffect(effectServicePreviewData.EffectBaseVM, effectServicePreviewData.Stop);
+                    break;
+                case MediatorMessages.EffectService_RecieveCurrentLedEntities:
+                    _ledEntityBaseVMs.Clear();
+                    foreach(var VM in (data as MediatorMessageData.EffectService_RecieveCurrentLedEntities).LedEntityBaseVMs)
+                    {
+                        _ledEntityBaseVMs.Add(VM);
+                    }                    
                     break;
                 default:
                     break;
