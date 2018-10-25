@@ -367,6 +367,11 @@ namespace Led
         public static int MainWindowWidth = 1600;
         public static int MainWindowHeight = 900;
 
-        public static byte FramesPerSecond = 40;        
+        public static byte FramesPerSecond = 40;
+
+        public const int UdpServerPort = 31313;
+        public const string ScanMessage = "I bims, ein PC!";
+        public const string RecieveMessage = "I bims, eins LED!";
+        public const string TimestampPrefix = "Time";
     }
 }

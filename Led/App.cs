@@ -15,6 +15,7 @@ namespace Led
         public Services.IOService IOService;
         public Services.MediatorService MediatorService;
         public Services.EffectService EffectService;
+        public Services.ConnectivityService ConnectivityService;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -27,6 +28,8 @@ namespace Led
             Instance.IOService = new Services.IOService();
             Instance.MediatorService = new Services.MediatorService();
             Instance.EffectService = new Services.EffectService();
+            Instance.ConnectivityService = new Services.ConnectivityService();
+            Instance.ConnectivityService.StartServer();
             MainWindowTest();
         }
 
