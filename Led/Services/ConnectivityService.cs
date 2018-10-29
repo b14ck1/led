@@ -57,6 +57,11 @@ namespace Led.Services
             _TcpServer.SendData(TcpMessages.RenderedEffects, data, id);
         }
 
+        public void SendShow(string id)
+        {
+            _TcpServer.SendData(TcpMessages.Show, null, id);
+        }
+
         public ConnectivityService()
         {
             _UdpSocket = new lib.UdpSocket();            
