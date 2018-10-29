@@ -139,6 +139,8 @@
     <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
     <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
     <Compile Include="ViewModels\EffectProperties\SetColorVM.cs" />
+    <Compile Include="ViewModels\NetworkClientOverviewVM.cs" />
+    <Compile Include="ViewModels\NetworkClientVM.cs" />
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
@@ -166,6 +168,9 @@
     </Compile>
     <Compile Include="Views\Controls\MainWindow\LedEntityButtons.xaml.cs">
       <DependentUpon>LedEntityButtons.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Controls\MainWindow\NetworkClientOverview.xaml.cs">
+      <DependentUpon>NetworkClientOverview.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\Controls\MainWindow\TimelineUserControl.xaml.cs">
       <DependentUpon>TimelineUserControl.xaml</DependentUpon>
@@ -237,6 +242,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Controls\MainWindow\LedEntityButtons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Controls\MainWindow\NetworkClientOverview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
