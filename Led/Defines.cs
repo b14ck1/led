@@ -201,7 +201,8 @@ namespace Led
         EffectService_RenderAll,
         EffectService_Preview,
         EffectService_AskCurrentLedEntities,
-        EffectService_RecieveCurrentLedEntities
+        EffectService_RecieveCurrentLedEntities,
+        TcpServer_ClientsChanged
     }
 
     public class MediatorMessageData
@@ -354,6 +355,17 @@ namespace Led
         //}
     }
 
+    public enum TcpMessages
+    {
+        ID,
+        Config,
+        RenderedEffects,
+        Timestamp,
+        Play,
+        Pause,
+        Preview
+    }
+
     public static class Defines
     {
         public static Brush LedGroupColor = Brushes.DarkSlateGray;
@@ -369,9 +381,8 @@ namespace Led
 
         public static byte FramesPerSecond = 40;
 
-        public const int UdpServerPort = 31313;
-        public const string ScanMessage = "I bims, ein PC!";
-        public const string RecieveMessage = "I bims, eins LED!";
-        public const string TimestampPrefix = "Time";
+        public const int ServerPort = 31313;        
+        public const string UdpBroadcastMessage = "I bims, eins LED!";
+        public const string UdpBroadcastAnswer = "I bims, ein PC!";        
     }
 }

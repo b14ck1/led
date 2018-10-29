@@ -7,201 +7,206 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Led.Services
 {
     public class ConnectivityService
     {
-        private UDP _UDP;
-        private TCP _TCP;
+        private lib.UdpSocket _UdpSocket;
+        private lib.TCP.TcpServer _TcpServer;
 
-        //private BackgroundWorker _ScanUDPBackgroundWorker;
-
-        public List<EntityClient> UnbindedClients { get; }
-        public Dictionary<ViewModels.LedEntityBaseVM, EntityClient> ClientMapping { get; }
+        public List<string> ConnectedClients { get => _TcpServer.ConnectedClients; }
 
         public void StartServer()
         {
-            _UDP.StartListening(ClientResponded);
-            //_ScanUDPBackgroundWorker = new BackgroundWorker();
-            //_ScanUDPBackgroundWorker.DoWork += new DoWorkEventHandler(delegate (object o, DoWorkEventArgs e)
-            //{
-            //    BackgroundWorker _backgroundWorker = o as BackgroundWorker;
-            //    try
-            //    {
-            //        while (!_backgroundWorker.CancellationPending)
-            //        {
-            //            _UDP.SendScanMessage();
-            //            Thread.Sleep(1000);
-            //        }
-            //    }
-            //    catch (Exception)
-            //    {
-            //        Console.WriteLine(e.ToString());
-            //    }
-            //});
-            //_ScanUDPBackgroundWorker.RunWorkerAsync();
+            _UdpSocket.StartListening(ClientBroadcasted);
+            _TcpServer.Start();
         }
 
         public void StopServer()
         {
-            //_ScanUDPBackgroundWorker.CancelAsync();
-            _UDP.StopListening();
+            _UdpSocket.StopListening();
+            _TcpServer.Stop();
         }
 
-        public void SendTimeStamp(long frame, ViewModels.LedEntityBaseVM ledEntityBaseVM = null)
+        public void SendTimeStamp(long frame, string id)
         {
-            if (ledEntityBaseVM == null)
-                ClientMapping.Values.ToList().ForEach(x => _UDP.SendTimeStamp(frame, x.IP, x.Port));
-            else if (ClientMapping.ContainsKey(ledEntityBaseVM))
-                _UDP.SendTimeStamp(frame, ClientMapping[ledEntityBaseVM].IP, ClientMapping[ledEntityBaseVM].Port);
+            _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(frame), id);
+        }
+
+        public void SendEntityConfig(Model.LedEntity ledEntity, string id)
+        {
+            //Determine the length of the byte array
+            int countBus = 0;
+            int countGroups = 0;
+
+            ledEntity.LedBuses.Values.ToList().ForEach(bus =>
+            {
+                countBus++;
+                bus.LedGroups.ForEach(group =>
+                {
+                    countGroups++;                    
+                });
+            });
+            byte[] data = new byte[2 + countBus * 3 + countGroups * 3];
+
+            //Write out the total number of busses
+            int writtenBytes = 0;
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)ledEntity.LedBuses.Count), 0, data, writtenBytes, 2);
+            writtenBytes += 2;
+
+            foreach(var bus in ledEntity.LedBuses)
+            {
+                //Write out bus id
+                data[writtenBytes] = bus.Key;
+                writtenBytes++;
+
+                //Write out number of groups in this bus
+                Buffer.BlockCopy(BitConverter.GetBytes((UInt16)bus.Value.LedGroups.Count), 0, data, writtenBytes, 2);
+                writtenBytes += 2;
+
+                foreach(var group in bus.Value.LedGroups)
+                {
+                    //Write out group id
+                    data[writtenBytes] = group.PositionInBus;
+                    writtenBytes++;
+
+                    //Write out number of leds in this group
+                    Buffer.BlockCopy(BitConverter.GetBytes((UInt16)group.Leds.Count), 0, data, writtenBytes, 2);
+                    writtenBytes += 2;
+                }
+            }
+
+            _TcpServer.SendData(TcpMessages.Config, data, id);
+        }
+
+        public void SendPlay(string id)
+        {
+            _TcpServer.SendData(TcpMessages.Play, null, id);
+        }
+
+        public void SendPause(string id)
+        {
+            _TcpServer.SendData(TcpMessages.Pause, null, id);
+        }
+
+        public void SendEntityEffects(Model.LedEntity ledEntity, string id)
+        {
+            //Determine the length of the byte array
+            int countSeconds = ledEntity.Seconds.Length;
+            int bytesOneImage = ledEntity.AllLedIDs.Count * 8;
+            int countFrames = 0;
+            int countLedChanges = 0;
+            foreach(var second in ledEntity.Seconds)
+            {
+                foreach (var frame in second.Frames)
+                {
+                    if (frame.LedChanges.Count > 0)
+                    {
+                        countFrames++;
+                        countLedChanges += frame.LedChanges.Count;
+                    }
+                }
+            }
+            byte[] data = new byte[2 + 2 + countSeconds * bytesOneImage + 2 + countFrames * 4 + countLedChanges * 8];
+
+            //At first we send the number of seconds
+            int writtenBytes = 0;
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)ledEntity.Seconds.Length), 0, data, writtenBytes, 2);
+            writtenBytes += 2;
+
+            //After how many frames per second
+            data[writtenBytes] = Defines.FramesPerSecond;
+            writtenBytes++;
+
+            //How much bytes does one image take
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)bytesOneImage), 0, data, writtenBytes, 2);
+            writtenBytes += 2;
+
+            //Write out all images
+            foreach (var second in ledEntity.Seconds)
+            {                
+                foreach (var led in second.LedEntityStatus)
+                {
+                    //First the led id
+                    data[writtenBytes] = led.LedID.BusID;
+                    writtenBytes++;
+                    data[writtenBytes] = led.LedID.PositionInBus;
+                    writtenBytes++;
+                    Buffer.BlockCopy(BitConverter.GetBytes(led.LedID.Led), 0, data, writtenBytes, 2);
+                    writtenBytes += 2;
+
+                    //After the color (A,R,G,B)
+                    data[writtenBytes] = led.Color.A;
+                    writtenBytes++;
+                    data[writtenBytes] = led.Color.R;
+                    writtenBytes++;
+                    data[writtenBytes] = led.Color.G;
+                    writtenBytes++;
+                    data[writtenBytes] = led.Color.B;
+                    writtenBytes++;
+                }                
+            }
+
+            //Number of frames
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)countFrames), 0, data, writtenBytes, 2);
+            writtenBytes += 2;
+
+            //Write out all frames
+            for (int i = 0; i < ledEntity.Seconds.Length; i++)
+            {
+                for (int j = 0; j < ledEntity.Seconds[i].Frames.Length; j++)
+                {
+                    if (ledEntity.Seconds[i].Frames[j].LedChanges.Count > 0)
+                    {
+                        //Which frame
+                        Buffer.BlockCopy(BitConverter.GetBytes((UInt16)(i * Defines.FramesPerSecond + j)), 0, data, writtenBytes, 2);
+                        writtenBytes += 2;
+
+                        //How many led changes
+                        Buffer.BlockCopy(BitConverter.GetBytes((UInt16)ledEntity.Seconds[i].Frames[j].LedChanges.Count), 0, data, writtenBytes, 2);
+                        writtenBytes += 2;
+
+                        foreach (var led in ledEntity.Seconds[i].Frames[j].LedChanges)
+                        {
+                            //First the led id
+                            data[writtenBytes] = led.LedID.BusID;
+                            writtenBytes++;
+                            data[writtenBytes] = led.LedID.PositionInBus;
+                            writtenBytes++;
+                            Buffer.BlockCopy(BitConverter.GetBytes(led.LedID.Led), 0, data, writtenBytes, 2);
+                            writtenBytes += 2;
+
+                            //After the color (A,R,G,B)
+                            data[writtenBytes] = led.Color.A;
+                            writtenBytes++;
+                            data[writtenBytes] = led.Color.R;
+                            writtenBytes++;
+                            data[writtenBytes] = led.Color.G;
+                            writtenBytes++;
+                            data[writtenBytes] = led.Color.B;
+                            writtenBytes++;
+                        }
+                    }
+                }
+            }
+
+            _TcpServer.SendData(TcpMessages.RenderedEffects, data, id);
         }
 
         public ConnectivityService()
         {
-            _UDP = new UDP();
-            _TCP = new TCP();
-            
-            ClientMapping = new Dictionary<ViewModels.LedEntityBaseVM, EntityClient>();
+            _UdpSocket = new lib.UdpSocket();            
+            _TcpServer = new lib.TCP.TcpServer(new lib.EntityHandlerProvider(), Defines.ServerPort);
         }
 
-        private void ClientResponded(IPAddress IP, byte[] data, int port)
+        private void ClientBroadcasted(IPAddress ip, byte[] data, int port)
         {
-            EntityClient entityClient = new EntityClient(IP, Encoding.ASCII.GetString(data), port);
-            if (!UnbindedClients.Contains(entityClient))
-                UnbindedClients.Add(entityClient);
+            Console.WriteLine("IP: {0}, Port: {1}, Data: {2}", ip, port, Encoding.ASCII.GetString(data));
 
-            Console.WriteLine("IP: {0}, Port: {1}, Data: {2}", IP, port, Encoding.ASCII.GetString(data));
-
-            _UDP.SendTimeStamp(200, entityClient.IP, entityClient.Port);
-
-            Thread.Sleep(1000);
-
-            _UDP.SendTimeStamp(200, entityClient.IP, entityClient.Port);
-            _UDP.SendTimeStamp(200, entityClient.IP, entityClient.Port);
-        }
-
-        class UDP
-        {
-            Socket _Socket;
-
-            private UdpClient _UdpServer;
-            private IPEndPoint _ScanServerEndPoint;
-            BackgroundWorker _ServerBackgroundWorker;
-
-            public UDP()
-            {
-                _Socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-
-                _UdpServer = new UdpClient(Defines.UdpServerPort);
-                _ScanServerEndPoint = new IPEndPoint(IPAddress.Any, Defines.UdpServerPort);
-            }
-
-            public void SendTimeStamp(long frame, IPAddress iPAddress, int port)
-            {
-                byte[] _prefix = Encoding.ASCII.GetBytes(Defines.TimestampPrefix);
-                byte[] _time = BitConverter.GetBytes(frame);
-
-                byte[] _sendBuffer = new byte[_prefix.Length + _time.Length];
-                Buffer.BlockCopy(_prefix, 0, _sendBuffer, 0, _prefix.Length);
-                Buffer.BlockCopy(_time, 0, _sendBuffer, _prefix.Length, _time.Length);
-
-                _SendMessage(_sendBuffer, iPAddress, port);
-            }
-
-            private void _SendMessage(byte[] sendbuffer, IPAddress iPAddress, int port)
-            {
-                try
-                {
-                    IPEndPoint _iPEndPoint = new IPEndPoint(iPAddress, port);
-                    _Socket.SendTo(sendbuffer, _iPEndPoint);
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-            }
-
-            public void StartListening(Action<IPAddress, byte[], int> callback)
-            {
-                _ServerBackgroundWorker = new BackgroundWorker();
-                _ServerBackgroundWorker.DoWork += new DoWorkEventHandler(
-                    delegate (object o, DoWorkEventArgs e)
-                    {
-                        BackgroundWorker _backgroundWorker = o as BackgroundWorker;
-                        try
-                        {
-                            while (!_backgroundWorker.CancellationPending)
-                            {
-                                byte[] bytes = _UdpServer.Receive(ref _ScanServerEndPoint);
-
-                                IPAddress ip = _ScanServerEndPoint.Address;                                
-                                int port = _ScanServerEndPoint.Port;
-
-                                callback(ip, bytes, port);
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            Console.WriteLine(e.ToString());
-                        }
-                    });
-
-                _ServerBackgroundWorker.RunWorkerAsync();
-            }
-
-            public void StopListening()
-            {
-                _ServerBackgroundWorker.CancelAsync();
-            }
-        }
-
-        class TCP
-        {
-
-        }
-
-        public class EntityClient
-        {
-            public IPAddress IP { get; }
-
-            public string ID { get; }
-
-            public int Port { get; }
-
-            public EntityClient(IPAddress ip, string id, int port)
-            {
-                IP = ip;
-                ID = id;
-                Port = port;
-            }
-
-            // override object.Equals
-            public override bool Equals(object obj)
-            {
-                //       
-                // See the full list of guidelines at
-                //   http://go.microsoft.com/fwlink/?LinkID=85237  
-                // and also the guidance for operator== at
-                //   http://go.microsoft.com/fwlink/?LinkId=85238
-                //
-
-                if (obj == null || GetType() != obj.GetType())
-                {
-                    return false;
-                }
-                                
-                if ((obj as EntityClient).ID.Equals(ID))
-                    return true;
-                else
-                    return false;
-            }
-
-            // override object.GetHashCode
-            public override int GetHashCode()
-            {                                
-                return ID.GetHashCode();
-            }
+            if (Encoding.ASCII.GetString(data).Equals(Defines.UdpBroadcastMessage))
+                _UdpSocket.SendAnswer(ip, port);
         }
     }
 }
