@@ -364,7 +364,8 @@ namespace Led
         Timestamp,
         Play,
         Pause,
-        Preview
+        Preview,
+        Show
     }
 
     public static class Defines
