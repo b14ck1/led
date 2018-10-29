@@ -68,7 +68,10 @@ namespace Led.Services
             Console.WriteLine("IP: {0}, Port: {1}, Data: {2}", ip, port, Encoding.ASCII.GetString(data));
 
             if (Encoding.ASCII.GetString(data).Equals(Defines.UdpBroadcastMessage))
+            {
+                Console.WriteLine("Sending Answer.");
                 _UdpSocket.SendAnswer(ip, port);
+            }
         }
     }
 }
