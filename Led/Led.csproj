@@ -94,6 +94,7 @@
     <Compile Include="Services\ConnectivityService.cs" />
     <Compile Include="Services\EffectService.cs" />
     <Compile Include="Services\lib\EntityHandlerProvider.cs" />
+    <Compile Include="Services\lib\Parser.cs" />
     <Compile Include="Services\lib\TCP\ConnectionState.cs" />
     <Compile Include="Services\lib\TCP\TcpServer.cs" />
     <Compile Include="Services\lib\TCP\TcpServiceProvider.cs" />
