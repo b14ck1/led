@@ -87,6 +87,9 @@ namespace Led.ViewModels
             }
         }
 
+        private Views.Controls.MainWindow.NetworkClientOverview _NetworkClientOverview;
+        private NetworkClientOverviewVM _NetworkClientOverviewVM;
+
         public Command SaveProjectCommand { get; set; }
         public Command LoadProjectCommand { get; set; }
 
@@ -100,10 +103,12 @@ namespace Led.ViewModels
         public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity,
             Views.Controls.MainWindow.EffectProperties effectView,
             Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
-            Views.Controls.MainWindow.AudioUserControl audioUserControl)
+            Views.Controls.MainWindow.AudioUserControl audioUserControl,
+            Views.Controls.MainWindow.NetworkClientOverview networkClientOverview)
         {
             //Init
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
+            _NetworkClientOverviewVM = new NetworkClientOverviewVM(LedEntities);
 
             //Get Refs
             _MainWindow = mainWindow;
@@ -111,10 +116,12 @@ namespace Led.ViewModels
             _EffectView = effectView;
             _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
+            _NetworkClientOverview = networkClientOverview;
 
             //Set DataContexts
-            _AudioUserControl.DataContext = AudioUserControlVM;
             _LedEntityView.DataContext = _CurrentLedEntity;
+            _AudioUserControl.DataContext = AudioUserControlVM;
+            _NetworkClientOverview.DataContext = _NetworkClientOverviewVM;
 
             //Init Commands
             SaveProjectCommand = new Command(_OnSaveProjectCommand, () => Project != null);

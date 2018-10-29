@@ -63,8 +63,9 @@ namespace Led
             Views.Controls.MainWindow.EffectProperties effectProperties = new Views.Controls.MainWindow.EffectProperties();
             Views.Controls.MainWindow.TimelineUserControl timelineUserControl = new Views.Controls.MainWindow.TimelineUserControl();
             Views.Controls.MainWindow.AudioUserControl audioUserControl = new Views.Controls.MainWindow.AudioUserControl();
+            Views.Controls.MainWindow.NetworkClientOverview networkClientOverview = new Views.Controls.MainWindow.NetworkClientOverview();
 
-            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, timelineUserControl, audioUserControl);
+            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, timelineUserControl, audioUserControl, networkClientOverview);
 
             System.Windows.Controls.Grid.SetColumn(entityButtons, 1);
             mainWindow.Grid.Children.Add(entityButtons);
@@ -86,6 +87,10 @@ namespace Led
             System.Windows.Controls.Grid.SetColumn(audioUserControl, 0);
             System.Windows.Controls.Grid.SetColumnSpan(audioUserControl, 3);
             mainWindow.Grid.Children.Add(audioUserControl);
+
+            System.Windows.Controls.Grid.SetRow(networkClientOverview, 1);
+            System.Windows.Controls.Grid.SetColumn(networkClientOverview, 0);
+            mainWindow.Grid.Children.Add(networkClientOverview);
 
             Instance.WindowService.ShowNewWindow(mainWindow, MainViewModel);
         }

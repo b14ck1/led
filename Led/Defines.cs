@@ -202,7 +202,8 @@ namespace Led
         EffectService_Preview,
         EffectService_AskCurrentLedEntities,
         EffectService_RecieveCurrentLedEntities,
-        TcpServer_ClientsChanged
+        TcpServer_ClientsChanged,
+        NetworkClient_BindingChanged
     }
 
     public class MediatorMessageData

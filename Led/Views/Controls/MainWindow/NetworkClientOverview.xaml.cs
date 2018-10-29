@@ -10,16 +10,17 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace Led.Views.Controls.MainWindow
 {
     /// <summary>
-    /// Interaktionslogik für NetworkClients.xaml
+    /// Interaktionslogik für NetworkClientOverview.xaml
     /// </summary>
-    public partial class NetworkClients : Window
+    public partial class NetworkClientOverview : UserControl
     {
-        public NetworkClients()
+        public NetworkClientOverview()
         {
             InitializeComponent();
         }
