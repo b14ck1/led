@@ -385,6 +385,6 @@ namespace Led
 
         public const int ServerPort = 31313;        
         public const string UdpBroadcastMessage = "I bims, eins LED!";
-        public const string UdpBroadcastAnswer = "I bims, ein PC!";        
+        public const string UdpBroadcastAnswer = "I bims, eins PC!";        
     }
 }

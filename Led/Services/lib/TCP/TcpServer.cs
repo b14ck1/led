@@ -38,6 +38,8 @@ namespace Led.Services.lib.TCP
             ConnectionReady = new AsyncCallback(ConnectionReady_Handler);
             AcceptConnection = new WaitCallback(AcceptConnection_Handler);
             ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
+
+            _clientMapping = new Dictionary<string, ConnectionState>();
         }
 
 
@@ -49,7 +51,7 @@ namespace Led.Services.lib.TCP
         {
             try
             {
-                _listener.Bind(new IPEndPoint(IPAddress.Parse(GetLocalIPAddress()), _port));
+                _listener.Bind(new IPEndPoint(ConnectivityService.GetLocalIPAddress(), _port));
                 _listener.Listen(100);
                 _listener.BeginAccept(ConnectionReady, null);
                 return true;
@@ -233,19 +235,6 @@ namespace Led.Services.lib.TCP
             {
                 lock (this) { return _clientMapping.Keys.ToList(); }
             }
-        }
-
-        private static string GetLocalIPAddress()
-        {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
-            {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {
-                    return ip.ToString();
-                }
-            }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
         }
 
         public void AddClientMapping(string id, ConnectionState connectionState)

@@ -57,7 +57,10 @@ namespace Led
         static void MainWindowTest()
         {
             Views.MainWindow mainWindow = new Views.MainWindow();
+
             Instance.EffectService.MainWindow = mainWindow;
+            Instance.MediatorService.MainWindow = mainWindow;
+
             Views.Controls.MainWindow.LedEntityButtons entityButtons = new Views.Controls.MainWindow.LedEntityButtons();
             Views.Controls.LedEntityOverview entity = new Views.Controls.LedEntityOverview();
             Views.Controls.MainWindow.EffectProperties effectProperties = new Views.Controls.MainWindow.EffectProperties();

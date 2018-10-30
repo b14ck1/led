@@ -27,7 +27,13 @@ namespace Led.Services.lib
 
         public void SendAnswer(IPAddress iPAddress, int port)
         {
-            byte[] _sendBuffer = Encoding.ASCII.GetBytes(Defines.UdpBroadcastAnswer);
+            byte[] _answer = Encoding.ASCII.GetBytes(Defines.UdpBroadcastAnswer);
+            byte[] _ip = Encoding.ASCII.GetBytes(ConnectivityService.GetLocalIPAddress().ToString());
+
+            byte[] _sendBuffer = new byte[_answer.Length + _ip.Length];
+            Buffer.BlockCopy(_answer, 0, _sendBuffer, 0, _answer.Length);
+            Buffer.BlockCopy(_ip, 0, _sendBuffer, _answer.Length, _ip.Length);
+
             _SendMessage(_sendBuffer, iPAddress, port);
         }
 

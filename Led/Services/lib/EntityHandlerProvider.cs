@@ -27,7 +27,9 @@ namespace Led.Services.lib
         public override void OnAcceptConnection(ConnectionState state)
         {
             _MessageIdentified = false;
-            if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1));
+            //if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1))
+            //    state.EndConnection();
+            if (!state.Write(BitConverter.GetBytes((UInt16)145), 0, 1))
                 state.EndConnection();
         }        
 
@@ -91,6 +93,7 @@ namespace Led.Services.lib
                 case TcpMessages.ID:
                     ID = Encoding.ASCII.GetString(_Data);
                     TcpServer.AddClientMapping(ID, state);
+                    //Task.Run(() => App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null));
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null);
                     break;
             }

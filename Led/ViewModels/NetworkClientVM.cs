@@ -38,7 +38,9 @@ namespace Led.ViewModels
                         _SelectedEntity.ClientID = String.Empty;
 
                     _SelectedEntity = value;
-                    _SelectedEntity.ClientID = ID;
+                    if (_SelectedEntity != null)
+                        _SelectedEntity.ClientID = ID;
+
                     RaisePropertyChanged(nameof(SelectedEntity));
                     RaisePropertyChanged(nameof(SelectableEntities));
 

@@ -18,6 +18,7 @@ namespace Led.ViewModels
         public NetworkClientOverviewVM(ObservableCollection<LedEntityBaseVM> ledEntityBaseVMs)
         {
             _LedEntityBaseVMs = ledEntityBaseVMs;
+            NetworkClientVMs = new ObservableCollection<NetworkClientVM>();
 
             _MediatorService = App.Instance.MediatorService;
             _MediatorService.Register(this);
