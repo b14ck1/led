@@ -72,20 +72,16 @@ namespace Led.Services.lib
                     }
                 }
             }
-            byte[] data = new byte[2 + 2 + countSeconds * bytesOneImage + 2 + countFrames * 4 + countLedChanges * 8];
+            byte[] data = new byte[2 + 1 + countSeconds * bytesOneImage + 2 + countFrames * 4 + countLedChanges * 8];
 
-            //At first we send the number of seconds
+            //At first we send the number of frames
             int writtenBytes = 0;
-            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)ledEntity.Seconds.Length), 0, data, writtenBytes, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)App.Instance.Project.AudioProperty.Frames), 0, data, writtenBytes, 2);
             writtenBytes += 2;
 
             //After how many frames per second
             data[writtenBytes] = Defines.FramesPerSecond;
             writtenBytes++;
-
-            //How much bytes does one image take
-            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)bytesOneImage), 0, data, writtenBytes, 2);
-            writtenBytes += 2;
 
             //Write out all images
             foreach (var second in ledEntity.Seconds)
