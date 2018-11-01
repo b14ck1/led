@@ -17,6 +17,8 @@ namespace Led
         public Services.EffectService EffectService;
         public Services.ConnectivityService ConnectivityService;
 
+        public Model.Project Project;
+
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
         /// </summary>
