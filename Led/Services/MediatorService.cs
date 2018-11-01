@@ -9,6 +9,8 @@ namespace Led.Services
 {
     public class MediatorService : IMediator
     {
+        public System.Windows.Window MainWindow { private get; set; }
+
         /// <summary>
         /// All Participants which send and recieve Messages
         /// </summary>
@@ -28,12 +30,15 @@ namespace Led.Services
 
         public void BroadcastMessage(MediatorMessages message, object sender, object data)
         {
-            List<IParticipant> recievers = new List<IParticipant>(_Participants);
-            foreach (IParticipant reciever in recievers)
+            MainWindow.Dispatcher.BeginInvoke((Action)( () =>
             {
-                if (!reciever.Equals(sender as IParticipant))
-                    reciever.RecieveMessage(message, sender, data);
-            }
+                List<IParticipant> receivers = new List<IParticipant>(_Participants);
+                foreach (IParticipant receiver in receivers)
+                {
+                    if (!receiver.Equals(sender as IParticipant))
+                        receiver.RecieveMessage(message, sender, data);
+                }
+            }));
         }
 
         public MediatorService()

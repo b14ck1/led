@@ -46,6 +46,19 @@ namespace Led.ViewModels
             }
         }
 
+        public string ClientID
+        {
+            get => _ledEntity.ClientID;
+            set
+            {
+                if (_ledEntity.ClientID != value)
+                {
+                    LedEntity.ClientID = value;
+                    RaisePropertyChanged(nameof(ClientID));
+                }
+            }
+        }
+
         /// <summary>
         /// Path to the Front Image.
         /// </summary>

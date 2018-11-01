@@ -20,6 +20,9 @@ namespace Led.Model
         [JsonProperty]
         public Dictionary<LedEntityView, ImageInfo> ImageInfos { get; set; }
 
+        [JsonProperty]
+        public string ClientID { get; set; }
+
         public List<Utility.LedModelID> AllLedIDs
         {
             get
@@ -52,6 +55,7 @@ namespace Led.Model
                 { LedEntityView.Front, new ImageInfo() },
                 { LedEntityView.Back, new ImageInfo() }
             };
+            ClientID = "";
         }
     }
 }

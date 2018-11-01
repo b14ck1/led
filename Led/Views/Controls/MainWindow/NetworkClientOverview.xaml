@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="Led.Views.Controls.MainWindow.NetworkClientOverview"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Led.Views.Controls.MainWindow"
+             xmlns:vm="clr-namespace:Led.ViewModels"
+             xmlns:controls="clr-namespace:Led.Views.Controls.MainWindow"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="200">
+    <UserControl.Resources>
+        <ItemsPanelTemplate x:Key="ITP">
+            <StackPanel Orientation="Vertical" />
+        </ItemsPanelTemplate>
+
+        <DataTemplate DataType="{x:Type vm:NetworkClientVM}">
+            <StackPanel Orientation="Horizontal">
+                <Button Content="{Binding ID}" Command="{Binding ShowClientCommand}" Margin="3,3,3,3" />
+                <ComboBox ItemsSource="{Binding SelectableEntities}" SelectedValue="{Binding SelectedEntity, Mode=TwoWay}" Margin="3,3,3,3">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding Name}" Margin="3,3,3,3"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <Button Content="x" Command="{Binding RemoveBindingCommand}" Margin="3,3,3,3"/>
+            </StackPanel>
+        </DataTemplate>
+
+    </UserControl.Resources>
+    <Grid>
+        <ItemsControl HorizontalAlignment="Left"
+                      VerticalAlignment="Top"
+                      Margin="0,8,0,0"
+                      ItemsPanel="{StaticResource ITP}"
+                      ItemsSource="{Binding NetworkClientVMs}" />
+    </Grid>
+</UserControl>

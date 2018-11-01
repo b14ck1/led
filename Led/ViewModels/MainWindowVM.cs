@@ -87,6 +87,9 @@ namespace Led.ViewModels
             }
         }
 
+        private Views.Controls.MainWindow.NetworkClientOverview _NetworkClientOverview;
+        private NetworkClientOverviewVM _NetworkClientOverviewVM;
+
         public Command SaveProjectCommand { get; set; }
         public Command LoadProjectCommand { get; set; }
 
@@ -100,10 +103,12 @@ namespace Led.ViewModels
         public MainWindowVM(Views.MainWindow mainWindow, Views.Controls.LedEntityOverview ledEntity,
             Views.Controls.MainWindow.EffectProperties effectView,
             Views.Controls.MainWindow.TimelineUserControl timelineUserControl,
-            Views.Controls.MainWindow.AudioUserControl audioUserControl)
+            Views.Controls.MainWindow.AudioUserControl audioUserControl,
+            Views.Controls.MainWindow.NetworkClientOverview networkClientOverview)
         {
             //Init
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
+            _NetworkClientOverviewVM = new NetworkClientOverviewVM(LedEntities);
 
             //Get Refs
             _MainWindow = mainWindow;
@@ -111,10 +116,12 @@ namespace Led.ViewModels
             _EffectView = effectView;
             _TimelineUserControl = timelineUserControl;
             _AudioUserControl = audioUserControl;
+            _NetworkClientOverview = networkClientOverview;
 
             //Set DataContexts
-            _AudioUserControl.DataContext = AudioUserControlVM;
             _LedEntityView.DataContext = _CurrentLedEntity;
+            _AudioUserControl.DataContext = AudioUserControlVM;
+            _NetworkClientOverview.DataContext = _NetworkClientOverviewVM;
 
             //Init Commands
             SaveProjectCommand = new Command(_OnSaveProjectCommand, () => Project != null);
@@ -123,7 +130,7 @@ namespace Led.ViewModels
             NewProjectCommand = new Command(_OnNewProjectCommand);
             NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
             EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
-            AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null);
+            AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null && Project.AudioProperty != null);
             AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
 
             //Init Mediator
@@ -197,7 +204,7 @@ namespace Led.ViewModels
         }
 
         private void _OnAddEffectCommand()
-        {           
+        {
             (_CurrentLedEntity as LedEntitySelectVM).AddEffect();            
         }
 
@@ -207,9 +214,10 @@ namespace Led.ViewModels
             string filePath = App.Instance.IOService.OpenFileDialog($"Audio-Dateien ({fileFilter})|{fileFilter}");
             if (!string.IsNullOrEmpty(filePath))
             {                    
-                Project.AudioProperty = new Model.AudioProperty(filePath, Project.FramesPerSecond);
-                _InitAudioUserControl();                
+                Project.AudioProperty = new Model.AudioProperty(filePath);
+                _InitAudioUserControl();
             }
+            AddEffectCommand.RaiseCanExecuteChanged();
         }
 
         private void _InitProject()
@@ -220,6 +228,9 @@ namespace Led.ViewModels
             _LedEntityView.DataContext = null;
             _LedEntityView.DataContext = _CurrentLedEntity;
 
+            //Set new ref
+            App.Instance.Project = Project;
+
             //Add existing shit if there is something
             Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
 
@@ -229,7 +240,7 @@ namespace Led.ViewModels
             //Update the View and all Commands
             RaiseAllPropertyChanged();
             EditLedEntityCommand.RaiseCanExecuteChanged();
-            AddEffectCommand.RaiseCanExecuteChanged();            
+            AddEffectCommand.RaiseCanExecuteChanged();
             SaveProjectCommand.RaiseCanExecuteChanged();
             NewLedEntityCommand.RaiseCanExecuteChanged();
             AddAudioCommand.RaiseCanExecuteChanged();
@@ -248,7 +259,7 @@ namespace Led.ViewModels
             _Mediator.BroadcastMessage(message, this, data);
         }
 
-        public virtual void RecieveMessage(MediatorMessages message, object sender, object data)
+        public void RecieveMessage(MediatorMessages message, object sender, object data)
         {
             switch (message)
             {

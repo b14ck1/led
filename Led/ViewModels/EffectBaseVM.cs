@@ -45,7 +45,7 @@ namespace Led.ViewModels
             get => EffectBase.StartFrame;
             set
             {
-                if (EffectBase.StartFrame != value)
+                if (EffectBase.StartFrame != value && value <= App.Instance.Project.AudioProperty.Frames)
                 {
                     EffectBase.EndFrame = (ushort)(value + Dauer);
                     EffectBase.StartFrame = value;
@@ -74,7 +74,7 @@ namespace Led.ViewModels
             get => EffectBase.EndFrame;
             set
             {
-                if (EffectBase.EndFrame != value && value >= StartFrame)
+                if (EffectBase.EndFrame != value && value >= StartFrame && value <= App.Instance.Project.AudioProperty.Frames)
                 {
                     EffectBase.EndFrame = value;
 

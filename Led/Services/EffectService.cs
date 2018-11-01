@@ -197,14 +197,24 @@ namespace Led.Services
 
         private void _InitSeconds(LedEntityBaseVM ledEntityBaseVM)
         {
-            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[(int)_AudioProperty.Length.TotalSeconds];
+            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[_AudioProperty.Frames / Defines.FramesPerSecond+1];
             for (int i = 0; i < ledEntityBaseVM.LedEntity.Seconds.Length; i++)
             {
                 ledEntityBaseVM.LedEntity.Seconds[i] = new Model.Second();
 
-                for (int j = 0; j < Defines.FramesPerSecond; j++)
+                if (i != ledEntityBaseVM.LedEntity.Seconds.Length)
                 {
-                    ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    for (int j = 0; j < Defines.FramesPerSecond; j++)
+                    {
+                        ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < _AudioProperty.Frames % Defines.FramesPerSecond ; j++)
+                    {
+                        ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    }
                 }
             }
         }
@@ -331,47 +341,61 @@ namespace Led.Services
 
         private void _UpdateView(LedEntityBaseVM ledEntity, long currentFrame)
         {
-            if (ledEntity == null)
-                return;
-
-            //Get refs and compute the current second
-            int currentSecond = (int)(currentFrame / Defines.FramesPerSecond);
-            int currentFramesRespectiveCurrentSecond = (int)(currentFrame % Defines.FramesPerSecond);
-            Model.Second[] seconds = ledEntity.LedEntity.Seconds;
-
-            //Just some checking
-            if (currentSecond >= seconds.Length)
+            try
             {
-                Debug.WriteLine("UpdateFrame out of range. FrameValue: " + currentFrame + " SecondValue: " + currentSecond + "MaxSeconds: " + seconds.Length);
-                return;
-            }
+                //Get refs and compute the current second
+                int currentSecond = (int)(currentFrame / Defines.FramesPerSecond);
+                int currentFramesRespectiveCurrentSecond = (int)(currentFrame % Defines.FramesPerSecond);
+                Model.Second[] seconds = ledEntity.LedEntity.Seconds;
 
-            //When we are only one frame ahead of the ledEntity (normal) just execute the update
-            if (currentFrame - 1 == ledEntity.CurrentFrame)
-            {
-                ledEntity.SetLedColor(seconds[currentSecond].Frames[currentFramesRespectiveCurrentSecond].LedChanges);
-            }
-            else
-            {
-                Debug.WriteLine("Out of sync. Updating to Frame: " + _LastTickedFrame + " from Frame: " + ledEntity.CurrentFrame);
-
-                //When we aren't in the current Second, load the full image
-                if (ledEntity.CurrentFrame / Defines.FramesPerSecond == currentSecond)
+                //Just some checking
+                if (currentSecond >= seconds.Length)
                 {
-                    ledEntity.SetLedColor(ledEntity.LedEntity.Seconds[currentSecond].LedEntityStatus);
+                    Debug.WriteLine("UpdateFrame out of range. FrameValue: " + currentFrame + " SecondValue: " + currentSecond + "MaxSeconds: " + seconds.Length);
+                    return;
                 }
 
-                //After this execute all FrameChanges till the current one
-                List<List<Model.LedChangeData>> _LedChangeDatas = new List<List<Model.LedChangeData>>();
-                for (int i = (int)(ledEntity.CurrentFrame % Defines.FramesPerSecond) + 1; i <= currentFramesRespectiveCurrentSecond; i++)
+                //When we are only one frame ahead of the ledEntity (normal) just execute the update
+                if (currentFrame - 1 == ledEntity.CurrentFrame)
                 {
-                    _LedChangeDatas.Add(ledEntity.LedEntity.Seconds[currentSecond].Frames[i].LedChanges);
+                    ledEntity.SetLedColor(seconds[currentSecond].Frames[currentFramesRespectiveCurrentSecond].LedChanges);
+                }
+                else
+                {
+                    Debug.WriteLine("Out of sync. Updating to Frame: " + _LastTickedFrame + " from Frame: " + ledEntity.CurrentFrame);
+
+                    //When we aren't in the current Second, load the full image
+                    if (ledEntity.CurrentFrame / Defines.FramesPerSecond == currentSecond)
+                    {
+                        ledEntity.SetLedColor(ledEntity.LedEntity.Seconds[currentSecond].LedEntityStatus);
+                    }
+
+                    //After this execute all FrameChanges till the current one
+                    List<List<Model.LedChangeData>> _LedChangeDatas = new List<List<Model.LedChangeData>>();
+                    for (int i = (int)(ledEntity.CurrentFrame % Defines.FramesPerSecond) + 1; i <= currentFramesRespectiveCurrentSecond; i++)
+                    {
+                        _LedChangeDatas.Add(ledEntity.LedEntity.Seconds[currentSecond].Frames[i].LedChanges);
+                    }
+
+                    ledEntity.SetLedColor(_CumulateLedChangeDatas(_LedChangeDatas));
                 }
 
-                ledEntity.SetLedColor(_CumulateLedChangeDatas(_LedChangeDatas));
+                ledEntity.CurrentFrame = currentFrame;
             }
-
-            ledEntity.CurrentFrame = currentFrame;
+            catch (NullReferenceException e)
+            {
+                Debug.Print(ToString() + e.ToString());
+                //throw;
+            }
+            catch (ArgumentOutOfRangeException e)
+            {
+                Debug.Print(ToString() + e.ToString());
+                //throw;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
         private void _UpdateSuit(LedEntityBaseVM ledEntity, long currentFrame)
