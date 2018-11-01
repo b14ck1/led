@@ -197,14 +197,24 @@ namespace Led.Services
 
         private void _InitSeconds(LedEntityBaseVM ledEntityBaseVM)
         {
-            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[(int)_AudioProperty.Length.TotalSeconds];
+            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[_AudioProperty.Frames / Defines.FramesPerSecond+1];
             for (int i = 0; i < ledEntityBaseVM.LedEntity.Seconds.Length; i++)
             {
                 ledEntityBaseVM.LedEntity.Seconds[i] = new Model.Second();
 
-                for (int j = 0; j < Defines.FramesPerSecond; j++)
+                if (i != ledEntityBaseVM.LedEntity.Seconds.Length)
                 {
-                    ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    for (int j = 0; j < Defines.FramesPerSecond; j++)
+                    {
+                        ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < _AudioProperty.Frames % Defines.FramesPerSecond ; j++)
+                    {
+                        ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
+                    }
                 }
             }
         }
