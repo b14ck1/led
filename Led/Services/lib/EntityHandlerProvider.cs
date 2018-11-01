@@ -29,7 +29,7 @@ namespace Led.Services.lib
             _MessageIdentified = false;
             //if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1))
             //    state.EndConnection();
-            if (!state.Write(BitConverter.GetBytes((UInt16)145), 0, 1))
+            if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1))
                 state.EndConnection();
         }        
 
