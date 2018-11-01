@@ -100,15 +100,9 @@ namespace Led.Services.lib
                     Buffer.BlockCopy(BitConverter.GetBytes(led.LedID.Led), 0, data, writtenBytes, 2);
                     writtenBytes += 2;
 
-                    //After the color (A,R,G,B)
-                    data[writtenBytes] = led.Color.A;
-                    writtenBytes++;
-                    data[writtenBytes] = led.Color.R;
-                    writtenBytes++;
-                    data[writtenBytes] = led.Color.G;
-                    writtenBytes++;
-                    data[writtenBytes] = led.Color.B;
-                    writtenBytes++;
+                    //After the color (A,B,G,R)
+                    Buffer.BlockCopy(_Color(led.Color), 0, data, writtenBytes, 4);
+                    writtenBytes += 4;
                 }
             }
 
@@ -141,21 +135,26 @@ namespace Led.Services.lib
                             Buffer.BlockCopy(BitConverter.GetBytes(led.LedID.Led), 0, data, writtenBytes, 2);
                             writtenBytes += 2;
 
-                            //After the color (A,R,G,B)
-                            data[writtenBytes] = led.Color.A;
-                            writtenBytes++;
-                            data[writtenBytes] = led.Color.R;
-                            writtenBytes++;
-                            data[writtenBytes] = led.Color.G;
-                            writtenBytes++;
-                            data[writtenBytes] = led.Color.B;
-                            writtenBytes++;
+                            //After the color (A,B,G,R)
+                            Buffer.BlockCopy(_Color(led.Color), 0, data, writtenBytes, 4);
+                            writtenBytes += 4;
                         }
                     }
                 }
             }
 
             return data;
+        }
+
+        private static byte[] _Color(System.Windows.Media.Color color)
+        {
+            byte[] res = new byte[4];            
+            //Global Brightness (5 bits?) (111 11111)
+            res[0] = (byte)(0b111000 | color.A >> 3);            
+            res[1] = color.B;            
+            res[2] = color.G;            
+            res[3] = color.R;
+            return res;
         }
     }
 }
