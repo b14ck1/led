@@ -365,7 +365,8 @@ namespace Led
         Play,
         Pause,
         Preview,
-        Show
+        Show,
+        Color
     }
 
     public static class Defines
