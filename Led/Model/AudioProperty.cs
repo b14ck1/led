@@ -25,13 +25,14 @@ namespace Led.Model
 
         [JsonProperty]
         public string FilePath { get; }
-
+        
         public AudioProperty(int frames)
         {
             Frames = frames;
             Length = TimeSpan.FromMilliseconds(Frames / Defines.FramesPerSecond * 1000);
         }
 
+        [JsonConstructor]
         public AudioProperty(string filePath)
         {
             FilePath = filePath;
