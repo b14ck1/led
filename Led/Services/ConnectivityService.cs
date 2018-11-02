@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -79,14 +80,28 @@ namespace Led.Services
             }
         }
 
+        /// <summary>
+        /// Searches for connected interfaces and excludes:
+        /// - not connected
+        /// - loopback
+        /// - ipv6
+        /// </summary>
+        /// <returns>First found UnicastAddress</returns>
         public static IPAddress GetLocalIPAddress()
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            foreach (NetworkInterface adapter in NetworkInterface.GetAllNetworkInterfaces())
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                if (adapter.OperationalStatus == OperationalStatus.Up)
                 {
-                    return ip;
+                    string description = adapter.Description;
+                    if (!description.Contains("Loopback") && !description.Contains("loopback"))
+                    {
+                        foreach (var address in adapter.GetIPProperties().UnicastAddresses)
+                        {
+                            if (address.Address.AddressFamily == AddressFamily.InterNetwork)
+                                return address.Address;
+                        }
+                    }
                 }
             }
             throw new Exception("No network adapters with an IPv4 address in the system!");
