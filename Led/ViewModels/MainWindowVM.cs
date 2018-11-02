@@ -186,7 +186,8 @@ namespace Led.ViewModels
 
         private void _OnEditLedEntityCommand()
         {
-            Project.LedEntities.ForEach(x => x.Seconds = new Model.Second[(int)Project.AudioProperty.Length.TotalSeconds]);
+            //forgotten probably
+            //Project.LedEntities.ForEach(x => x.Seconds = new Model.Second[(int)Project.AudioProperty.Length.TotalSeconds]);
             
             Views.CRUDs.LedEntityCRUD ledEntityCRUDView = new Views.CRUDs.LedEntityCRUD();
             Views.Controls.CRUDs.LedEntityGroupProperties _ledGroupProperties = new Views.Controls.CRUDs.LedEntityGroupProperties();
