@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -167,22 +168,31 @@ namespace Led.Services.lib.TCP
         /// </SUMMARY>
         private void ReceivedDataReady_Handler(IAsyncResult ar)
         {
-            ConnectionState st = ar.AsyncState as ConnectionState;
-            st._conn.EndReceive(ar);
-            //Im considering the following condition as a signal that the
-            //remote host droped the connection.
-            if (st._conn.Available == 0) DropConnection(st);
-            else
+            try
             {
-                try { st._provider.OnReceiveData(st); }
-                catch
+                ConnectionState st = ar.AsyncState as ConnectionState;
+                st._conn.EndReceive(ar);
+                //Im considering the following condition as a signal that the
+                //remote host droped the connection.
+                if (st._conn.Available == 0) DropConnection(st);
+                else
                 {
-                    //report error in the provider
+                    try { st._provider.OnReceiveData(st); }
+                    catch
+                    {
+                        //report error in the provider
+                    }
+                    //Resume ReceivedData callback loop
+                    if (st._conn.Connected)
+                        st._conn.BeginReceive(st._buffer, 0, 0, SocketFlags.None,
+                          ReceivedDataReady, st);
                 }
-                //Resume ReceivedData callback loop
-                if (st._conn.Connected)
-                    st._conn.BeginReceive(st._buffer, 0, 0, SocketFlags.None,
-                      ReceivedDataReady, st);
+
+            }
+            catch (Exception e)
+            {
+                Debug.Print(e.ToString());
+                DropConnection(ar.AsyncState as ConnectionState);
             }
         }
 
