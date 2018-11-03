@@ -59,7 +59,7 @@ namespace Led.Services.lib
             //Determine the length of the byte array
             int countSeconds = ledEntity.Seconds.Length;
             int bytesOneImage = ledEntity.AllLedIDs.Count * 8;
-            int countFrames = 0;
+            //int countFrames = 0;
             int countLedChanges = 0;
             foreach (var second in ledEntity.Seconds)
             {
@@ -67,12 +67,12 @@ namespace Led.Services.lib
                 {
                     if (frame.LedChanges.Count > 0)
                     {
-                        countFrames++;
+                        //countFrames++;
                         countLedChanges += frame.LedChanges.Count;
                     }
                 }
             }
-            byte[] data = new byte[2 + 1 + countSeconds * bytesOneImage + 2 + countFrames * 4 + countLedChanges * 8];
+            byte[] data = new byte[2 + 1 + countSeconds * bytesOneImage + /* 2 + countFrames */ App.Instance.Project.AudioProperty.Frames * 4 + countLedChanges * 8];
 
             //At first we send the number of frames
             int writtenBytes = 0;
@@ -103,16 +103,16 @@ namespace Led.Services.lib
             }
 
             //Number of frames
-            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)countFrames), 0, data, writtenBytes, 2);
-            writtenBytes += 2;
+            //Buffer.BlockCopy(BitConverter.GetBytes((UInt16)countFrames), 0, data, writtenBytes, 2);
+            //writtenBytes += 2;
 
             //Write out all frames
             for (int i = 0; i < ledEntity.Seconds.Length; i++)
             {
                 for (int j = 0; j < ledEntity.Seconds[i].Frames.Length; j++)
                 {
-                    if (ledEntity.Seconds[i].Frames[j].LedChanges.Count > 0)
-                    {
+                    //if (ledEntity.Seconds[i].Frames[j].LedChanges.Count > 0)
+                    //{
                         //Which frame
                         Buffer.BlockCopy(BitConverter.GetBytes((UInt16)(i * Defines.FramesPerSecond + j)), 0, data, writtenBytes, 2);
                         writtenBytes += 2;
@@ -135,7 +135,7 @@ namespace Led.Services.lib
                             Buffer.BlockCopy(_Color(led.Color), 0, data, writtenBytes, 4);
                             writtenBytes += 4;
                         }
-                    }
+                    //}
                 }
             }
 
