@@ -72,7 +72,7 @@ namespace Led.Services.lib
                     }
                 }
             }
-            byte[] data = new byte[2 + 1 + countSeconds * bytesOneImage + /* 2 + countFrames */ App.Instance.Project.AudioProperty.Frames * 4 + countLedChanges * 8];
+            byte[] data = new byte[2 + 1 + countSeconds * bytesOneImage + /* 2 + countFrames */ App.Instance.Project.AudioProperty.Frames * 2 + countLedChanges * 8];
 
             //At first we send the number of frames
             int writtenBytes = 0;
@@ -114,8 +114,8 @@ namespace Led.Services.lib
                     //if (ledEntity.Seconds[i].Frames[j].LedChanges.Count > 0)
                     //{
                         //Which frame
-                        Buffer.BlockCopy(BitConverter.GetBytes((UInt16)(i * Defines.FramesPerSecond + j)), 0, data, writtenBytes, 2);
-                        writtenBytes += 2;
+                        //Buffer.BlockCopy(BitConverter.GetBytes((UInt16)(i * Defines.FramesPerSecond + j)), 0, data, writtenBytes, 2);
+                        //writtenBytes += 2;
 
                         //How many led changes
                         Buffer.BlockCopy(BitConverter.GetBytes((UInt16)ledEntity.Seconds[i].Frames[j].LedChanges.Count), 0, data, writtenBytes, 2);
