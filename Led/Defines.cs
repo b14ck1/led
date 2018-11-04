@@ -358,15 +358,18 @@ namespace Led
 
     public enum TcpMessages
     {
-        ID,
-        Config,
-        RenderedEffects,
-        Timestamp,
-        Play,
-        Pause,
-        Preview,
-        Show,
-        Color
+        NULL = 0,
+        ID = 1,
+        Config = 2,
+        RenderedEffects = 3,
+        Timestamp = 4,
+        Play = 5,
+        Pause = 6,
+        Preview = 7,
+        Show = 8,
+        Color = 9,
+        Resend = 10,
+        Ready = 11
     }
 
     public static class Defines
