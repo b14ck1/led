@@ -99,7 +99,7 @@ namespace Led.Services.lib.TCP
             if (data == null)
                 data = new byte[0];
 
-            byte[] _length = BitConverter.GetBytes((UInt32)data.Length);
+            byte[] _length = BitConverter.GetBytes((Int32)data.Length);
             byte[] _sendBuffer = new byte[1 + _length.Length + data.Length];
 
             Buffer.BlockCopy(_message, 0, _sendBuffer, 0, 1);

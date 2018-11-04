@@ -11,8 +11,8 @@ namespace Led.Services.lib
     {
         private bool _MessageIdentified;
         private TcpMessages _IncomingMessage;
-        private UInt16 _DataLength;
-        private UInt16 _DataReceived;
+        private Int32 _DataLength;
+        private Int32 _DataReceived;
         private byte[] _Data;
 
         public override TcpServer TcpServer { get; set; }
@@ -27,12 +27,19 @@ namespace Led.Services.lib
         public override void OnAcceptConnection(ConnectionState state)
         {
             _MessageIdentified = false;
-            //if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1))
-            //    state.EndConnection();
-            if (!state.Write(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, 1))
+            byte[] data = new byte[5];
+            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, data, 0, 1);
+            if (!state.Write(data, 0, 5))
                 state.EndConnection();
         }        
 
+        /*
+         *  MESSAGE FORMAT:
+         *  1 byte Message_ID   uint8
+         *  4 byte Data_Length  int32
+         *  * byte Data 
+         * 
+         */
         public override void OnReceiveData(ConnectionState state)
         {
             byte[] buffer = new byte[1024];
@@ -47,19 +54,19 @@ namespace Led.Services.lib
                         message[0] = buffer[0];
 
                         _IncomingMessage = (TcpMessages)BitConverter.ToUInt16(message, 0);
-                        _DataLength = BitConverter.ToUInt16(buffer, 1);
+                        _DataLength = BitConverter.ToInt32(buffer, 1);
                         _Data = new byte[_DataLength];
 
-                        UInt16 _dataToCopy = (UInt16)(_DataLength - _DataReceived >= readBytes ? readBytes : _DataLength - _DataReceived);
-                        Buffer.BlockCopy(buffer, 3, _Data, _DataReceived, _dataToCopy);
+                        Int32 _dataToCopy = (Int32)(_DataLength - _DataReceived >= readBytes ? readBytes : _DataLength - _DataReceived);
+                        Buffer.BlockCopy(buffer, 5, _Data, _DataReceived, _dataToCopy);
                         _DataReceived += _dataToCopy;
 
                         _MessageIdentified = true;
                     }
                     else
                     {
-                        UInt16 _dataToCopy = (UInt16)(_DataLength - _DataReceived >= readBytes ? readBytes : _DataLength - _DataReceived);
-                        Buffer.BlockCopy(buffer, 3, _Data, _DataReceived, _dataToCopy);
+                        Int32 _dataToCopy = (Int32)(_DataLength - _DataReceived >= readBytes ? readBytes : _DataLength - _DataReceived);
+                        Buffer.BlockCopy(buffer, 0, _Data, _DataReceived, _dataToCopy);
                         _DataReceived += _dataToCopy;
                     }
 
@@ -92,13 +99,19 @@ namespace Led.Services.lib
             {
                 case TcpMessages.ID:
                     ID = Encoding.ASCII.GetString(_Data);
+                    Console.WriteLine("Received ID from client: {0}", ID);
                     TcpServer.AddClientMapping(ID, state);
                     //Task.Run(() => App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null));
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null);
                     break;
+                case TcpMessages.Ready:
+                    Console.WriteLine("Received Ready from client");
+                    break;
             }
 
             _MessageIdentified = false;
+            _DataLength = 0;
+            _DataReceived = 0;
         }
     }
 }
