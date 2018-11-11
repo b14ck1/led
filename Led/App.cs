@@ -17,7 +17,7 @@ namespace Led
         public Services.EffectService EffectService;
         public Services.ConnectivityService ConnectivityService;
 
-        public Model.Project Project;
+        public ViewModels.MainWindowVM MainWindowVM;
 
         /// <summary>
         /// Der Haupteinstiegspunkt für die Anwendung.
@@ -70,7 +70,7 @@ namespace Led
             Views.Controls.MainWindow.AudioUserControl audioUserControl = new Views.Controls.MainWindow.AudioUserControl();
             Views.Controls.MainWindow.NetworkClientOverview networkClientOverview = new Views.Controls.MainWindow.NetworkClientOverview();
 
-            ViewModels.MainWindowVM MainViewModel = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, timelineUserControl, audioUserControl, networkClientOverview);
+            Instance.MainWindowVM = new ViewModels.MainWindowVM(mainWindow, entity, effectProperties, timelineUserControl, audioUserControl, networkClientOverview);
 
             System.Windows.Controls.Grid.SetColumn(entityButtons, 1);
             mainWindow.Grid.Children.Add(entityButtons);
@@ -97,7 +97,7 @@ namespace Led
             System.Windows.Controls.Grid.SetColumn(networkClientOverview, 0);
             mainWindow.Grid.Children.Add(networkClientOverview);
 
-            Instance.WindowService.ShowNewWindow(mainWindow, MainViewModel);
+            Instance.WindowService.ShowNewWindow(mainWindow, Instance.MainWindowVM);
         }
 
         static void JsonTest()
