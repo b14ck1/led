@@ -94,7 +94,7 @@ namespace Led.ViewModels
                 }
                 else
                 {
-                    _SendMessage(MediatorMessages.EffectService_RenderAll, null);
+                    _SendMessage(MediatorMessages.EffectService_PreparePlay, null);
                     _Player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
                     _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
                     _UpdateTimer.Start();
@@ -103,15 +103,16 @@ namespace Led.ViewModels
             }, () => _CanExecute);
             ChangeTimeCommand = new Command<double>(progress =>
             {
-                Debug.WriteLine("clicked waveform");
+                //Debug.WriteLine("clicked waveform");
                 var time = TimeSpan.FromTicks((long)(_Player.Length.Ticks * progress));
-                Debug.WriteLine("clicked time: " + time);
+                //Debug.WriteLine("clicked time: " + time);
                 if (!IsPlaying)
                 {
                     // set current time because it's used to start playback after pause
                     SetCurrentTime(time);
                 }
                 _Player.ChangeTime(time);
+                
             });
 
             var theLength = _Player.Length;

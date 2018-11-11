@@ -198,10 +198,9 @@ namespace Led
         AudioControlPlayPause,
         AudioControlCurrentTick,
         AudioProperty_NewAudio,
-        EffectService_RenderAll,
+        EffectService_PreparePlay,
         EffectService_Preview,
         EffectService_AskCurrentLedEntities,
-        EffectService_RecieveCurrentLedEntities,
         TcpServer_ClientsChanged,
         NetworkClient_BindingChanged
     }
@@ -369,7 +368,8 @@ namespace Led
         Show = 8,
         Color = 9,
         Resend = 10,
-        Ready = 11
+        Ready = 11,
+        Heartbeat = 12
     }
 
     public static class Defines

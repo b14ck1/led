@@ -476,23 +476,13 @@ namespace Led.Services
                         _SynchronizeTimerWithMusic();
                     }
                     break;
-                case MediatorMessages.AudioProperty_NewAudio:
-                    _AudioProperty = (data as MediatorMessageData.AudioProperty_NewAudio).AudioProperty;
-                    _RenderAllEntities();
-                    break;
-                case MediatorMessages.EffectService_RenderAll:
-                    _RenderAllEntities();
+                case MediatorMessages.EffectService_PreparePlay:
+                    RenderAllEntities();
+                    _SendEffectDataToAllSuits();
                     break;
                 case MediatorMessages.EffectService_Preview:
                     MediatorMessageData.EffectServicePreview effectServicePreviewData = (data as MediatorMessageData.EffectServicePreview);
                     _PreviewEffect(effectServicePreviewData.EffectBaseVM, effectServicePreviewData.Stop);
-                    break;
-                case MediatorMessages.EffectService_RecieveCurrentLedEntities:
-                    _ledEntityBaseVMs.Clear();
-                    foreach(var VM in (data as MediatorMessageData.EffectService_RecieveCurrentLedEntities).LedEntityBaseVMs)
-                    {
-                        _ledEntityBaseVMs.Add(VM);
-                    }                    
                     break;
                 default:
                     break;
