@@ -23,18 +23,26 @@ namespace Led.Model.Effect
 
         public override List<LedChangeData> LedChangeDatas(long frame)
         {
-            List<LedChangeData> res = new List<LedChangeData>();
+            bool _initialized = false;
+            List<LedChangeData> res = null;
 
             long currFrame = frame - StartFrame;
             if (currFrame >= 0 && currFrame <= EndFrame)
             { 
                 if (currFrame % BlinkFrames == 0)
                 {
+                    if (!_initialized)
+                    {
+                        res = new List<LedChangeData>();
+                        _initialized = true;
+                    }
+
                     int tmp = (int)(currFrame / BlinkFrames);
                     Leds.ForEach(x => res.Add(new LedChangeData(x, Colors[tmp % Colors.Count], 0)));                    
                 }
 
-                return res;
+                if(_initialized)
+                    return res;
             }
 
             return null;

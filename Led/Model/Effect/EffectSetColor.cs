@@ -15,12 +15,15 @@ namespace Led.Model.Effect
         }
 
         public override List<LedChangeData> LedChangeDatas (long frame)
-        {
-            List<LedChangeData> res = new List<LedChangeData>();
+        {            
             if (frame == StartFrame)
+            {
+                List<LedChangeData> res = new List<LedChangeData>();
                 Leds.ForEach(x => res.Add(new LedChangeData(x, Colors[0], 0)));
+                return res;
+            }
 
-            return res;
+            return null;
         }
     }
 }

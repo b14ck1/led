@@ -42,19 +42,7 @@ namespace Led.Services
          * 
          * */
 
-        private Services.MediatorService _Mediator;
-        private List<LedEntityBaseVM> _ledEntityBaseVMs;
-        public List<LedEntityBaseVM> LedEntityBaseVMs
-        {
-            get
-            {
-                _SendMessage(MediatorMessages.EffectService_AskCurrentLedEntities, null);
-                return _ledEntityBaseVMs;
-            }
-        }
-        private LedEntityBaseVM _CurrentLedEntity;
-
-        private Model.AudioProperty _AudioProperty;
+        private MediatorService _Mediator;
 
         private long _LastTickedFrame;
         private long _LastPreviewedFrame;
@@ -77,7 +65,7 @@ namespace Led.Services
         /// <returns>Ref. to the LedGroup.</returns>
         public Model.LedGroup GetLedGroup(Utility.LedModelID ledID, EffectBaseVM effectBaseVM)
         {
-            foreach (var ledEntityBaseVM in LedEntityBaseVMs)
+            foreach (var ledEntityBaseVM in App.Instance.MainWindowVM.LedEntities)
             {
                 if (ledEntityBaseVM.Effects.Contains(effectBaseVM))
                     return ledEntityBaseVM.LedEntity.LedBuses[ledID.BusID].LedGroups.Find(x => x.PositionInBus == ledID.PositionInBus);
@@ -177,8 +165,6 @@ namespace Led.Services
 
         public EffectService()
         {
-            _ledEntityBaseVMs = new List<LedEntityBaseVM>();
-
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
         }
@@ -186,9 +172,9 @@ namespace Led.Services
 
         private void _InitAllSeconds()
         {
-            if (_AudioProperty != null)
+            if (App.Instance.MainWindowVM.Project.AudioProperty != null)
             {
-                foreach (var ledEntityBaseVM in LedEntityBaseVMs)
+                foreach (var ledEntityBaseVM in App.Instance.MainWindowVM.LedEntities)
                 {
                     _InitSeconds(ledEntityBaseVM);
                 }
@@ -197,7 +183,11 @@ namespace Led.Services
 
         private void _InitSeconds(LedEntityBaseVM ledEntityBaseVM)
         {
-            ledEntityBaseVM.LedEntity.Seconds = new Model.Second[_AudioProperty.Frames / Defines.FramesPerSecond+1];
+            if (App.Instance.MainWindowVM.Project.AudioProperty.Frames % Defines.FramesPerSecond > 0)
+                ledEntityBaseVM.LedEntity.Seconds = new Model.Second[App.Instance.MainWindowVM.Project.AudioProperty.Frames / Defines.FramesPerSecond + 1];
+            else
+                ledEntityBaseVM.LedEntity.Seconds = new Model.Second[App.Instance.MainWindowVM.Project.AudioProperty.Frames / Defines.FramesPerSecond];
+
             for (int i = 0; i < ledEntityBaseVM.LedEntity.Seconds.Length; i++)
             {
                 ledEntityBaseVM.LedEntity.Seconds[i] = new Model.Second();
@@ -211,7 +201,7 @@ namespace Led.Services
                 }
                 else
                 {
-                    for (int j = 0; j < _AudioProperty.Frames % Defines.FramesPerSecond ; j++)
+                    for (int j = 0; j < App.Instance.MainWindowVM.Project.AudioProperty.Frames % Defines.FramesPerSecond; j++)
                     {
                         ledEntityBaseVM.LedEntity.Seconds[i].Frames[j] = new Model.Frame();
                     }
@@ -219,9 +209,12 @@ namespace Led.Services
             }
         }
 
-        private void _RenderAllEntities()
+        public void RenderAllEntities()
         {
-            LedEntityBaseVMs.ForEach(x => _RenderEntity(x));
+            foreach (var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                _RenderEntity(x);
+            }            
         }
 
         private void _RenderEntity(LedEntityBaseVM ledEntity)
@@ -245,6 +238,7 @@ namespace Led.Services
 
             });
 
+            int framesWithChanges = 0;
             //Render every Effect one after another
             foreach (var Effect in _Effects)
             {
@@ -254,37 +248,38 @@ namespace Led.Services
                     {
                         List<Model.LedChangeData> ledChangeDatas = Effect.LedChangeDatas(i);
                         if (ledChangeDatas != null)
+                        {
                             ledEntity.LedEntity.Seconds[i / Defines.FramesPerSecond].Frames[i % Defines.FramesPerSecond].LedChanges.AddRange(ledChangeDatas);
-                        else
-                            Debug.WriteLine(this + ": Something went wrong. Null Exception while rendering Entity.");
+                            if(ledChangeDatas.Count>0 && ledEntity.LedEntity.Seconds[i / Defines.FramesPerSecond].Frames[i % Defines.FramesPerSecond].LedChanges.Count > 0)
+                                framesWithChanges++;
+                        }
+                        //else
+                        //    Debug.WriteLine(this + ": Something went wrong. Null Exception while rendering Entity.");
                     }
+                    Debug.WriteLine("Frames with changes: " + framesWithChanges);
                 }
             }
 
             //Save the FullImages (LedStatus) for every second
             //Start with writing every existing Led in the first Status
 
-            ledEntity.LedEntity.Seconds[0].LedEntityStatus.Clear();
             ledEntity.LedEntity.AllLedIDs.ForEach(x => ledEntity.LedEntity.Seconds[0].LedEntityStatus.Add(new Model.LedChangeData(x, System.Windows.Media.Colors.Black, 0)));
-
-            List<List<Model.LedChangeData>> ledChangeDatasForFirstFrame = new List<List<Model.LedChangeData>>();
-            ledChangeDatasForFirstFrame.Add(ledEntity.LedEntity.Seconds[0].LedEntityStatus);
 
             for (int i = 0; i < ledEntity.LedEntity.Seconds.Length; i++)
             {
                 List<List<Model.LedChangeData>> _ledChangeDatas = new List<List<Model.LedChangeData>>();
                 if (i == 0)
                 {
-                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i].LedEntityStatus);
-                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i].Frames[0].LedChanges);
+                    _ledChangeDatas.Add(new List<Model.LedChangeData>(ledEntity.LedEntity.Seconds[i].LedEntityStatus));
+                    _ledChangeDatas.Add(new List<Model.LedChangeData>(ledEntity.LedEntity.Seconds[i].Frames[0].LedChanges));
                 }
                 else
                 {
-                    _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i - 1].LedEntityStatus);
+                    _ledChangeDatas.Add(new List<Model.LedChangeData>(ledEntity.LedEntity.Seconds[i - 1].LedEntityStatus));
 
                     for (int j = 0; j < Defines.FramesPerSecond; j++)
                     {
-                        _ledChangeDatas.Add(ledEntity.LedEntity.Seconds[i - 1].Frames[j].LedChanges);
+                        _ledChangeDatas.Add(new List<Model.LedChangeData>(ledEntity.LedEntity.Seconds[i - 1].Frames[j].LedChanges));
                     }
                 }
                 ledEntity.LedEntity.Seconds[i].LedEntityStatus = _CumulateLedChangeDatas(_ledChangeDatas);
@@ -296,7 +291,7 @@ namespace Led.Services
             if (stop)
             {
                 _StopTimer();
-                _UpdateView(_CurrentLedEntity, _LastTickedFrame);
+                _UpdateView(App.Instance.MainWindowVM.CurrentLedEntity, _LastTickedFrame);
             }
             else
             {
@@ -362,10 +357,10 @@ namespace Led.Services
                 }
                 else
                 {
-                    Debug.WriteLine("Out of sync. Updating to Frame: " + _LastTickedFrame + " from Frame: " + ledEntity.CurrentFrame);
+                    Debug.WriteLine("Out of sync. Updating to Frame: " + currentFrame + " from Frame: " + ledEntity.CurrentFrame);
 
-                    //When we aren't in the current Second, load the full image
-                    if (ledEntity.CurrentFrame / Defines.FramesPerSecond == currentSecond)
+                    //When we are updating to the past or updating to another second in the future load the full image
+                    if (ledEntity.CurrentFrame > currentFrame || ledEntity.CurrentFrame / Defines.FramesPerSecond != currentSecond)
                     {
                         ledEntity.SetLedColor(ledEntity.LedEntity.Seconds[currentSecond].LedEntityStatus);
                     }
@@ -436,15 +431,39 @@ namespace Led.Services
             return _res;
         }
 
-        private void _SendFrameDataToSuit(LedEntityBaseVM ledEntity)
+        private void _SendEffectDataToAllSuits()
         {
+            foreach (var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                _SendEffectDataToSuit(x);
+            }
+        }
 
+        private void _SendEffectDataToSuit(LedEntityBaseVM ledEntity)
+        {
+            App.Instance.ConnectivityService.SendEntityEffects(ledEntity.LedEntity, ledEntity.LedEntity.ClientID);
+        }
+
+        private void _PlayAll()
+        {
+            foreach(var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                App.Instance.ConnectivityService.SendPlay(x.LedEntity.ClientID);
+            }
+        }
+
+        private void _PauseAll()
+        {
+            foreach (var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                App.Instance.ConnectivityService.SendPause(x.LedEntity.ClientID);
+            }
         }
 
         private void _PlayWithMusic()
         {
             Debug.WriteLine(_LastTickedFrame);
-            _UpdateView(_CurrentLedEntity, _LastTickedFrame);
+            _UpdateView(App.Instance.MainWindowVM.CurrentLedEntity, _LastTickedFrame);
             _LastTickedFrame++;
         }
 
@@ -457,16 +476,19 @@ namespace Led.Services
         {
             switch (message)
             {
-                case MediatorMessages.LedEntitySelectButtonClicked:
-                    _CurrentLedEntity = (sender as LedEntityBaseVM);
-                    break;
                 case MediatorMessages.AudioControlPlayPause:
                     _LastRecievedFrame = (data as MediatorMessageData.AudioControlPlayPauseData).CurrentFrame;
                     _LastTickedFrame = _LastRecievedFrame;
                     if ((data as MediatorMessageData.AudioControlPlayPauseData).Playing)
-                        _StartTimer(_PlayWithMusic);
+                    {
+                        _PlayAll();
+                        _StartTimer(_PlayWithMusic);                        
+                    }
                     else
-                        _StopTimer();
+                    {
+                        _PauseAll();
+                        _StopTimer();                        
+                    }
                     break;
                 case MediatorMessages.AudioControlCurrentTick:
                     long _frameRecieved = (data as MediatorMessageData.AudioControlCurrentFrameData).CurrentFrame;
