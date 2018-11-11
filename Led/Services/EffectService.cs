@@ -44,15 +44,15 @@ namespace Led.Services
 
         private MediatorService _Mediator;
 
-        private long _LastTickedFrame;
-        private long _LastPreviewedFrame;
-        private long _LastRecievedFrame;
+        private int _LastTickedFrame;
+        private int _LastPreviewedFrame;
+        private int _LastRecievedFrame;
 
         private Utility.AccurateTimer _AccurateTimer;
 
         public System.Windows.Window MainWindow;
 
-        public List<Model.LedStatus> GetState(long frame, List<Utility.LedModelID> ledModelIDs, Model.Effect.EffectBase effectBase)
+        public List<Model.LedStatus> GetState(int frame, List<Utility.LedModelID> ledModelIDs, Model.Effect.EffectBase effectBase)
         {
             throw new NotImplementedException();
         }

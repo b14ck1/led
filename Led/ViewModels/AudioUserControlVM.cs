@@ -89,14 +89,14 @@ namespace Led.ViewModels
                 if (IsPlaying)
                 {
                     _Player.Pause();
-                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), false));
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((int)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), false));
                     _UpdateTimer.Stop();
                 }
                 else
                 {
                     _SendMessage(MediatorMessages.EffectService_PreparePlay, null);
                     _Player.Play(TimeSpanHelper.FromDisplayString(CurrentTime));
-                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
+                    _SendMessage(MediatorMessages.AudioControlPlayPause, new MediatorMessageData.AudioControlPlayPauseData((int)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000), true));
                     _UpdateTimer.Start();
                 }
                 RaisePropertyChanged(playPausePropertyNames);
@@ -156,7 +156,7 @@ namespace Led.ViewModels
         private DispatcherTimer _UpdateTimer;
         private void UpdateTimer_Tick(object sender, EventArgs e)
         {
-            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((long)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
+            _SendMessage(MediatorMessages.AudioControlCurrentTick, new MediatorMessageData.AudioControlCurrentFrameData((int)(_Player.CurrentTime.TotalMilliseconds * Defines.FramesPerSecond / 1000)));
             SetCurrentTime(_Player.CurrentTime);
         }
 

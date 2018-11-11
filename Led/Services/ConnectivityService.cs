@@ -31,9 +31,9 @@ namespace Led.Services
             _TcpServer.Stop();
         }
 
-        public void SendTimeStamp(long frame, string id)
+        public void SendTimeStamp(int frame, string id)
         {
-            _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(frame), id);
+            _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(lib.HostNetworkConverter.Int32(frame)), id);
         }
 
         public void SendEntityConfig(Model.LedEntity ledEntity, string id)

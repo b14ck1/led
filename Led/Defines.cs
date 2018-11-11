@@ -282,10 +282,10 @@ namespace Led
 
         public class AudioControlPlayPauseData
         {
-            public long CurrentFrame { get; }
+            public int CurrentFrame { get; }
             public bool Playing { get; }
 
-            public AudioControlPlayPauseData(long currentFrame, bool playing)
+            public AudioControlPlayPauseData(int currentFrame, bool playing)
             {
                 CurrentFrame = currentFrame;
                 Playing = playing;
@@ -294,9 +294,9 @@ namespace Led
 
         public class AudioControlCurrentFrameData
         {
-            public long CurrentFrame { get; }
+            public int CurrentFrame { get; }
 
-            public AudioControlCurrentFrameData(long currentFrame)
+            public AudioControlCurrentFrameData(int currentFrame)
             {
                 CurrentFrame = currentFrame;
             }
