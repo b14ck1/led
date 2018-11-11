@@ -84,6 +84,7 @@ namespace Led.Services
         /// Searches for connected interfaces and excludes:
         /// - not connected
         /// - loopback
+        /// - virtual
         /// - ipv6
         /// </summary>
         /// <returns>First found UnicastAddress</returns>
@@ -94,7 +95,7 @@ namespace Led.Services
                 if (adapter.OperationalStatus == OperationalStatus.Up)
                 {
                     string description = adapter.Description;
-                    if (!description.Contains("Loopback") && !description.Contains("loopback"))
+                    if (!description.Contains("Loopback") && !description.Contains("loopback") && !description.Contains("virtual"))
                     {
                         foreach (var address in adapter.GetIPProperties().UnicastAddresses)
                         {
@@ -104,7 +105,7 @@ namespace Led.Services
                     }
                 }
             }
-            throw new Exception("No network adapters with an IPv4 address in the system!");
+            throw new Exception("No suitable network adapters with an IPv4 address in the system!");
         }
     }
 }
