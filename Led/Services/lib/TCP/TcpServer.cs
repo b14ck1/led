@@ -19,6 +19,7 @@ namespace Led.Services.lib.TCP
         private List<ConnectionState> _connections;
         private Dictionary<string, ConnectionState> _clientMapping;
         private int _maxConnections = 100;
+        private byte[] _SecretBytes;
 
         private AsyncCallback ConnectionReady;
         private WaitCallback AcceptConnection;
@@ -41,6 +42,8 @@ namespace Led.Services.lib.TCP
             ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
 
             _clientMapping = new Dictionary<string, ConnectionState>();
+
+            _SecretBytes = BitConverter.GetBytes(HostNetworkConverter.Int16((short)42));
         }
 
 
@@ -94,17 +97,18 @@ namespace Led.Services.lib.TCP
             if (!_clientMapping.ContainsKey(id))
                 return false;
 
-            byte[] _message = BitConverter.GetBytes((UInt16)message);
+            byte[] _message = BitConverter.GetBytes(HostNetworkConverter.Int16((Int16)message));
 
             if (data == null)
                 data = new byte[0];
 
-            byte[] _length = BitConverter.GetBytes((Int32)data.Length);
-            byte[] _sendBuffer = new byte[1 + _length.Length + data.Length];
+            byte[] _length = BitConverter.GetBytes(HostNetworkConverter.Int32((Int32)data.Length));
+            byte[] _sendBuffer = new byte[4 + _length.Length + data.Length];
 
-            Buffer.BlockCopy(_message, 0, _sendBuffer, 0, 1);
-            Buffer.BlockCopy(_length, 0, _sendBuffer, 1, _length.Length);
-            Buffer.BlockCopy(data, 0, _sendBuffer, 1 + _length.Length, data.Length);
+            Buffer.BlockCopy(_SecretBytes, 0, _sendBuffer, 0, 2);
+            Buffer.BlockCopy(_message, 0, _sendBuffer, 2, 2);
+            Buffer.BlockCopy(_length, 0, _sendBuffer, 4, _length.Length);
+            Buffer.BlockCopy(data, 0, _sendBuffer, 4 + _length.Length, data.Length);
 
             return _clientMapping[id].Write(_sendBuffer, 0, _sendBuffer.Length);
         }

@@ -27,9 +27,10 @@ namespace Led.Services.lib
         public override void OnAcceptConnection(ConnectionState state)
         {
             _MessageIdentified = false;
-            byte[] data = new byte[5];
-            Buffer.BlockCopy(BitConverter.GetBytes((UInt16)TcpMessages.ID), 0, data, 0, 1);
-            if (!state.Write(data, 0, 5))
+            byte[] data = new byte[8];
+            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)42)), 0, data, 0, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)TcpMessages.ID)), 0, data, 2, 2);
+            if (!state.Write(data, 0, data.Length))
                 state.EndConnection();
         }        
 
@@ -50,15 +51,16 @@ namespace Led.Services.lib
                 {                    
                     if (!_MessageIdentified)
                     {
-                        byte[] message = new byte[2];
-                        message[0] = buffer[0];
+                        short _secret = HostNetworkConverter.Int16(BitConverter.ToInt16(buffer, 0));
+                        if (_secret != 42)
+                            state.EndConnection();
 
-                        _IncomingMessage = (TcpMessages)BitConverter.ToUInt16(message, 0);
-                        _DataLength = BitConverter.ToInt32(buffer, 1);
+                        _IncomingMessage = (TcpMessages)HostNetworkConverter.Int16(BitConverter.ToInt16(buffer, 2));
+                        _DataLength = HostNetworkConverter.Int32(BitConverter.ToInt32(buffer, 4));
                         _Data = new byte[_DataLength];
 
                         Int32 _dataToCopy = (Int32)(_DataLength - _DataReceived >= readBytes ? readBytes : _DataLength - _DataReceived);
-                        Buffer.BlockCopy(buffer, 5, _Data, _DataReceived, _dataToCopy);
+                        Buffer.BlockCopy(buffer, 8, _Data, _DataReceived, _dataToCopy);
                         _DataReceived += _dataToCopy;
 
                         _MessageIdentified = true;
@@ -105,7 +107,15 @@ namespace Led.Services.lib
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null);
                     break;
                 case TcpMessages.Ready:
-                    Console.WriteLine("Received Ready from client");
+                    //Console.WriteLine("Received Ready from client");
+                    break;
+                case TcpMessages.Heartbeat:
+                    //Console.WriteLine("Received Heartbeat from client");
+                    byte[] data = new byte[8];
+                    Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)42)), 0, data, 0, 2);
+                    Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)TcpMessages.Heartbeat)), 0, data, 2, 2);
+                    if (!state.Write(data, 0, data.Length))
+                        state.EndConnection();
                     break;
             }
 
