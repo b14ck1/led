@@ -324,9 +324,12 @@ namespace Led.Services
             }
         }
 
-        private void _SynchronizeSuit()
+        private void _SynchronizeSuitWithMusic()
         {
-
+            foreach (var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                App.Instance.ConnectivityService.SendTimeStamp(_LastTickedFrame, x.LedEntity.ClientID);
+            }
         }
 
         private void _SetViewChangeData(LedEntityBaseVM ledEntity)
@@ -448,6 +451,7 @@ namespace Led.Services
         {
             foreach(var x in App.Instance.MainWindowVM.LedEntities)
             {
+                App.Instance.ConnectivityService.SendTimeStamp(_LastTickedFrame, x.LedEntity.ClientID);
                 App.Instance.ConnectivityService.SendPlay(x.LedEntity.ClientID);
             }
         }
@@ -462,7 +466,7 @@ namespace Led.Services
 
         private void _PlayWithMusic()
         {
-            Debug.WriteLine(_LastTickedFrame);
+            //Debug.WriteLine(_LastTickedFrame);
             _UpdateView(App.Instance.MainWindowVM.CurrentLedEntity, _LastTickedFrame);
             _LastTickedFrame++;
         }
@@ -491,11 +495,12 @@ namespace Led.Services
                     }
                     break;
                 case MediatorMessages.AudioControlCurrentTick:
-                    long _frameRecieved = (data as MediatorMessageData.AudioControlCurrentFrameData).CurrentFrame;
+                    int _frameRecieved = (data as MediatorMessageData.AudioControlCurrentFrameData).CurrentFrame;
                     if (_LastRecievedFrame != _frameRecieved)
                     {
                         _LastRecievedFrame = _frameRecieved;
                         _SynchronizeTimerWithMusic();
+                        _SynchronizeSuitWithMusic();
                     }
                     break;
                 case MediatorMessages.EffectService_PreparePlay:

@@ -14,6 +14,7 @@ namespace Led.Services.lib
         private Int32 _DataLength;
         private Int32 _DataReceived;
         private byte[] _Data;
+        private TcpServer.Client _Client;
 
         public override TcpServer TcpServer { get; set; }
 
@@ -102,11 +103,16 @@ namespace Led.Services.lib
                 case TcpMessages.ID:
                     ID = Encoding.ASCII.GetString(_Data);
                     Console.WriteLine("Received ID from client: {0}", ID);
-                    TcpServer.AddClientMapping(ID, state);
+                    _Client = new TcpServer.Client(state);
+                    TcpServer.AddClientMapping(ID, _Client);
                     //Task.Run(() => App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null));
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null);
                     break;
                 case TcpMessages.Ready:
+                    lock (_Client.Lock)
+                    {
+                        _Client.Ready = true;
+                    }
                     //Console.WriteLine("Received Ready from client");
                     break;
                 case TcpMessages.Heartbeat:
@@ -117,6 +123,11 @@ namespace Led.Services.lib
                     if (!state.Write(data, 0, data.Length))
                         state.EndConnection();
                     break;
+            }
+
+            lock (_Client.Lock)
+            {
+                _Client.LastMessageReceived = _IncomingMessage;
             }
 
             _MessageIdentified = false;
