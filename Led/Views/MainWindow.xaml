@@ -18,8 +18,14 @@
                 <MenuItem Header="_Speichern" Command="{Binding SaveProjectCommand}"/>
                 <MenuItem Header="_Laden" Command="{Binding LoadProjectCommand}"/>
             </MenuItem>
+            <MenuItem Header="_Bearbeiten">
+                <MenuItem Header="_LedEntity bearbeiten" Command="{Binding EditLedEntityCommand}"/>
+                <MenuItem Header="_LedEntity AddEffect" Command="{Binding AddEffectCommand}"/>
+            </MenuItem>
             <MenuItem Header="_Optionen">
                 <MenuItem Header="_Musik hinzufügen" Command="{Binding AddAudioCommand}"/>
+                <MenuItem Header="_Konfig übertragen" Command="{Binding SendConfigCommand}"/>
+                <MenuItem Header="_Effekte übertragen" Command="{Binding SendEffectCommand}"/>
             </MenuItem>
         </Menu>
         <Grid Name="Grid">
@@ -34,13 +40,6 @@
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="0.65*" />
             </Grid.RowDefinitions>
-
-            <Button Command="{Binding EditLedEntityCommand}" >
-                <TextBlock TextWrapping="Wrap">Current LedEntity bearbeiten</TextBlock>
-            </Button>
-            <Button Command="{Binding AddEffectCommand}" Grid.Column="2">
-                <TextBlock TextWrapping="Wrap">Current LedEntity AddEffect</TextBlock>
-            </Button>
         </Grid>        
     </DockPanel>
 </Window>

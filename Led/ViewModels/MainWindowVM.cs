@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace Led.ViewModels
 {
-    class MainWindowVM : INPC, IParticipant
+    public class MainWindowVM : INPC, IParticipant
     {
         private Services.MediatorService _Mediator;
 
@@ -50,7 +50,7 @@ namespace Led.ViewModels
             get => Defines.MainWindowHeight;
         }
 
-        private LedEntityBaseVM _CurrentLedEntity;        
+        public LedEntityBaseVM CurrentLedEntity;        
         private ObservableCollection<LedEntityBaseVM> _ledEntities;
         public ObservableCollection<LedEntityBaseVM> LedEntities
         {
@@ -65,7 +65,7 @@ namespace Led.ViewModels
             }
         }
 
-        private EffectBaseVM _CurrentEffect => _CurrentLedEntity.CurrentEffect;
+        private EffectBaseVM _CurrentEffect => CurrentLedEntity.CurrentEffect;
         private Views.Controls.MainWindow.EffectProperties _EffectView;
 
         private Views.Controls.MainWindow.TimelineUserControl _TimelineUserControl;
@@ -95,7 +95,10 @@ namespace Led.ViewModels
 
         public Command NewProjectCommand { get; set; }
         public Command NewLedEntityCommand { get; set; }
+
         public Command AddAudioCommand { get; set; }
+        public Command SendConfigCommand { get; set; }
+        public Command SendEffectCommand { get; set; }
 
         public Command EditLedEntityCommand { get; set; }
         public Command AddEffectCommand { get; set; }
@@ -119,7 +122,7 @@ namespace Led.ViewModels
             _NetworkClientOverview = networkClientOverview;
 
             //Set DataContexts
-            _LedEntityView.DataContext = _CurrentLedEntity;
+            _LedEntityView.DataContext = CurrentLedEntity;
             _AudioUserControl.DataContext = AudioUserControlVM;
             _NetworkClientOverview.DataContext = _NetworkClientOverviewVM;
 
@@ -129,9 +132,11 @@ namespace Led.ViewModels
 
             NewProjectCommand = new Command(_OnNewProjectCommand);
             NewLedEntityCommand = new Command(_OnNewLedEntityCommand, () => Project != null);
-            EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => _CurrentLedEntity != null);
-            AddEffectCommand = new Command(_OnAddEffectCommand, () => _CurrentLedEntity != null && Project.AudioProperty != null);
+            EditLedEntityCommand = new Command(_OnEditLedEntityCommand, () => CurrentLedEntity != null);
+            AddEffectCommand = new Command(_OnAddEffectCommand, () => CurrentLedEntity != null && Project.AudioProperty != null);
             AddAudioCommand = new Command(_OnAddAudioCommand, () => Project != null);
+            SendConfigCommand = new Command(_OnSendConfigCommand, () => Project != null);
+            SendEffectCommand = new Command(_OnSendEffectCommand, () => Project != null);
 
             //Init Mediator
             _Mediator = App.Instance.MediatorService;
@@ -197,16 +202,16 @@ namespace Led.ViewModels
             Grid.SetColumn(ledEntity, 1);
             ledEntityCRUDView.Grid.Children.Add(ledEntity);
 
-            App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, new LedEntityCRUDVM(_CurrentLedEntity.LedEntity));
+            App.Instance.WindowService.ShowNewWindow(ledEntityCRUDView, new LedEntityCRUDVM(CurrentLedEntity.LedEntity));
 
-            _CurrentLedEntity.Update();
+            CurrentLedEntity.Update();
             _LedEntityView.DataContext = null;
-            _LedEntityView.DataContext = _CurrentLedEntity;
+            _LedEntityView.DataContext = CurrentLedEntity;
         }
 
         private void _OnAddEffectCommand()
         {
-            (_CurrentLedEntity as LedEntitySelectVM).AddEffect();            
+            (CurrentLedEntity as LedEntitySelectVM).AddEffect();            
         }
 
         private void _OnAddAudioCommand()
@@ -221,16 +226,30 @@ namespace Led.ViewModels
             AddEffectCommand.RaiseCanExecuteChanged();
         }
 
+        private void _OnSendConfigCommand()
+        {
+            foreach (var x in LedEntities)
+            {
+                App.Instance.ConnectivityService.SendEntityConfig(x.LedEntity, x.LedEntity.ClientID);
+            }            
+        }
+
+        private void _OnSendEffectCommand()
+        {
+            App.Instance.EffectService.RenderAllEntities();
+            foreach (var x in LedEntities)
+            {
+                App.Instance.ConnectivityService.SendEntityEffects(x.LedEntity, x.LedEntity.ClientID);
+            }
+        }
+
         private void _InitProject()
         {
             //Clear all old values
             LedEntities.Clear();
-            _CurrentLedEntity = null;
+            CurrentLedEntity = null;
             _LedEntityView.DataContext = null;
-            _LedEntityView.DataContext = _CurrentLedEntity;
-
-            //Set new ref
-            App.Instance.Project = Project;
+            _LedEntityView.DataContext = CurrentLedEntity;
 
             //Add existing shit if there is something
             Project.LedEntities.ForEach(LedEntity => LedEntities.Add(new LedEntitySelectVM(LedEntity)));
@@ -245,6 +264,8 @@ namespace Led.ViewModels
             SaveProjectCommand.RaiseCanExecuteChanged();
             NewLedEntityCommand.RaiseCanExecuteChanged();
             AddAudioCommand.RaiseCanExecuteChanged();
+            SendConfigCommand.RaiseCanExecuteChanged();
+            SendEffectCommand.RaiseCanExecuteChanged();
         }
 
         private void _InitAudioUserControl()
@@ -265,20 +286,18 @@ namespace Led.ViewModels
             switch (message)
             {
                 case MediatorMessages.LedEntitySelectButtonClicked:
-                    _CurrentLedEntity = (sender as LedEntityBaseVM);
-                    _LedEntityView.DataContext = _CurrentLedEntity;
+                    CurrentLedEntity = (sender as LedEntityBaseVM);
+                    _LedEntityView.DataContext = CurrentLedEntity;
                     _EffectView.DataContext = _CurrentEffect;
                     EditLedEntityCommand.RaiseCanExecuteChanged();
                     AddEffectCommand.RaiseCanExecuteChanged();
+                    SendConfigCommand.RaiseCanExecuteChanged();
                     break;
                 case MediatorMessages.TimeLineEffectSelected:
-                    _CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;                    
+                    CurrentLedEntity.CurrentEffect = (data as MediatorMessageData.TimeLineEffectSelectedData).EffectBaseVM;                    
                     break;
                 case MediatorMessages.LedEntitySelectVM_CurrentEffectChanged:
                     _EffectView.DataContext = _CurrentEffect;
-                    break;
-                case MediatorMessages.EffectService_AskCurrentLedEntities:
-                    _SendMessage(MediatorMessages.EffectService_RecieveCurrentLedEntities, new MediatorMessageData.EffectService_RecieveCurrentLedEntities(LedEntities));
                     break;
                 default:
                     break;
