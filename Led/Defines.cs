@@ -180,15 +180,36 @@ namespace Led
         Group
     }
 
+    public enum TcpMessages
+    {
+        NULL = 0,
+        ID = 1,
+        Config = 2,
+        Effects = 3,
+        Timestamp = 4,
+        Play = 5,
+        Pause = 6,
+        Preview = 7,
+        Show = 8,
+        Color = 9,
+        Resend = 10,
+        Ready = 11,
+        Heartbeat = 12,
+        Restart = 13,
+        Shutdown = 14
+    }
+
     public enum MediatorMessages
     {
-        LedEntitySelectButtonClicked,
+        LedEntity_SelectButtonClicked,
+        EffectBaseVM_EffectChanged,
         EffectBaseVM_EffectTypeChanged,
         EffectBaseVM_EditCommand_Start,
         EffectBaseVM_EditCommand_Finished,
         EffectBaseVM_ClearCommand,
         EffectBaseVM_DeleteCommand,
         LedEntitySelectVM_CurrentEffectChanged,
+        LedEntityCRUDVM_Editing,
         LedEntityCRUDVM_GroupBusDefinitionsChanged,
         LedEntityCRUDVM_GroupBusDefinitionsNeedCorrectionChanged,
         LedEntityCRUDVM_GroupPositionChanged,
@@ -202,7 +223,8 @@ namespace Led
         EffectService_Preview,
         EffectService_AskCurrentLedEntities,
         TcpServer_ClientsChanged,
-        NetworkClient_BindingChanged
+        NetworkClient_Created,
+        NetworkClient_BindingChanged,        
     }
 
     public class MediatorMessageData
@@ -335,41 +357,25 @@ namespace Led
             }
         }
 
-        //public class TimeLineEffectPropertiesChangedData
-        //{
-        //    public enum Values
-        //    {
-        //        StartFrame,
-        //        Dauer,
-        //        EndFrame
-        //    }
+        public class LedEntityCRUDVM_Editing
+        {
+            public string ID { get; }
 
-        //    public Values ChangedValue { get; }
-        //    public ushort Value { get; }
+            public LedEntityCRUDVM_Editing(string id)
+            {
+                ID = id;
+            }
+        }
 
-        //    public TimeLineEffectPropertiesChangedData(Values changedValue, ushort value)
-        //    {
-        //        ChangedValue = changedValue;
-        //        Value = value;
-        //    }
-        //}
-    }
+        public class EffectBaseVM_EffectChanged
+        {
+            public string ID { get; }
 
-    public enum TcpMessages
-    {
-        NULL = 0,
-        ID = 1,
-        Config = 2,
-        RenderedEffects = 3,
-        Timestamp = 4,
-        Play = 5,
-        Pause = 6,
-        Preview = 7,
-        Show = 8,
-        Color = 9,
-        Resend = 10,
-        Ready = 11,
-        Heartbeat = 12
+            public EffectBaseVM_EffectChanged(string id)
+            {
+                ID = id;
+            }
+        }
     }
 
     public static class Defines

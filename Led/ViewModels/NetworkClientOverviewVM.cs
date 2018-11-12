@@ -11,17 +11,22 @@ namespace Led.ViewModels
     {
         private Services.MediatorService _MediatorService;
 
-        private ObservableCollection<LedEntityBaseVM> _LedEntityBaseVMs;
-
         public ObservableCollection<NetworkClientVM> NetworkClientVMs { get; set; }
 
-        public NetworkClientOverviewVM(ObservableCollection<LedEntityBaseVM> ledEntityBaseVMs)
+        public NetworkClientOverviewVM()
         {
-            _LedEntityBaseVMs = ledEntityBaseVMs;
             NetworkClientVMs = new ObservableCollection<NetworkClientVM>();
 
             _MediatorService = App.Instance.MediatorService;
             _MediatorService.Register(this);
+        }
+
+        public void RemapClients()
+        {
+            foreach(var x in NetworkClientVMs)
+            {
+                x.Remap();
+            }
         }
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
@@ -38,7 +43,7 @@ namespace Led.ViewModels
                     foreach(var id in _ids)
                     {
                         if (NetworkClientVMs.Select(x => x.ID.Equals(id)).ToList().Count == 0)
-                            NetworkClientVMs.Add(new NetworkClientVM(id, _LedEntityBaseVMs));
+                            NetworkClientVMs.Add(new NetworkClientVM(id));
                     }
                     break;
             }

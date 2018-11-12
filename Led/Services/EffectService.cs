@@ -328,7 +328,7 @@ namespace Led.Services
         {
             foreach (var x in App.Instance.MainWindowVM.LedEntities)
             {
-                App.Instance.ConnectivityService.SendTimeStamp(_LastTickedFrame, x.LedEntity.ClientID);
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Timestamp, x.ClientID, _LastTickedFrame);
             }
         }
 
@@ -444,15 +444,18 @@ namespace Led.Services
 
         private void _SendEffectDataToSuit(LedEntityBaseVM ledEntity)
         {
-            App.Instance.ConnectivityService.SendEntityEffects(ledEntity.LedEntity, ledEntity.LedEntity.ClientID);
+            App.Instance.ConnectivityService.SendMessage(TcpMessages.Effects, ledEntity.ClientID);
         }
 
         private void _PlayAll()
         {
             foreach(var x in App.Instance.MainWindowVM.LedEntities)
             {
-                App.Instance.ConnectivityService.SendTimeStamp(_LastTickedFrame, x.LedEntity.ClientID);
-                App.Instance.ConnectivityService.SendPlay(x.LedEntity.ClientID);
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Timestamp, x.ClientID, _LastTickedFrame);
+            }
+            foreach (var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Play, x.ClientID, _LastTickedFrame);
             }
         }
 
@@ -460,7 +463,7 @@ namespace Led.Services
         {
             foreach (var x in App.Instance.MainWindowVM.LedEntities)
             {
-                App.Instance.ConnectivityService.SendPause(x.LedEntity.ClientID);
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Pause, x.ClientID);
             }
         }
 

@@ -31,42 +31,68 @@ namespace Led.Services
             _TcpServer.Stop();
         }
 
-        public void SendTimeStamp(int frame, string id)
+        public void SendMessage(TcpMessages tcpMessages, string id, int frame = 0)
         {
-            _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(lib.HostNetworkConverter.Int32(frame)), id);
-        }
-
-        public void SendEntityConfig(Model.LedEntity ledEntity, string id)
-        {
-            byte[] data = lib.Parser.EntityConfig(ledEntity);
-            _TcpServer.SendData(TcpMessages.Config, data, id);
-        }
-
-        public void SendPlay(string id)
-        {
-            _TcpServer.SendData(TcpMessages.Play, null, id);
-        }
-
-        public void SendPause(string id)
-        {
-            _TcpServer.SendData(TcpMessages.Pause, null, id);
-        }
-
-        public void SendEntityEffects(Model.LedEntity ledEntity, string id)
-        {
-            byte[] data = lib.Parser.EntityEffect(ledEntity);
-            _TcpServer.SendData(TcpMessages.RenderedEffects, data, id);
-        }
-
-        public void SendShow(string id)
-        {
-            _TcpServer.SendData(TcpMessages.Show, null, id);
+            Model.LedEntity ledEntity;
+            switch (tcpMessages)
+            {
+                case TcpMessages.Config:
+                    ledEntity = _GetLedEntity(id);
+                    if (ledEntity != null)
+                    {
+                        byte[] data = lib.Parser.EntityConfig(ledEntity);
+                        _TcpServer.SendData(TcpMessages.Config, data, id);
+                    }
+                    break;
+                case TcpMessages.Effects:
+                    ledEntity = _GetLedEntity(id);
+                    if (ledEntity != null)
+                    {
+                        byte[] data = lib.Parser.EntityEffect(ledEntity);
+                        _TcpServer.SendData(TcpMessages.Effects, data, id);
+                    }
+                    break;
+                case TcpMessages.Timestamp:
+                    _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(lib.HostNetworkConverter.Int32(frame)), id);
+                    break;
+                case TcpMessages.Play:
+                    _TcpServer.SendData(TcpMessages.Play, null, id);
+                    break;
+                case TcpMessages.Pause:
+                    _TcpServer.SendData(TcpMessages.Pause, null, id);
+                    break;
+                case TcpMessages.Preview:
+                    break;
+                case TcpMessages.Show:
+                    _TcpServer.SendData(TcpMessages.Show, null, id);
+                    break;
+                case TcpMessages.Color:
+                    break;
+                case TcpMessages.Resend:
+                    break;
+                case TcpMessages.Ready:
+                    break;
+                case TcpMessages.Heartbeat:
+                    break;
+                default:
+                    break;
+            }
         }
 
         public ConnectivityService()
         {
             _UdpSocket = new lib.UdpSocket();            
             _TcpServer = new lib.TCP.TcpServer(new lib.EntityHandlerProvider(), Defines.ServerPort);
+        }
+
+        private Model.LedEntity _GetLedEntity(string id)
+        {
+            foreach(var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                if (x.LedEntity.ClientID.Equals(id))
+                    return x.LedEntity;
+            }
+            return null;
         }
 
         private void ClientBroadcasted(IPAddress ip, byte[] data, int port)

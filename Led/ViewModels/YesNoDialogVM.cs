@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Led.ViewModels
 {
-    class NewProjectDialogVM : DialogVM
+    class YesNoDialogVM : DialogVM
     {
 
         private string _dialogTitle;
@@ -18,36 +18,22 @@ namespace Led.ViewModels
                 if (_dialogTitle != value)
                 {
                     _dialogTitle = value;
-                    RaisePropertyChanged(nameof(DialogTitle));
+                    RaisePropertyChanged("DialogTitle");
                 }
             }
         }
 
 
-        private string _textToEnter;
-        public string TextToEnter
+        private string _textToShow;
+        public string TextToShow
         {
-            get => _textToEnter;
+            get => _textToShow;
             set
             {
-                if (_textToEnter != value)
+                if (_textToShow != value)
                 {
-                    _textToEnter = value;
-                    RaisePropertyChanged(nameof(TextToEnter));
-                }
-            }
-        }
-
-        private string _text;
-        public string Text
-        {
-            get => _text;
-            set
-            {
-                if (_text != value)
-                {
-                    _text = value;
-                    RaisePropertyChanged(nameof(Text));
+                    _textToShow = value;
+                    RaisePropertyChanged(nameof(TextToShow));
                 }
             }
         }
@@ -56,10 +42,10 @@ namespace Led.ViewModels
         public Command AbortCommand { get; set; }
         public Command CloseWindowCommand { get; set; }
 
-        public NewProjectDialogVM(string dialogTitle = "Neues Projekt anlegen", string textToEnter = "Bitte Namen eingeben:")
+        public YesNoDialogVM(string dialogTitle = "Neues Projekt anlegen", string textToShow = "Bitte Namen eingeben:")
         {
             DialogTitle = dialogTitle;
-            TextToEnter = textToEnter;
+            TextToShow = textToShow;
             OkCommand = new Command(_OnOkCommand);
             AbortCommand = new Command(_OnAbortCommand);
             CloseWindowCommand = new Command(_OnCloseWindowCommand);

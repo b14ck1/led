@@ -111,7 +111,7 @@ namespace Led.ViewModels
         {
             //Init
             LedEntities = new ObservableCollection<LedEntityBaseVM>();
-            _NetworkClientOverviewVM = new NetworkClientOverviewVM(LedEntities);
+            _NetworkClientOverviewVM = new NetworkClientOverviewVM();
 
             //Get Refs
             _MainWindow = mainWindow;
@@ -167,7 +167,7 @@ namespace Led.ViewModels
             App.Instance.WindowService.ShowNewWindow(_newProjectDialog, _newProjectDialogVM);
 
             if (_newProjectDialogVM.DialogResult)
-                Project = new Model.Project(_newProjectDialogVM.ProjectName);
+                Project = new Model.Project(_newProjectDialogVM.Text);
         }
 
         private void _OnNewLedEntityCommand()
@@ -230,7 +230,7 @@ namespace Led.ViewModels
         {
             foreach (var x in LedEntities)
             {
-                App.Instance.ConnectivityService.SendEntityConfig(x.LedEntity, x.LedEntity.ClientID);
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Config, x.ClientID);
             }            
         }
 
@@ -239,7 +239,7 @@ namespace Led.ViewModels
             App.Instance.EffectService.RenderAllEntities();
             foreach (var x in LedEntities)
             {
-                App.Instance.ConnectivityService.SendEntityEffects(x.LedEntity, x.LedEntity.ClientID);
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Effects, x.ClientID);
             }
         }
 
@@ -256,7 +256,9 @@ namespace Led.ViewModels
 
             if (!string.IsNullOrEmpty(Project.AudioProperty?.FilePath))
                 _InitAudioUserControl();
-            
+
+            _NetworkClientOverviewVM.RemapClients();
+
             //Update the View and all Commands
             RaiseAllPropertyChanged();
             EditLedEntityCommand.RaiseCanExecuteChanged();
@@ -285,7 +287,7 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.LedEntitySelectButtonClicked:
+                case MediatorMessages.LedEntity_SelectButtonClicked:
                     CurrentLedEntity = (sender as LedEntityBaseVM);
                     _LedEntityView.DataContext = CurrentLedEntity;
                     _EffectView.DataContext = _CurrentEffect;

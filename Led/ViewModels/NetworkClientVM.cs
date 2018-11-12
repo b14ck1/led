@@ -9,10 +9,13 @@ namespace Led.ViewModels
 {
     class NetworkClientVM : INPC, Interfaces.IParticipant
     {
-        private ObservableCollection<LedEntityBaseVM> _LedEntityBaseVMs;
         private Services.MediatorService _MediatorService;
+        private bool _playing;
 
         private string _ID;
+        /// <summary>
+        /// ID of this network device.
+        /// </summary>
         public string ID
         {
             get => _ID;
@@ -27,6 +30,9 @@ namespace Led.ViewModels
         }
 
         private LedEntityBaseVM _SelectedEntity;
+        /// <summary>
+        /// LedEntity this network devices belongs to.
+        /// </summary>
         public LedEntityBaseVM SelectedEntity
         {
             get => _SelectedEntity;
@@ -49,12 +55,15 @@ namespace Led.ViewModels
             }
         }
         
+        /// <summary>
+        /// LedEntities which don't belong to a device yet.
+        /// </summary>
         public List<LedEntityBaseVM> SelectableEntities
         {
             get
             {
                 List<LedEntityBaseVM> res = new List<LedEntityBaseVM>();
-                foreach (var x in _LedEntityBaseVMs)
+                foreach (var x in App.Instance.MainWindowVM.LedEntities)
                 {
                     if (x.ClientID.Equals(""))
                         res.Add(x);
@@ -63,29 +72,121 @@ namespace Led.ViewModels
             }
         }
 
+        private bool _ConfigSynchronized;
+        /// <summary>
+        /// Is the config on this device synchronized.
+        /// Gets set to false when the corresponding LedEntity gets edited.
+        /// Gets set to true when the config is sent and we received a ConfigReady.
+        /// </summary>
+        public bool ConfigSynchronized
+        {
+            get => _ConfigSynchronized;
+            set
+            {
+                if(_ConfigSynchronized != value)
+                {
+                    _ConfigSynchronized = value;
+                    RaisePropertyChanged(nameof(ConfigSynchronized));
+                }
+            }
+        }
+
+        private bool _EffectsSynchronized;
+        /// <summary>
+        /// Are the effects on this device synchronized.
+        /// Gets set to false when one of the corresponding Effects gets edited.
+        /// Gets set to true when the effects are sent and we received a EffectsReady.
+        /// </summary>
+        public bool EffectsSynchronized
+        {
+            get => _EffectsSynchronized;
+            set
+            {
+                if (_EffectsSynchronized != value)
+                {
+                    _EffectsSynchronized = value;
+                    RaisePropertyChanged(nameof(EffectsSynchronized));
+                }
+            }
+        }
+
         public Command ShowClientCommand { get; set; }
         public Command RemoveBindingCommand { get; set; }
 
-        public NetworkClientVM(string id, ObservableCollection<LedEntityBaseVM> ledEntityBaseVMs)
+        public Command RestartCommand { get; set; }
+        public Command ShutdownCommand { get; set; }
+        
+        /// <summary>
+        /// Remap LedEntity to match our ID.
+        /// </summary>
+        public void Remap()
         {
-            _LedEntityBaseVMs = ledEntityBaseVMs;
+            foreach(var x in App.Instance.MainWindowVM.LedEntities)
+            {
+                if(x.ClientID == ID)
+                {
+                    _SelectedEntity = x;
+                    return;
+                }
+            }
 
+            _SelectedEntity = null;
+        }
+
+        public NetworkClientVM(string id)
+        {
             ID = id;
-            ShowClientCommand = new Command(_OnShowClientCommand);
-            RemoveBindingCommand = new Command(_OnRemoveBindingCommand);
+            ShowClientCommand = new Command(_OnShowClientCommand, () => !_playing);
+            RemoveBindingCommand = new Command(_OnRemoveBindingCommand, () => !_playing);
+
+            RestartCommand = new Command(_OnRestartCommand, () => !_playing);
+            ShutdownCommand = new Command(_OnShutdownCommand, () => !_playing);
 
             _MediatorService = App.Instance.MediatorService;
             _MediatorService.Register(this);
+
+            _MediatorService.BroadcastMessage(MediatorMessages.NetworkClient_Created, this, null);
+        }
+
+        private void _RaiseCommandsChanged()
+        {
+            ShowClientCommand.RaiseCanExecuteChanged();
+            RemoveBindingCommand.RaiseCanExecuteChanged();
+
+            RestartCommand.RaiseCanExecuteChanged();
+            ShutdownCommand.RaiseCanExecuteChanged();
         }
 
         private void _OnShowClientCommand()
         {
-            App.Instance.ConnectivityService.SendShow(ID);
+            App.Instance.ConnectivityService.SendMessage(TcpMessages.Show, ID);
+        }
+
+        private void _OnRestartCommand()
+        {
+            Views.Dialogs.YesNoDialog yesNoDialog = new Views.Dialogs.YesNoDialog();
+            ViewModels.YesNoDialogVM yesNoDialogVM = new YesNoDialogVM("Bitte bestätigen", "Gerät neustarten.");
+            App.Instance.WindowService.ShowNewWindow(yesNoDialog, yesNoDialogVM);
+
+            if(yesNoDialogVM.DialogResult)
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Restart, ID);
+
+        }
+
+        private void _OnShutdownCommand()
+        {
+            Views.Dialogs.YesNoDialog yesNoDialog = new Views.Dialogs.YesNoDialog();
+            ViewModels.YesNoDialogVM yesNoDialogVM = new YesNoDialogVM("Bitte bestätigen", "Gerät ausschalten.");
+            App.Instance.WindowService.ShowNewWindow(yesNoDialog, yesNoDialogVM);
+
+            if (yesNoDialogVM.DialogResult)
+                App.Instance.ConnectivityService.SendMessage(TcpMessages.Shutdown, ID);
         }
 
         private void _OnRemoveBindingCommand()
         {
             SelectedEntity = null;
+            _MediatorService.BroadcastMessage(MediatorMessages.NetworkClient_BindingChanged, this, null);
         }
 
         public void RecieveMessage(MediatorMessages message, object sender, object data)
@@ -94,6 +195,18 @@ namespace Led.ViewModels
             {
                 case MediatorMessages.NetworkClient_BindingChanged:
                     RaisePropertyChanged(nameof(SelectableEntities));
+                    break;
+                case MediatorMessages.AudioControlPlayPause:
+                    _playing = (data as MediatorMessageData.AudioControlPlayPauseData).Playing;
+                    _RaiseCommandsChanged();
+                    break;
+                case MediatorMessages.LedEntityCRUDVM_Editing:
+                    if ((data as MediatorMessageData.LedEntityCRUDVM_Editing).ID.Equals(ID))
+                        ConfigSynchronized = false;
+                    break;
+                case MediatorMessages.EffectBaseVM_EffectChanged:
+                    if ((data as MediatorMessageData.EffectBaseVM_EffectChanged).ID.Equals(ID))
+                        EffectsSynchronized = false;
                     break;
             }
         }

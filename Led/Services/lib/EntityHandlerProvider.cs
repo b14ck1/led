@@ -106,6 +106,9 @@ namespace Led.Services.lib
                     _Client = new TcpServer.Client(state);
                     TcpServer.AddClientMapping(ID, _Client);
                     //Task.Run(() => App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null));
+
+                    //TODO: An den Client sollte sich das NetworkClientVM dranhängen
+
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_ClientsChanged, null, null);
                     break;
                 case TcpMessages.Ready:

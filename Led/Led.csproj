@@ -143,6 +143,7 @@
     <Compile Include="ViewModels\NetworkClientOverviewVM.cs" />
     <Compile Include="ViewModels\NetworkClientVM.cs" />
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
+    <Compile Include="ViewModels\YesNoDialogVM.cs" />
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
@@ -184,6 +185,9 @@
     </Compile>
     <Compile Include="Views\Controls\CRUDs\LedEntityGroupProperties.xaml.cs">
       <DependentUpon>LedEntityGroupProperties.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Dialogs\YesNoDialog.xaml.cs">
+      <DependentUpon>YesNoDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -263,6 +267,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\Controls\CRUDs\LedEntityGroupProperties.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Dialogs\YesNoDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
