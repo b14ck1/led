@@ -7,10 +7,57 @@ using System.Threading.Tasks;
 
 namespace Led.ViewModels
 {
-    class NetworkClientVM : INPC, Interfaces.IParticipant
+    public class NetworkClientVM : INPC, Interfaces.IParticipant
     {
+        public object Lock { get; }
+
         private Services.MediatorService _MediatorService;
+        
+        public Services.lib.TCP.ConnectionState ConnectionState { get; private set; }
+
+        public bool Ready { get; set; }
         private bool _playing;
+
+        private TcpMessages _LastMessageSent;
+        public TcpMessages LastMessageSent
+        {
+            get => _LastMessageSent;
+            set
+            {
+                if(_LastMessageSent != value)
+                {
+                    _LastMessageSent = value;
+                    RaisePropertyChanged(nameof(LastMessageSent));
+                }
+            }
+        }
+
+        private TcpMessages _LastMessageReceived;
+        public TcpMessages LastMessageReceived
+        {
+            get => _LastMessageReceived;
+            set
+            {
+                if (_LastMessageReceived != value)
+                {
+                    _LastMessageReceived = value;
+                    if(_LastMessageReceived == TcpMessages.Ready)
+                    {
+                        if (_LastMessageSent == TcpMessages.Config)
+                        {
+                            ConfigSynchronized = true;
+                            RaisePropertyChanged(nameof(ConfigSynchronized));
+                        }
+                        if (_LastMessageSent == TcpMessages.Effects)
+                        {
+                            EffectsSynchronized = true;
+                            RaisePropertyChanged(nameof(EffectsSynchronized));
+                        }
+                    }
+                    RaisePropertyChanged(nameof(LastMessageReceived));
+                }
+            }
+        }
 
         private string _ID;
         /// <summary>
@@ -133,9 +180,13 @@ namespace Led.ViewModels
             _SelectedEntity = null;
         }
 
-        public NetworkClientVM(string id)
+        public NetworkClientVM(string id, Services.lib.TCP.ConnectionState connectionState)
         {
+            Lock = new object();            
+
             ID = id;
+            ConnectionState = connectionState;
+
             ShowClientCommand = new Command(_OnShowClientCommand, () => !_playing);
             RemoveBindingCommand = new Command(_OnRemoveBindingCommand, () => !_playing);
 
@@ -144,8 +195,6 @@ namespace Led.ViewModels
 
             _MediatorService = App.Instance.MediatorService;
             _MediatorService.Register(this);
-
-            _MediatorService.BroadcastMessage(MediatorMessages.NetworkClient_Created, this, null);
         }
 
         private void _RaiseCommandsChanged()

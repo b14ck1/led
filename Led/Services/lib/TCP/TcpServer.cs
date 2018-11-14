@@ -17,7 +17,7 @@ namespace Led.Services.lib.TCP
         private Socket _listener;
         private TcpServiceProvider _provider;
         private List<ConnectionState> _connections;
-        private Dictionary<string, Client> _clientMapping;
+        private Dictionary<string, ViewModels.NetworkClientVM> _clientMapping;
         private int _maxConnections = 100;
         private byte[] _SecretBytes;
 
@@ -41,7 +41,7 @@ namespace Led.Services.lib.TCP
             _AcceptConnection = new WaitCallback(AcceptConnection_Handler);
             _ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
 
-            _clientMapping = new Dictionary<string, Client>();
+            _clientMapping = new Dictionary<string, ViewModels.NetworkClientVM>();
 
             _SecretBytes = BitConverter.GetBytes(HostNetworkConverter.Int16((short)42));
         }
@@ -256,27 +256,12 @@ namespace Led.Services.lib.TCP
             }
         }
 
-        public void AddClientMapping(string id, Client client)
+        public void AddClientMapping(ViewModels.NetworkClientVM client)
         {
             lock (this)
             {
-                if (!_clientMapping.ContainsKey(id))
-                    _clientMapping.Add(id, client);
-            }
-        }
-
-        public class Client
-        {
-            public object Lock { get; }
-            public ConnectionState ConnectionState { get; private set; }
-            public bool Ready { get; set; }
-            public TcpMessages LastMessageSent { get; set; }
-            public TcpMessages LastMessageReceived { get; set; }
-
-            public Client(ConnectionState connectionState)
-            {
-                Lock = new object();
-                ConnectionState = connectionState;
+                if (!_clientMapping.ContainsKey(client.ID))
+                    _clientMapping.Add(client.ID, client);
             }
         }
     }
