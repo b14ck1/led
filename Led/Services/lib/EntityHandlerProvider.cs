@@ -88,9 +88,9 @@ namespace Led.Services.lib
 
         public EntityHandlerProvider()
         {
-            byte[] d_IDRequest = new byte[8];
-            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)42)), 0, d_IDRequest, 0, 2);
-            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)TcpMessages.ID)), 0, d_IDRequest, 2, 2);
+            _IDRequest = new byte[8];
+            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)42)), 0, _IDRequest, 0, 2);
+            Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)TcpMessages.ID)), 0, _IDRequest, 2, 2);
 
             _HeartbeatAnswer = new byte[8];
             Buffer.BlockCopy(BitConverter.GetBytes(HostNetworkConverter.Int16((short)42)), 0, _HeartbeatAnswer, 0, 2);
@@ -98,7 +98,7 @@ namespace Led.Services.lib
         }
 
         public EntityHandlerProvider(TcpServer tcpServer)
-            :base()
+            :this()
         {
             TcpServer = tcpServer;
         }
