@@ -222,8 +222,8 @@ namespace Led
         EffectService_PreparePlay,
         EffectService_Preview,
         EffectService_AskCurrentLedEntities,
-        TcpServer_ClientsChanged,
-        NetworkClient_Created,
+        TcpServer_NetworkClientAdded,
+        TcpServer_NetworkClientDropped,
         NetworkClient_BindingChanged,        
     }
 

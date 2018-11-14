@@ -33,19 +33,12 @@ namespace Led.ViewModels
         {
             switch (message)
             {
-                case MediatorMessages.TcpServer_ClientsChanged:
-                    List<string> _ids = new List<string>(App.Instance.ConnectivityService.ConnectedClients);
-                    foreach(var client in NetworkClientVMs.ToList())
-                    {
-                        if (!_ids.Contains(client.ID))
-                            NetworkClientVMs.Remove(client);
-                    }
-                    foreach(var id in _ids)
-                    {
-                        if (NetworkClientVMs.Select(x => x.ID.Equals(id)).ToList().Count == 0)
-                            NetworkClientVMs.Add(new NetworkClientVM(id));
-                    }
+                case MediatorMessages.TcpServer_NetworkClientAdded:
+                    NetworkClientVMs.Add((data as NetworkClientVM));                    
                     break;
+                case MediatorMessages.TcpServer_NetworkClientDropped:
+                    NetworkClientVMs.Remove((data as NetworkClientVM));
+                    break;                
             }
         }
     }
