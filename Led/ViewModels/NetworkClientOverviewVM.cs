@@ -38,7 +38,7 @@ namespace Led.ViewModels
                     break;
                 case MediatorMessages.TcpServer_NetworkClientDropped:
                     NetworkClientVMs.Remove((data as NetworkClientVM));
-                    break;                
+                    break;
             }
         }
     }

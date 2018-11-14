@@ -75,6 +75,8 @@ namespace Led.ViewModels
             ImageMouseUpCommand = new Command<MouseEventArgs>(_OnImageMouseUpCommand);
 
             CloseWindowCommand = new Command(_OnCloseWindowCommand, _CanExecuteClosing);
+
+            _SendMessage(MediatorMessages.LedEntityCRUDVM_Editing, new MediatorMessageData.LedEntityCRUDVM_Editing(LedEntity.ClientID));
         }
 
         private void _OnNewFrontImmage()

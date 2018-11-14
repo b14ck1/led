@@ -32,7 +32,7 @@ namespace Led.Services.lib
             _MessageIdentified = false;
             if (!state.Write(_IDRequest, 0, _IDRequest.Length))
                 state.EndConnection();
-        }        
+        }
 
         /*
          *  MESSAGE FORMAT:
@@ -122,7 +122,6 @@ namespace Led.Services.lib
                 default:
                     lock (_Client.Lock)
                         _Client.LastMessageReceived = _IncomingMessage;
-
                     break;
             }
 

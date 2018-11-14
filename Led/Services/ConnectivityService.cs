@@ -48,6 +48,9 @@ namespace Led.Services
                     ledEntity = _GetLedEntity(id);
                     if (ledEntity != null)
                     {
+                        if(!_TcpServer.ClientMapping[id].ConfigSynchronized)                        
+                            _TcpServer.SendData(TcpMessages.Config, lib.Parser.EntityConfig(ledEntity), id);
+                        
                         byte[] data = lib.Parser.EntityEffect(ledEntity);
                         _TcpServer.SendData(TcpMessages.Effects, data, id);
                     }

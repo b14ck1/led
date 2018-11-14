@@ -17,7 +17,7 @@ namespace Led.Services.lib.TCP
         private Socket _listener;
         private TcpServiceProvider _provider;
         private List<ConnectionState> _connections;
-        private Dictionary<string, ViewModels.NetworkClientVM> _clientMapping;
+        public Dictionary<string, ViewModels.NetworkClientVM> ClientMapping;
         private int _maxConnections = 100;
         private byte[] _SecretBytes;
 
@@ -41,7 +41,7 @@ namespace Led.Services.lib.TCP
             _AcceptConnection = new WaitCallback(AcceptConnection_Handler);
             _ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
 
-            _clientMapping = new Dictionary<string, ViewModels.NetworkClientVM>();
+            ClientMapping = new Dictionary<string, ViewModels.NetworkClientVM>();
 
             _SecretBytes = BitConverter.GetBytes(HostNetworkConverter.Int16((short)42));
         }
@@ -94,7 +94,7 @@ namespace Led.Services.lib.TCP
         /// <returns>False if data sending failed</returns>
         public bool SendData(TcpMessages message, byte[] data, string id)
         {
-            if (!_clientMapping.ContainsKey(id))
+            if (!ClientMapping.ContainsKey(id))
                 return false;
 
             byte[] _message = BitConverter.GetBytes(HostNetworkConverter.Int16((Int16)message));
@@ -110,12 +110,12 @@ namespace Led.Services.lib.TCP
             Buffer.BlockCopy(_length, 0, _sendBuffer, 4, _length.Length);
             Buffer.BlockCopy(data, 0, _sendBuffer, 4 + _length.Length, data.Length);
 
-            lock (_clientMapping[id].Lock)
+            lock (ClientMapping[id].Lock)
             {
-                _clientMapping[id].Ready = false;
-                _clientMapping[id].LastMessageSent = message;
+                ClientMapping[id].Ready = false;
+                ClientMapping[id].LastMessageSent = message;
             }
-            return _clientMapping[id].ConnectionState.Write(_sendBuffer, 0, _sendBuffer.Length);
+            return ClientMapping[id].ConnectionState.Write(_sendBuffer, 0, _sendBuffer.Length);
         }
 
         /// <SUMMARY>
@@ -221,7 +221,7 @@ namespace Led.Services.lib.TCP
                     //some error in the provider
                 }
 
-                _clientMapping.Where(kvp => kvp.Value.ConnectionState == st).ToList().ForEach(x => _clientMapping.Remove(x.Key));
+                ClientMapping.Where(kvp => kvp.Value.ConnectionState == st).ToList().ForEach(x => ClientMapping.Remove(x.Key));
 
                 if (_connections.Contains(st))
                     _connections.Remove(st);
@@ -252,7 +252,7 @@ namespace Led.Services.lib.TCP
         {
             get
             {
-                lock (this) { return _clientMapping.Keys.ToList(); }
+                lock (this) { return ClientMapping.Keys.ToList(); }
             }
         }
 
@@ -260,8 +260,8 @@ namespace Led.Services.lib.TCP
         {
             lock (this)
             {
-                if (!_clientMapping.ContainsKey(client.ID))
-                    _clientMapping.Add(client.ID, client);
+                if (!ClientMapping.ContainsKey(client.ID))
+                    ClientMapping.Add(client.ID, client);
             }
         }
     }
