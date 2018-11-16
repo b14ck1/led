@@ -94,7 +94,15 @@ namespace Led.Services.lib
         public void EnqueueMessage (EntityMessage entityMessage, bool isPriority = false)
         {
             if (isPriority)
+            {
+                if(_PriorityQueue.Contains(entityMessage))
+                {
+                    if (entityMessage.TcpMessage == TcpMessages.Heartbeat)
+                        return;
+                }
+                else
                 _PriorityQueue.Enqueue(entityMessage);
+            }
             else
                 _NormalQueue.Enqueue(entityMessage);
 

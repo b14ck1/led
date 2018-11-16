@@ -77,7 +77,7 @@ namespace Led.Services
         public ConnectivityService()
         {
             _UdpSocket = new lib.UdpSocket();            
-            _TcpServer = new lib.TCP.TcpServer(new lib.EntityHandlerProvider(), Defines.ServerPort);
+            _TcpServer = new TcpServer(new lib.EntityHandlerProvider(), Defines.ServerPort);
         }
 
         private Model.LedEntity _GetLedEntity(string id)

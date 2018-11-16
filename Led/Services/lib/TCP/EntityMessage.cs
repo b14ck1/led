@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Led.Services.lib.TCP
 {
-    public class EntityMessage
+    public class EntityMessage : Comparer<EntityMessage>
     {
         static byte[] _Secret { get; }
 
@@ -43,6 +43,16 @@ namespace Led.Services.lib.TCP
                 Buffer.BlockCopy(_length, 0, Data, 4, _length.Length);
                 Buffer.BlockCopy(data, 0, Data, 4 + _length.Length, data.Length);
             }            
+        }
+
+        public override int Compare(EntityMessage x, EntityMessage y)
+        {
+            if (x.TcpMessage > y.TcpMessage)
+                return 1;
+            else if (x.TcpMessage < y.TcpMessage)
+                return -1;
+            else
+                return 0;
         }
     }
 }
