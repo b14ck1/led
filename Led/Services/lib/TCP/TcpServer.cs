@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,9 +18,8 @@ namespace Led.Services.lib.TCP
         private Socket _listener;
         private TcpServiceProvider _provider;
         private List<ConnectionState> _connections;
-        public Dictionary<string, ViewModels.NetworkClientVM> ClientMapping;
+        public ConcurrentDictionary<string, EntityHandlerProvider> ClientMapping;
         private int _maxConnections = 100;
-        private byte[] _SecretBytes;
 
         private AsyncCallback _ConnectionReady;
         private WaitCallback _AcceptConnection;
@@ -41,11 +41,8 @@ namespace Led.Services.lib.TCP
             _AcceptConnection = new WaitCallback(AcceptConnection_Handler);
             _ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
 
-            ClientMapping = new Dictionary<string, ViewModels.NetworkClientVM>();
-
-            _SecretBytes = BitConverter.GetBytes(HostNetworkConverter.Int16((short)42));
+            ClientMapping = new ConcurrentDictionary<string, EntityHandlerProvider>();            
         }
-
 
         /// <SUMMARY>
         /// Start accepting connections.
@@ -85,39 +82,6 @@ namespace Led.Services.lib.TCP
             }
         }
 
-        /// <summary>
-        /// Send data to a mapped client
-        /// </summary>
-        /// <param name="message">Which type of data</param>
-        /// <param name="data">Max. 4GB</param>
-        /// <param name="ledEntityBaseVM"></param>
-        /// <returns>False if data sending failed</returns>
-        public bool SendData(TcpMessages message, byte[] data, string id)
-        {
-            if (!ClientMapping.ContainsKey(id))
-                return false;
-
-            byte[] _message = BitConverter.GetBytes(HostNetworkConverter.Int16((Int16)message));
-
-            if (data == null)
-                data = new byte[0];
-
-            byte[] _length = BitConverter.GetBytes(HostNetworkConverter.Int32((Int32)data.Length));
-            byte[] _sendBuffer = new byte[4 + _length.Length + data.Length];
-
-            Buffer.BlockCopy(_SecretBytes, 0, _sendBuffer, 0, 2);
-            Buffer.BlockCopy(_message, 0, _sendBuffer, 2, 2);
-            Buffer.BlockCopy(_length, 0, _sendBuffer, 4, _length.Length);
-            Buffer.BlockCopy(data, 0, _sendBuffer, 4 + _length.Length, data.Length);
-
-            lock (ClientMapping[id].Lock)
-            {
-                ClientMapping[id].Ready = false;
-                ClientMapping[id].LastMessageSent = message;
-            }
-            return ClientMapping[id].ConnectionState.Write(_sendBuffer, 0, _sendBuffer.Length);
-        }
-
         /// <SUMMARY>
         /// Callback function: A new connection is waiting.
         /// </SUMMARY>
@@ -142,7 +106,7 @@ namespace Led.Services.lib.TCP
                     ConnectionState st = new ConnectionState();
                     st._conn = conn;
                     st._server = this;
-                    st._provider = (TcpServiceProvider)_provider.Clone();
+                    st._provider = (TcpServiceProvider)_provider.Clone(st);
                     st._buffer = new byte[4];
                     _connections.Add(st);
                     //Queue the rest of the job to be executed latter
@@ -220,9 +184,7 @@ namespace Led.Services.lib.TCP
                 {
                     //some error in the provider
                 }
-
-                ClientMapping.Where(kvp => kvp.Value.ConnectionState == st).ToList().ForEach(x => ClientMapping.Remove(x.Key));
-
+                                
                 if (_connections.Contains(st))
                     _connections.Remove(st);
             }
@@ -248,21 +210,16 @@ namespace Led.Services.lib.TCP
             }
         }
 
-        public List<string> ConnectedClients
+        public void AddClientMapping(EntityHandlerProvider entityHandlerProvider)
         {
-            get
-            {
-                lock (this) { return ClientMapping.Keys.ToList(); }
-            }
+            if (!ClientMapping.ContainsKey(entityHandlerProvider.ID))
+                ClientMapping.TryAdd(entityHandlerProvider.ID, entityHandlerProvider);            
         }
 
-        public void AddClientMapping(ViewModels.NetworkClientVM client)
+        public void RemoveClientMaping(EntityHandlerProvider entityHandlerProvider)
         {
-            lock (this)
-            {
-                if (!ClientMapping.ContainsKey(client.ID))
-                    ClientMapping.Add(client.ID, client);
-            }
+            if (ClientMapping.ContainsKey(entityHandlerProvider.ID))
+                ClientMapping.TryRemove(entityHandlerProvider.ID, out var ignore);
         }
     }
 }

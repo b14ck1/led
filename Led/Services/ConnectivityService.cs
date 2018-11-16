@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Led.Services.lib.TCP;
 
 namespace Led.Services
 {
@@ -16,8 +17,6 @@ namespace Led.Services
     {
         private lib.UdpSocket _UdpSocket;
         private lib.TCP.TcpServer _TcpServer;
-
-        public List<string> ConnectedClients { get => _TcpServer.ConnectedClients; }
 
         public void StartServer()
         {
@@ -33,49 +32,42 @@ namespace Led.Services
 
         public void SendMessage(TcpMessages tcpMessages, string id, int frame = 0)
         {
+            if (!_TcpServer.ClientMapping.ContainsKey(id))
+                return;
+
             Model.LedEntity ledEntity;
             switch (tcpMessages)
             {
                 case TcpMessages.Config:
                     ledEntity = _GetLedEntity(id);
                     if (ledEntity != null)
-                    {
-                        byte[] data = lib.Parser.EntityConfig(ledEntity);
-                        _TcpServer.SendData(TcpMessages.Config, data, id);
-                    }
+                        _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Config, lib.Parser.EntityConfig(ledEntity)));
                     break;
                 case TcpMessages.Effects:
                     ledEntity = _GetLedEntity(id);
                     if (ledEntity != null)
                     {
-                        if(!_TcpServer.ClientMapping[id].ConfigSynchronized)                        
-                            _TcpServer.SendData(TcpMessages.Config, lib.Parser.EntityConfig(ledEntity), id);
-                        
-                        byte[] data = lib.Parser.EntityEffect(ledEntity);
-                        _TcpServer.SendData(TcpMessages.Effects, data, id);
+                        if(!_TcpServer.ClientMapping[id].Client.ConfigSynchronized)
+                            _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Config, lib.Parser.EntityConfig(ledEntity)));
+                       
+                        _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Config, lib.Parser.EntityEffect(ledEntity)));
                     }
                     break;
                 case TcpMessages.Timestamp:
-                    _TcpServer.SendData(TcpMessages.Timestamp, BitConverter.GetBytes(lib.HostNetworkConverter.Int32(frame)), id);
+                    _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Timestamp, BitConverter.GetBytes(lib.HostNetworkConverter.Int32(frame))), true);                    
                     break;
                 case TcpMessages.Play:
-                    _TcpServer.SendData(TcpMessages.Play, null, id);
+                    _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Play, null), true);
                     break;
                 case TcpMessages.Pause:
-                    _TcpServer.SendData(TcpMessages.Pause, null, id);
+                    _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Pause, null), true);
                     break;
                 case TcpMessages.Preview:
                     break;
                 case TcpMessages.Show:
-                    _TcpServer.SendData(TcpMessages.Show, null, id);
+                    _TcpServer.ClientMapping[id].EnqueueMessage(new EntityMessage(TcpMessages.Show, null));
                     break;
                 case TcpMessages.Color:
-                    break;
-                case TcpMessages.Resend:
-                    break;
-                case TcpMessages.Ready:
-                    break;
-                case TcpMessages.Heartbeat:
                     break;
                 default:
                     break;

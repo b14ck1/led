@@ -11,14 +11,14 @@ namespace Led.Services.lib.TCP
     /// the actual code that is goint to service
     /// incoming connections.
     /// </SUMMARY>
-    public abstract class TcpServiceProvider : ICloneable
+    public abstract class TcpServiceProvider
     {
         public abstract TcpServer TcpServer { get; set; }
 
         /// <SUMMARY>
         /// Provides a new instance of the object.
         /// </SUMMARY>
-        public virtual object Clone()
+        public virtual object Clone(ConnectionState connectionState)
         {
             throw new Exception("Derived clases" +
                       " must override Clone method.");

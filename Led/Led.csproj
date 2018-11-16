@@ -97,6 +97,7 @@
     <Compile Include="Services\lib\HostNetworkConverter.cs" />
     <Compile Include="Services\lib\Parser.cs" />
     <Compile Include="Services\lib\TCP\ConnectionState.cs" />
+    <Compile Include="Services\lib\TCP\EntityMessage.cs" />
     <Compile Include="Services\lib\TCP\TcpServer.cs" />
     <Compile Include="Services\lib\TCP\TcpServiceProvider.cs" />
     <Compile Include="Services\lib\UdpSocket.cs" />

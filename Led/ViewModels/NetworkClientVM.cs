@@ -11,15 +11,13 @@ namespace Led.ViewModels
     {
         public object Lock { get; }
 
-        private Services.MediatorService _MediatorService;
-        
-        public Services.lib.TCP.ConnectionState ConnectionState { get; private set; }
+        private Services.MediatorService _MediatorService;        
 
-        public bool Ready { get; set; }
+        public bool Ready { get; private set; }
         private bool _playing;
 
-        private TcpMessages _LastMessageSent;
-        public TcpMessages LastMessageSent
+        private Services.lib.TCP.EntityMessage _LastMessageSent;
+        public Services.lib.TCP.EntityMessage LastMessageSent
         {
             get => _LastMessageSent;
             set
@@ -29,6 +27,7 @@ namespace Led.ViewModels
                     _LastMessageSent = value;
                     RaisePropertyChanged(nameof(LastMessageSent));
                 }
+                Ready = false;
             }
         }
 
@@ -43,16 +42,17 @@ namespace Led.ViewModels
                     _LastMessageReceived = value;
                     if(_LastMessageReceived == TcpMessages.Ready)
                     {
-                        if (_LastMessageSent == TcpMessages.Config)
+                        if (_LastMessageSent.TcpMessage == TcpMessages.Config)
                         {
                             ConfigSynchronized = true;
                             RaisePropertyChanged(nameof(ConfigSynchronized));
                         }
-                        if (_LastMessageSent == TcpMessages.Effects)
+                        if (_LastMessageSent.TcpMessage == TcpMessages.Effects)
                         {
                             EffectsSynchronized = true;
                             RaisePropertyChanged(nameof(EffectsSynchronized));
                         }
+                        Ready = true;
                     }
                     RaisePropertyChanged(nameof(LastMessageReceived));
                 }
@@ -180,12 +180,11 @@ namespace Led.ViewModels
             _SelectedEntity = null;
         }
 
-        public NetworkClientVM(string id, Services.lib.TCP.ConnectionState connectionState)
+        public NetworkClientVM(string id)
         {
             Lock = new object();            
 
             ID = id;
-            ConnectionState = connectionState;
 
             ShowClientCommand = new Command(_OnShowClientCommand, () => !_playing);
             RemoveBindingCommand = new Command(_OnRemoveBindingCommand, () => !_playing);
