@@ -135,6 +135,7 @@
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
+    <Compile Include="ViewModels\ColorPickerVM.cs" />
     <Compile Include="ViewModels\EffectProperties\BlinkVM.cs" />
     <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
     <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
