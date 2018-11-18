@@ -17,26 +17,21 @@ namespace Led.Services.lib
         private byte[] _Data;
         private static EntityMessage _HeartbeatAnswer;
         private static EntityMessage _IDRequest;
-        private ConnectionState _State;
         public ViewModels.NetworkClientVM Client;
 
-        private ConcurrentQueue<EntityMessage> _PriorityQueue;
-        private ConcurrentQueue<EntityMessage> _NormalQueue;
+        private string _ID;
+        public override string ID { get => _ID; }
 
-        public override TcpServer TcpServer { get; set; }
-
-        public string ID { get; private set; }        
-
-        public override object Clone(ConnectionState state)
+        public override object Clone()
         {
-            return new EntityHandlerProvider(state);
+            EntityHandlerProvider res = new EntityHandlerProvider();
+            return res;
         }
 
         public override void OnAcceptConnection(ConnectionState state)
         {
             _MessageIdentified = false;
-            if (!state.Write(_IDRequest.Data, 0, _IDRequest.Data.Length))
-                state.EndConnection();
+            state.Write(_IDRequest.Data, 0, _IDRequest.Data.Length);
         }
 
         /*
@@ -91,23 +86,12 @@ namespace Led.Services.lib
             App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_NetworkClientDropped, this, Client);
         }
 
-        public void EnqueueMessage (EntityMessage entityMessage, bool isPriority = false)
+        private void _SendMessage (EntityMessage entityMessage)
         {
-            if (isPriority)
-            {
-                if(_PriorityQueue.Contains(entityMessage))
-                {
-                    if (entityMessage.TcpMessage == TcpMessages.Heartbeat)
-                        return;
-                }
-                else
-                _PriorityQueue.Enqueue(entityMessage);
-            }
-            else
-                _NormalQueue.Enqueue(entityMessage);
-
-            _SendNextMessage();
+            App.Instance.ConnectivityService.SendMessage(entityMessage, ID);
+            Client.LastMessageSent = entityMessage;
         }
+        
 
         static EntityHandlerProvider()
         {
@@ -117,40 +101,7 @@ namespace Led.Services.lib
 
         public EntityHandlerProvider()
         {
-            _PriorityQueue = new ConcurrentQueue<EntityMessage>();
-            _NormalQueue = new ConcurrentQueue<EntityMessage>();
-        }
-
-        public EntityHandlerProvider(ConnectionState state)
-            :this()
-        {
-            _State = state;
-        }
-
-        private void _SendNextMessage()
-        {
-            lock (Client.Lock)
-            {
-                if (Client.Ready)
-                {
-                    if (!_PriorityQueue.IsEmpty)
-                    {
-                        if (_PriorityQueue.TryDequeue(out var message))
-                        {
-                            _State.Write(message.Data, 0, message.Data.Length);
-                            Client.LastMessageSent = message;
-                        }
-                    }
-                    else if (!_NormalQueue.IsEmpty)
-                    {
-                        if (_NormalQueue.TryDequeue(out var message))
-                        {
-                            _State.Write(message.Data, 0, message.Data.Length);
-                            Client.LastMessageSent = message;
-                        }
-                    }
-                }
-            }
+            Client = new ViewModels.NetworkClientVM();
         }
 
         private void _HandleData()
@@ -158,33 +109,26 @@ namespace Led.Services.lib
             switch (_IncomingMessage)
             {
                 case TcpMessages.ID:
-                    ID = Encoding.ASCII.GetString(_Data);
+                    _ID = Encoding.ASCII.GetString(_Data);
                     Console.WriteLine("Received ID from client: {0}", ID);
-                    Client = new ViewModels.NetworkClientVM(ID);
-                    TcpServer.AddClientMapping(this);
+                    Client.ID = ID;                    
 
                     App.Instance.MediatorService.BroadcastMessage(MediatorMessages.TcpServer_NetworkClientAdded, this, Client);
                     goto default;
                 case TcpMessages.Heartbeat:
-                    EnqueueMessage(new EntityMessage(TcpMessages.Heartbeat, null), true);
+                    _SendMessage(_HeartbeatAnswer);
                     break;
                 case TcpMessages.Ready:
+                    Client.Ready = true;
                     goto default;
-                case TcpMessages.Resend:
-                    EnqueueMessage(Client.LastMessageSent);
-                    goto default;
-                default:
-                    //Check if lock is needed
-                    lock (Client.Lock)
-                        Client.LastMessageReceived = _IncomingMessage;
+                default: 
+                    Client.LastMessageReceived = _IncomingMessage;
                     break;
             }
 
             _MessageIdentified = false;
             _DataLength = 0;
             _DataReceived = 0;
-
-            _SendNextMessage();
         }
     }
 }

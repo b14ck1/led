@@ -11,50 +11,70 @@ namespace Led.ViewModels
     {
         public object Lock { get; }
 
-        private Services.MediatorService _MediatorService;        
-
-        public bool Ready { get; private set; }
-        private bool _playing;
-
-        private Services.lib.TCP.EntityMessage _LastMessageSent;
-        public Services.lib.TCP.EntityMessage LastMessageSent
+        private Services.MediatorService _MediatorService;
+    
+        private volatile bool _Ready;
+        public bool Ready
         {
-            get => _LastMessageSent;
+            get
+            {
+                lock (Lock)
+                    return _Ready;
+            }
             set
             {
-                if(_LastMessageSent != value)
+                lock (Lock)
                 {
-                    _LastMessageSent = value;
-                    RaisePropertyChanged(nameof(LastMessageSent));
+                    if (_Ready != value)
+                    {
+                        _Ready = value;
+                        RaisePropertyChanged(nameof(Ready));
+                    }
                 }
-                Ready = false;
+            }
+        }
+        private bool _playing;
+
+        private volatile Services.lib.TCP.EntityMessage _LastMessageSent;
+        public Services.lib.TCP.EntityMessage LastMessageSent
+        {
+            get
+            {
+                lock (Lock)
+                    return _LastMessageSent;
+            }
+            set
+            {
+                lock (Lock)
+                {
+                    if (_LastMessageSent != value)
+                    {
+                        _LastMessageSent = value;
+                        RaisePropertyChanged(nameof(LastMessageSent));
+                    }
+                    Ready = false;
+                    Console.WriteLine("Ready is false.");
+                }
             }
         }
 
-        private TcpMessages _LastMessageReceived;
+        private volatile TcpMessages _LastMessageReceived;
         public TcpMessages LastMessageReceived
         {
-            get => _LastMessageReceived;
+            get
+            {
+                lock (Lock)
+                    return _LastMessageReceived;
+            }
             set
             {
-                if (_LastMessageReceived != value)
+                lock (Lock)
                 {
-                    _LastMessageReceived = value;
-                    if(_LastMessageReceived == TcpMessages.Ready)
+                    if (_LastMessageReceived != value)
                     {
-                        if (_LastMessageSent.TcpMessage == TcpMessages.Config)
-                        {
-                            ConfigSynchronized = true;
-                            RaisePropertyChanged(nameof(ConfigSynchronized));
-                        }
-                        if (_LastMessageSent.TcpMessage == TcpMessages.Effects)
-                        {
-                            EffectsSynchronized = true;
-                            RaisePropertyChanged(nameof(EffectsSynchronized));
-                        }
-                        Ready = true;
+                        _LastMessageReceived = value;
+                        RaisePropertyChanged(nameof(LastMessageReceived));
                     }
-                    RaisePropertyChanged(nameof(LastMessageReceived));
                 }
             }
         }
@@ -65,13 +85,20 @@ namespace Led.ViewModels
         /// </summary>
         public string ID
         {
-            get => _ID;
+            get
+            {
+                lock (Lock)
+                    return _ID;
+            }
             set
             {
-                if (_ID != value)
+                lock (Lock)
                 {
-                    _ID = value;
-                    RaisePropertyChanged(nameof(ID));
+                    if (_ID != value)
+                    {
+                        _ID = value;
+                        RaisePropertyChanged(nameof(ID));
+                    }
                 }
             }
         }
@@ -112,14 +139,14 @@ namespace Led.ViewModels
                 List<LedEntityBaseVM> res = new List<LedEntityBaseVM>();
                 foreach (var x in App.Instance.MainWindowVM.LedEntities)
                 {
-                    if (x.ClientID.Equals(""))
+                    if (String.IsNullOrEmpty(x.ClientID))
                         res.Add(x);
                 }
                 return res;
             }
         }
 
-        private bool _ConfigSynchronized;
+        private volatile bool _ConfigSynchronized;
         /// <summary>
         /// Is the config on this device synchronized.
         /// Gets set to false when the corresponding LedEntity gets edited.
@@ -138,7 +165,7 @@ namespace Led.ViewModels
             }
         }
 
-        private bool _EffectsSynchronized;
+        private volatile bool _EffectsSynchronized;
         /// <summary>
         /// Are the effects on this device synchronized.
         /// Gets set to false when one of the corresponding Effects gets edited.
@@ -180,11 +207,11 @@ namespace Led.ViewModels
             _SelectedEntity = null;
         }
 
-        public NetworkClientVM(string id)
+        public NetworkClientVM()
         {
             Lock = new object();            
 
-            ID = id;
+            Ready = true;
 
             ShowClientCommand = new Command(_OnShowClientCommand, () => !_playing);
             RemoveBindingCommand = new Command(_OnRemoveBindingCommand, () => !_playing);

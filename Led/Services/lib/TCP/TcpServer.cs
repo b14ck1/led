@@ -18,7 +18,7 @@ namespace Led.Services.lib.TCP
         private Socket _listener;
         private TcpServiceProvider _provider;
         private List<ConnectionState> _connections;
-        public ConcurrentDictionary<string, EntityHandlerProvider> ClientMapping;
+        private Dictionary<string, ConnectionState> _ConnectionMapping;
         private int _maxConnections = 100;
 
         private AsyncCallback _ConnectionReady;
@@ -32,16 +32,27 @@ namespace Led.Services.lib.TCP
         public TcpServer(TcpServiceProvider provider, int port)
         {
             _provider = provider;
-            _provider.TcpServer = this;
-
             _port = port;
             _listener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             _connections = new List<ConnectionState>();
+            _ConnectionMapping = new Dictionary<string, ConnectionState>();
             _ConnectionReady = new AsyncCallback(ConnectionReady_Handler);
             _AcceptConnection = new WaitCallback(AcceptConnection_Handler);
-            _ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);
+            _ReceivedDataReady = new AsyncCallback(ReceivedDataReady_Handler);   
+        }
 
-            ClientMapping = new ConcurrentDictionary<string, EntityHandlerProvider>();            
+        public bool SendMessage(EntityMessage entityMessage, string ID)
+        {
+            if(!_ConnectionMapping.ContainsKey(ID))
+            {
+                ConnectionState connectionState = _connections.Find(x => x._provider.ID.Equals(ID));
+                if (connectionState != null)
+                    _ConnectionMapping.Add(ID, connectionState);
+                else
+                    return false;
+            }
+
+            return _ConnectionMapping[ID].Write(entityMessage.Data, 0, entityMessage.Data.Length);
         }
 
         /// <SUMMARY>
@@ -106,7 +117,7 @@ namespace Led.Services.lib.TCP
                     ConnectionState st = new ConnectionState();
                     st._conn = conn;
                     st._server = this;
-                    st._provider = (TcpServiceProvider)_provider.Clone(st);
+                    st._provider = (TcpServiceProvider)_provider.Clone();
                     st._buffer = new byte[4];
                     _connections.Add(st);
                     //Queue the rest of the job to be executed latter
@@ -151,9 +162,10 @@ namespace Led.Services.lib.TCP
                 else
                 {
                     try { st._provider.OnReceiveData(st); }
-                    catch
+                    catch (Exception e)
                     {
-                        //report error in the provider
+                        Console.WriteLine(e);
+                        Console.WriteLine(e.StackTrace);
                     }
                     //Resume ReceivedData callback loop
                     if (st._conn.Connected)
@@ -184,6 +196,9 @@ namespace Led.Services.lib.TCP
                 {
                     //some error in the provider
                 }
+
+                if (_ConnectionMapping.ContainsKey(st._provider.ID))
+                    _ConnectionMapping.Remove(st._provider.ID);
                                 
                 if (_connections.Contains(st))
                     _connections.Remove(st);
@@ -208,18 +223,6 @@ namespace Led.Services.lib.TCP
             {
                 lock (this) { return _connections.Count; }
             }
-        }
-
-        public void AddClientMapping(EntityHandlerProvider entityHandlerProvider)
-        {
-            if (!ClientMapping.ContainsKey(entityHandlerProvider.ID))
-                ClientMapping.TryAdd(entityHandlerProvider.ID, entityHandlerProvider);            
-        }
-
-        public void RemoveClientMaping(EntityHandlerProvider entityHandlerProvider)
-        {
-            if (ClientMapping.ContainsKey(entityHandlerProvider.ID))
-                ClientMapping.TryRemove(entityHandlerProvider.ID, out var ignore);
         }
     }
 }

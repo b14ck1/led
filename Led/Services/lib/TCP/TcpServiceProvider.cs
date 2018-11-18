@@ -13,12 +13,12 @@ namespace Led.Services.lib.TCP
     /// </SUMMARY>
     public abstract class TcpServiceProvider
     {
-        public abstract TcpServer TcpServer { get; set; }
+        public abstract string ID { get; }
 
         /// <SUMMARY>
         /// Provides a new instance of the object.
         /// </SUMMARY>
-        public virtual object Clone(ConnectionState connectionState)
+        public virtual object Clone()
         {
             throw new Exception("Derived clases" +
                       " must override Clone method.");

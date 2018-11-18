@@ -21,6 +21,7 @@ namespace Led.Services.lib.TCP
 
         public EntityMessage(TcpMessages tcpMessage, byte[] data)
         {
+            TcpMessage = tcpMessage;
             byte[] _message = BitConverter.GetBytes(HostNetworkConverter.Int16((Int16)tcpMessage));
 
             byte[] _length;
