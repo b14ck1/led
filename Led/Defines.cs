@@ -199,6 +199,13 @@ namespace Led
         Shutdown = 14
     }
 
+    public enum ColorMode
+    {
+        Full,
+        Config,
+        Individual
+    }
+
     public enum MediatorMessages
     {
         LedEntity_SelectButtonClicked,

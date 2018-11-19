@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -12,8 +13,7 @@ namespace Led.ViewModels
 {
     public class ColorPickerVM : INPC
     {
-        private static System.Drawing.Size _RectangleSize;
-        private static SolidColorBrush[,] _RectangleBrushes;
+        private static System.Drawing.Size _RectangleSize;        
         private static Color[,] _RectangleColors;
         public static WriteableBitmap ColorRectangle { get; set; }
 
@@ -22,7 +22,7 @@ namespace Led.ViewModels
         public Color SelectedColor { get; set; }
 
         public Command MouseDownCommand { get; set; }
-        public Command MouseMoveCommand { get; set; }
+        public Command<MouseEventArgs> MouseMoveCommand { get; set; }
         public Command MouseUpCommand { get; set; }
 
         static ColorPickerVM()
@@ -86,12 +86,12 @@ namespace Led.ViewModels
                         _green = (byte)(_green - (_green * _scaleHeight));
                         _blue = (byte)(_blue - (_blue * _scaleHeight));
                     }
-
-                    _RectangleColors[j, i] = Color.FromArgb(255, (byte)(_red * _scaleHeight), (byte)(_green * _scaleHeight), (byte)(_blue * _scaleHeight));
+                                        
                     _pixelArray[offset] = _blue;
                     _pixelArray[offset + 1] = _green;
                     _pixelArray[offset + 2] = _red;
                     _pixelArray[offset + 3] = 255;
+                    _RectangleColors[j, i] = Color.FromArgb(255, _red, _green, _blue);
                 }
             }
             int stride = _RectangleSize.Width * 4;
@@ -100,7 +100,7 @@ namespace Led.ViewModels
 
         public ColorPickerVM()
         {
-
+            MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
         }
 
         public void OnMouseDownCommand(MouseEventArgs e)
@@ -111,7 +111,15 @@ namespace Led.ViewModels
 
         public void OnMouseMoveCommand(MouseEventArgs e)
         {
-            
+            Point mousePosition = e.GetPosition((IInputElement)e.Source);
+
+            byte[] color = new byte[4];
+            color[0] = 20;
+            color[1] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].B;
+            color[2] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].G;
+            color[3] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].R;
+            Console.WriteLine("Color: G: {0}, B: {1}, R: {2}", color[1], color[2], color[3]);
+            App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, color), "B827EB04E40A");
         }
 
         public void OnMouseUpCommand(MouseEventArgs e)
