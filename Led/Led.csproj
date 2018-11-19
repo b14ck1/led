@@ -145,13 +145,10 @@
     <Compile Include="ViewModels\NetworkClientOverviewVM.cs" />
     <Compile Include="ViewModels\NetworkClientVM.cs" />
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
-<<<<<<< HEAD
     <Compile Include="ViewModels\YesNoDialogVM.cs" />
-=======
     <Compile Include="Views\Controls\ColorPicker.xaml.cs">
       <DependentUpon>ColorPicker.xaml</DependentUpon>
     </Compile>
->>>>>>> color-picker
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
