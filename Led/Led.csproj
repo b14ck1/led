@@ -137,6 +137,7 @@
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
+    <Compile Include="ViewModels\ColorPickerVM.cs" />
     <Compile Include="ViewModels\EffectProperties\BlinkVM.cs" />
     <Compile Include="ViewModels\EffectProperties\EffectColorVM.cs" />
     <Compile Include="ViewModels\EffectProperties\FadeVM.cs" />
@@ -144,7 +145,13 @@
     <Compile Include="ViewModels\NetworkClientOverviewVM.cs" />
     <Compile Include="ViewModels\NetworkClientVM.cs" />
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
+<<<<<<< HEAD
     <Compile Include="ViewModels\YesNoDialogVM.cs" />
+=======
+    <Compile Include="Views\Controls\ColorPicker.xaml.cs">
+      <DependentUpon>ColorPicker.xaml</DependentUpon>
+    </Compile>
+>>>>>>> color-picker
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
@@ -231,6 +238,10 @@
     <None Include="PropertyChanged.snippet" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\Controls\ColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\MainWindow\EffectProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
