@@ -1,21 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 
 namespace Led.ViewModels
 {
     public class ColorPickerVM : INPC
     {
-        private static Size _RectangleSize;
-        private static Brush[,] _RectangleBrushes;
+        private static System.Drawing.Size _RectangleSize;
+        private static SolidColorBrush[,] _RectangleBrushes;
         private static Color[,] _RectangleColors;
-        public static Bitmap ColorRectangle { get; set; }
+        public static WriteableBitmap ColorRectangle { get; set; }
 
-        private bool _LeftMouseDown;        
+        private bool _LeftMouseDown;
 
         public Color SelectedColor { get; set; }
 
@@ -25,35 +27,75 @@ namespace Led.ViewModels
 
         static ColorPickerVM()
         {
-            _RectangleSize = new Size(765, 255);
-            ColorRectangle = new Bitmap(_RectangleSize.Width, _RectangleSize.Height);
-            _RectangleBrushes = new Brush[_RectangleSize.Width, _RectangleSize.Height];
+            _RectangleSize = new System.Drawing.Size(765, 510);
+
             _RectangleColors = new Color[_RectangleSize.Width, _RectangleSize.Height];
-
+            ColorRectangle = new WriteableBitmap(_RectangleSize.Width, _RectangleSize.Height, 96, 96, PixelFormats.Bgra32, null);
+            System.Windows.Int32Rect _pixelRect = new System.Windows.Int32Rect(0, 0, _RectangleSize.Width, _RectangleSize.Height);
+            byte[] _pixelArray = new byte[_RectangleSize.Width * _RectangleSize.Height * 4];
             int _halfHeight = _RectangleSize.Height / 2;
-            int _red, _green, _blue;
+            int _thirdWidth = _RectangleSize.Width / 3;
+            byte _red, _green, _blue;            
+            double _scaleHeight, _scaleWidth;
+            _red = 0;
+            _green = 0;
+            _blue = 0;
 
-            using (Graphics g = Graphics.FromImage(ColorRectangle))
+            for (int i = 0; i < _RectangleSize.Height; i++)
             {
-                for (int i = 0; i < _RectangleSize.Width; i++)
+                if (i / _halfHeight == 0)
+                    _scaleHeight = 1 - ((double)i / _halfHeight);
+                else
+                    _scaleHeight = ((double)(i - _halfHeight) / _halfHeight);
+
+                for (int j = 0; j < _RectangleSize.Width; j++)
                 {
-                    _red = 255;
-                    _green = 0;
-                    _blue = 0;
-                    for (int j = 0; j < _RectangleSize.Height; j++)
+                    double _region = j / _thirdWidth;
+                    if (_region >= 2)
                     {
-                        if (j / _halfHeight == 0)
-                            _RectangleColors[i, j] = Color.FromArgb(_red, _green, _blue);
-                        else
-                        {
-                            double _scaleHeight = 1 - ((j - _RectangleSize.Height) / _RectangleSize.Height);
-                            _RectangleColors[i, j] = Color.FromArgb((int)(_red * _scaleHeight), (int)(_green * _scaleHeight), (int)(_blue * _scaleHeight));
-                        }
-                        _RectangleBrushes[i, j] = new SolidBrush(_RectangleColors[i, j]);
-                        g.FillRectangle(_RectangleBrushes[i, j], i, j, 1, 1);
+                        _scaleWidth = 1 - ((double)(j - _thirdWidth * 2) / _thirdWidth);
+                        _red = (byte)(255 * (1 - _scaleWidth));
+                        _green = (byte)(255 * _scaleWidth);
+                        _blue = 0;
                     }
+                    else if (_region >= 1)
+                    {
+                        _scaleWidth = 1 - ((double)(j - _thirdWidth) / _thirdWidth);
+                        _red = 0;
+                        _green = (byte)(255 * (1 - _scaleWidth));
+                        _blue = (byte)(255 * _scaleWidth);
+                    }
+                    else if (_region >= 0)
+                    {
+                        _scaleWidth = 1 - ((double)j / _thirdWidth);
+                        _red = (byte)(255 * _scaleWidth);
+                        _green = 0;
+                        _blue = (byte)(255 * (1 - _scaleWidth));
+                    }
+
+                    int offset = (i * (_RectangleSize.Width * 4) + j * 4);
+                    if (i / _halfHeight == 0)
+                    {
+                        _red = (byte)(_red + ((255 - _red) * _scaleHeight));
+                        _green = (byte)(_green + ((255 - _green) * _scaleHeight));
+                        _blue = (byte)(_blue + ((255 - _blue) * _scaleHeight));
+                    }
+                    else
+                    {
+                        _red = (byte)(_red - (_red * _scaleHeight));
+                        _green = (byte)(_green - (_green * _scaleHeight));
+                        _blue = (byte)(_blue - (_blue * _scaleHeight));
+                    }
+
+                    _RectangleColors[j, i] = Color.FromArgb(255, (byte)(_red * _scaleHeight), (byte)(_green * _scaleHeight), (byte)(_blue * _scaleHeight));
+                    _pixelArray[offset] = _blue;
+                    _pixelArray[offset + 1] = _green;
+                    _pixelArray[offset + 2] = _red;
+                    _pixelArray[offset + 3] = 255;
                 }
             }
+            int stride = _RectangleSize.Width * 4;
+            ColorRectangle.WritePixels(_pixelRect, _pixelArray, stride, 0);
         }
 
         public ColorPickerVM()
@@ -69,7 +111,7 @@ namespace Led.ViewModels
 
         public void OnMouseMoveCommand(MouseEventArgs e)
         {
-
+            
         }
 
         public void OnMouseUpCommand(MouseEventArgs e)

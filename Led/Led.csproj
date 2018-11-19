@@ -143,6 +143,9 @@
     <Compile Include="ViewModels\NetworkClientOverviewVM.cs" />
     <Compile Include="ViewModels\NetworkClientVM.cs" />
     <Compile Include="ViewModels\TimelineUserControlVM.cs" />
+    <Compile Include="Views\Controls\ColorPicker.xaml.cs">
+      <DependentUpon>ColorPicker.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\Controls\MainWindow\AudioUserControl.xaml.cs">
       <DependentUpon>AudioUserControl.xaml</DependentUpon>
     </Compile>
@@ -226,6 +229,10 @@
     <None Include="PropertyChanged.snippet" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\Controls\ColorPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\Controls\MainWindow\EffectProperties.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
