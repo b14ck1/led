@@ -5,10 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Led.Views.Controls"
         xmlns:Behaviours="clr-namespace:Led.Behaviours"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="ColorPicker" Height="450" Width="800">
+        Title="ColorPicker" Height="569" Width="1115">
     <Grid>
-        <Image Source="{Binding ColorRectangle}" Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}" Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="785"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>        
+        
+        <Image Source="{Binding ColorRectangle}"
+               Grid.Column="0"
+               Width="765"
+               Height="510"
+               Stretch="Fill"
+               Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}"
+               Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}">
             <Behaviours:DataPiping.DataPipes>
                 <Behaviours:DataPipeCollection>
                     <Behaviours:DataPipe Source="{Binding RelativeSource={RelativeSource AncestorType={x:Type Image}}, Path=ActualWidth}"
@@ -18,5 +31,127 @@
                 </Behaviours:DataPipeCollection>
             </Behaviours:DataPiping.DataPipes>
         </Image>
+
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="35"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="65"/>
+                </Grid.ColumnDefinitions>
+
+                <Label Content="R"
+                   Grid.Row="0"
+                   Grid.Column="0"
+                   Margin="5,5,5,5"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   FontSize="17"/>
+                <xctk:DecimalUpDown Grid.Row="0"
+                    Grid.Column="2"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Minimum="0"
+                    Maximum="255"
+                    Value="{Binding CurrColor.R, Mode=TwoWay}"/>
+                <Slider Grid.Row="0"
+                    Grid.Column="1"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Maximum="255"                    
+                    Value="{Binding CurrColor.R, Mode=TwoWay}"/>
+
+                <Label Content="G"
+                   Grid.Row="1"
+                   Grid.Column="0"
+                   Margin="5,5,5,5"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   FontSize="17"/>
+                <xctk:DecimalUpDown Grid.Row="1"
+                    Grid.Column="2"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Minimum="0"
+                    Maximum="255"
+                    Value="{Binding CurrColor.G, Mode=TwoWay}"/>
+                <Slider Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Maximum="255"
+                    Value="{Binding CurrColor.G, Mode=TwoWay}"/>
+
+                <Label Content="B"
+                   Grid.Row="2"
+                   Grid.Column="0"
+                   Margin="5,5,5,5"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   FontSize="17"/>
+                <xctk:DecimalUpDown Grid.Row="2"
+                    Grid.Column="2"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"                                
+                    Minimum="0"
+                    Maximum="255"
+                    Value="{Binding CurrColor.B, Mode=TwoWay}"/>
+                <Slider Grid.Row="2"
+                    Grid.Column="1"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"                   
+                    Maximum="255"
+                    Value="{Binding CurrColor.B, Mode=TwoWay}"/>
+
+                <Label Content="A"
+                   Grid.Row="3"
+                   Grid.Column="0"
+                   Margin="5,5,5,5"
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   FontSize="17"/>
+                <xctk:DecimalUpDown Grid.Row="3"
+                    Grid.Column="2"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"                                
+                    Minimum="0"
+                    Maximum="255"
+                    Value="{Binding CurrColor.A, Mode=TwoWay}"/>
+                <Slider Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Maximum="255"
+                    Value="{Binding CurrColor.A, Mode=TwoWay}"/>
+            </Grid>
+
+            <Canvas Grid.Row="2"
+                Width="290"
+                Height="140"
+                Margin="5,5,5,5"
+                Background="{Binding CurrColor.SelectedColor}"/>
+        </Grid>
+        
     </Grid>
 </Window>
