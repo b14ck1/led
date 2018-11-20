@@ -8,6 +8,15 @@
         mc:Ignorable="d"
         Title="ColorPicker" Height="450" Width="800">
     <Grid>
-        <Image Source="{Binding ColorRectangle}" Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}" Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}"/>
+        <Image Source="{Binding ColorRectangle}" Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}" Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}">
+            <Behaviours:DataPiping.DataPipes>
+                <Behaviours:DataPipeCollection>
+                    <Behaviours:DataPipe Source="{Binding RelativeSource={RelativeSource AncestorType={x:Type Image}}, Path=ActualWidth}"
+                                         Target="{Binding ActualWidth, Mode=OneWayToSource}"/>
+                    <Behaviours:DataPipe Source="{Binding RelativeSource={RelativeSource AncestorType={x:Type Image}}, Path=ActualHeight}"
+                                         Target="{Binding ActualHeight, Mode=OneWayToSource}"/>
+                </Behaviours:DataPipeCollection>
+            </Behaviours:DataPiping.DataPipes>
+        </Image>
     </Grid>
 </Window>

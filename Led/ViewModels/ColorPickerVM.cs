@@ -19,11 +19,16 @@ namespace Led.ViewModels
 
         private bool _LeftMouseDown;
 
-        public Color SelectedColor { get; set; }
+        public double ActualWidth { get; set; }
+        public double ActualHeight { get; set; }
 
-        public Command MouseDownCommand { get; set; }
+        public Color SelectedColor { get; set; }
+        
+        public Command<MouseEventArgs> MouseDownCommand { get; set; }
         public Command<MouseEventArgs> MouseMoveCommand { get; set; }
-        public Command MouseUpCommand { get; set; }
+        public Command<MouseEventArgs> MouseUpCommand { get; set; }
+
+        public Command<SizeChangedEventArgs> ImageSizeChanged { get; set; }
 
         static ColorPickerVM()
         {
@@ -85,7 +90,7 @@ namespace Led.ViewModels
                         _red = (byte)(_red - (_red * _scaleHeight));
                         _green = (byte)(_green - (_green * _scaleHeight));
                         _blue = (byte)(_blue - (_blue * _scaleHeight));
-                    }
+                    }                    
                                         
                     _pixelArray[offset] = _blue;
                     _pixelArray[offset + 1] = _green;
@@ -101,6 +106,7 @@ namespace Led.ViewModels
         public ColorPickerVM()
         {
             MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
+            ImageSizeChanged = new Command<SizeChangedEventArgs>(OnImageSizeChanged);
         }
 
         public void OnMouseDownCommand(MouseEventArgs e)
@@ -112,19 +118,25 @@ namespace Led.ViewModels
         public void OnMouseMoveCommand(MouseEventArgs e)
         {
             Point mousePosition = e.GetPosition((IInputElement)e.Source);
-
+            Point mousePositionScaled = new Point(mousePosition.X * (_RectangleSize.Width / ActualWidth), mousePosition.Y * (_RectangleSize.Height / ActualHeight));
             byte[] color = new byte[4];
-            color[0] = 20;
-            color[1] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].B;
-            color[2] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].G;
-            color[3] = _RectangleColors[(int)mousePosition.X, (int)mousePosition.Y].R;
-            Console.WriteLine("Color: G: {0}, B: {1}, R: {2}", color[1], color[2], color[3]);
+            color[0] = 255;
+            color[1] = _RectangleColors[(int)mousePositionScaled.X, (int)mousePositionScaled.Y].B;
+            color[2] = _RectangleColors[(int)mousePositionScaled.X, (int)mousePositionScaled.Y].G;
+            color[3] = _RectangleColors[(int)mousePositionScaled.X, (int)mousePositionScaled.Y].R;
+            Console.WriteLine("Mouse: X: {0}, Y: {1}", (int)mousePositionScaled.X, (int)mousePositionScaled.Y);
+            Console.WriteLine("Color: B: {0}, G: {1}, R: {2}", color[1], color[2], color[3]);
             App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, color), "B827EB04E40A");
         }
 
         public void OnMouseUpCommand(MouseEventArgs e)
         {
             _LeftMouseDown = false;
+        }
+
+        public void OnImageSizeChanged(SizeChangedEventArgs e)
+        {
+            Console.WriteLine("Imagesize: X: {0], Y: {1}", e.NewSize.Width, e.NewSize.Height);
         }
     }
 }
