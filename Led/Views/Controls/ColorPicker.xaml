@@ -21,7 +21,8 @@
                Height="510"
                Stretch="Fill"
                Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}"
-               Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}">
+               Behaviours:MouseBehaviour.MouseMoveCommand="{Binding MouseMoveCommand}"
+               Behaviours:MouseBehaviour.MouseUpCommand="{Binding MouseUpCommand}">
             <Behaviours:DataPiping.DataPipes>
                 <Behaviours:DataPipeCollection>
                     <Behaviours:DataPipe Source="{Binding RelativeSource={RelativeSource AncestorType={x:Type Image}}, Path=ActualWidth}"
@@ -135,14 +136,14 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Stretch"                                
                     Minimum="0"
-                    Maximum="255"
+                    Maximum="31"
                     Value="{Binding CurrColor.A, Mode=TwoWay}"/>
                 <Slider Grid.Row="3"
                     Grid.Column="1"
                     Margin="5,5,5,5"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Maximum="255"
+                    Maximum="31"
                     Value="{Binding CurrColor.A, Mode=TwoWay}"/>
             </Grid>
 

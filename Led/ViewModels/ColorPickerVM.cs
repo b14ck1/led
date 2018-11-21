@@ -18,7 +18,9 @@ namespace Led.ViewModels
         public static WriteableBitmap ColorRectangle { get; set; }
 
         public ColorARGB CurrColor { get; set; }
+        private byte[] _Color;
         private bool _LeftMouseDown;
+
 
         public double ActualWidth { get; set; }
         public double ActualHeight { get; set; }
@@ -33,13 +35,30 @@ namespace Led.ViewModels
         {
             ImageSize = new System.Drawing.Size(1530, 510);
 
+            _InitializeColorImage();
+        }
+
+        public ColorPickerVM()
+        {
+            MouseDownCommand = new Command<MouseEventArgs>(OnMouseDownCommand);
+            MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
+            MouseUpCommand = new Command<MouseEventArgs>(OnMouseUpCommand);
+            ImageSizeChanged = new Command<SizeChangedEventArgs>(OnImageSizeChanged);
+
+            CurrColor = new ColorARGB();
+            CurrColor.ColorChanged += OnColorChangeCommand;
+            _Color = new byte[4];
+        }
+
+        private static void _InitializeColorImage()
+        {
             _RectangleColors = new Color[ImageSize.Width, ImageSize.Height];
             ColorRectangle = new WriteableBitmap(ImageSize.Width, ImageSize.Height, 96, 96, PixelFormats.Bgra32, null);
             System.Windows.Int32Rect _pixelRect = new System.Windows.Int32Rect(0, 0, ImageSize.Width, ImageSize.Height);
             byte[] _pixelArray = new byte[ImageSize.Width * ImageSize.Height * 4];
             int _halfHeight = ImageSize.Height / 2;
             int _sixtWidth = ImageSize.Width / 6;
-            byte _red, _green, _blue;            
+            byte _red, _green, _blue;
             double _scaleHeight, _scaleWidth;
             _red = 0;
             _green = 0;
@@ -109,8 +128,8 @@ namespace Led.ViewModels
                         _red = (byte)(_red - (_red * _scaleHeight));
                         _green = (byte)(_green - (_green * _scaleHeight));
                         _blue = (byte)(_blue - (_blue * _scaleHeight));
-                    }                    
-                                        
+                    }
+
                     _pixelArray[offset] = _blue;
                     _pixelArray[offset + 1] = _green;
                     _pixelArray[offset + 2] = _red;
@@ -122,25 +141,19 @@ namespace Led.ViewModels
             ColorRectangle.WritePixels(_pixelRect, _pixelArray, stride, 0);
         }
 
-        public ColorPickerVM()
+        private void _SendNewColor()
         {
-            MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
-            ImageSizeChanged = new Command<SizeChangedEventArgs>(OnImageSizeChanged);
-
-            CurrColor = new ColorARGB();
+            _Color[0] = CurrColor.A;
+            _Color[1] = CurrColor.B;
+            _Color[2] = CurrColor.G;
+            _Color[3] = CurrColor.R;
+            App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), "B827EB04E40A");
         }
 
-        public void OnMouseDownCommand(MouseEventArgs e)
+        private void _GetClickedColor(Point point)
         {
-            if (e.LeftButton == MouseButtonState.Pressed)
-                _LeftMouseDown = true;
-        }
-
-        public void OnMouseMoveCommand(MouseEventArgs e)
-        {
-            Point mousePosition = e.GetPosition((IInputElement)e.Source);
-            int _scaledX = (int)(mousePosition.X * (ImageSize.Width / ActualWidth) - 1);
-            int _scaledY = (int)(mousePosition.Y * (ImageSize.Height / ActualHeight) - 1);
+            int _scaledX = (int)(point.X * (ImageSize.Width / ActualWidth) - 1);
+            int _scaledY = (int)(point.Y * (ImageSize.Height / ActualHeight) - 1);
             if (_scaledX < 0)
                 _scaledX = 0;
             else if (_scaledX > ImageSize.Width - 1)
@@ -150,15 +163,31 @@ namespace Led.ViewModels
             else if (_scaledY > ImageSize.Height - 1)
                 _scaledY = ImageSize.Height - 1;
 
-            byte[] color = new byte[4];
-            color[0] = 255;
-            color[1] = _RectangleColors[_scaledX, _scaledY].B;
-            color[2] = _RectangleColors[_scaledX, _scaledY].G;
-            color[3] = _RectangleColors[_scaledX, _scaledY].R;
-            //Console.WriteLine("Mouse: X: {0}, Y: {1}", (int)mousePositionScaled.X, (int)mousePositionScaled.Y);
-            //Console.WriteLine("Color: B: {0}, G: {1}, R: {2}", color[1], color[2], color[3]);
             CurrColor.SetNewColor(_RectangleColors[_scaledX, _scaledY]);
-            App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, color), "B827EB04E40A");
+        }
+
+        public void OnColorChangeCommand(object sender, EventArgs e)
+        {
+            _SendNewColor();
+        }
+
+        public void OnMouseDownCommand(MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                _LeftMouseDown = true;
+                _GetClickedColor(e.GetPosition(e.Source as IInputElement));
+                _SendNewColor();
+            }
+        }
+
+        public void OnMouseMoveCommand(MouseEventArgs e)
+        {
+            if (!_LeftMouseDown)
+                return;
+
+            _GetClickedColor(e.GetPosition(e.Source as IInputElement));
+            _SendNewColor();
         }
 
         public void OnMouseUpCommand(MouseEventArgs e)
@@ -172,7 +201,7 @@ namespace Led.ViewModels
         }
 
         public class ColorARGB : INPC
-        {
+        {            
             private byte _A;
             public byte A
             {
@@ -184,8 +213,13 @@ namespace Led.ViewModels
                         _A = value;
                         RaisePropertyChanged(nameof(A));
                         RaisePropertyChanged(nameof(SelectedColor));
+                        ColorChanged?.Invoke(this, null);
                     }
                 }
+            }
+            public byte AScaled
+            {
+                get => (byte)(Math.Round(_A * (double)255 / 31));
             }
             private byte _R;
             public byte R
@@ -198,6 +232,7 @@ namespace Led.ViewModels
                         _R = value;
                         RaisePropertyChanged(nameof(R));
                         RaisePropertyChanged(nameof(SelectedColor));
+                        ColorChanged?.Invoke(this, null);
                     }
                 }
             }
@@ -212,6 +247,7 @@ namespace Led.ViewModels
                         _G = value;
                         RaisePropertyChanged(nameof(G));
                         RaisePropertyChanged(nameof(SelectedColor));
+                        ColorChanged?.Invoke(this, null);
                     }
                 }
             }
@@ -226,13 +262,14 @@ namespace Led.ViewModels
                         _B = value;
                         RaisePropertyChanged(nameof(B));
                         RaisePropertyChanged(nameof(SelectedColor));
+                        ColorChanged?.Invoke(this, null);
                     }
                 }
             }
 
             public Brush SelectedColor
             {
-                get => new SolidColorBrush(Color.FromArgb(A, R, G, B));
+                get => new SolidColorBrush(Color.FromArgb(AScaled, R, G, B));
             }
 
             public void SetNewColor(Color color)
@@ -247,9 +284,11 @@ namespace Led.ViewModels
                 RaisePropertyChanged(nameof(SelectedColor));
             }
 
+            public EventHandler ColorChanged;
+
             public ColorARGB()
             {
-                A = 255;
+                A = 31;
             }
         }
     }
