@@ -4,10 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Led.Views.Controls"
+        xmlns:vm="clr-namespace:Led.ViewModels"
         xmlns:Behaviours="clr-namespace:Led.Behaviours"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="ColorPicker" Height="569" Width="1115">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:ColorPickerSingleVM}">
+            <Button Background="{Binding Brush}" Command="{Binding MouseDownCommand}"/>
+        </DataTemplate>
+    </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="785"/>
@@ -35,9 +41,10 @@
 
         <Grid Grid.Column="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
+                <RowDefinition Height="160"/>
+                <RowDefinition Height="140"/>
+                <RowDefinition Height="115"/>
+                <RowDefinition Height="115"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
@@ -147,11 +154,13 @@
                     Value="{Binding CurrColor.A, Mode=TwoWay}"/>
             </Grid>
 
-            <Canvas Grid.Row="2"
+            <Canvas Grid.Row="1"
                 Width="290"
                 Height="140"
                 Margin="5,5,5,5"
                 Background="{Binding CurrColor.SelectedColor}"/>
+            
+            
         </Grid>
         
     </Grid>
