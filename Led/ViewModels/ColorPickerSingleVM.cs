@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels
 {
-    class ColorPickerSingleVM : INPC
+    public class ColorPickerSingleVM : INPC
     {
         private Color _Color;
         public Color Color {

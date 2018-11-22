@@ -11,8 +11,17 @@
         Title="ColorPicker" Height="569" Width="1115">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ColorPickerSingleVM}">
-            <Button Background="{Binding Brush}" Command="{Binding MouseDownCommand}"/>
+            <Button Background="{Binding Brush}"
+                    Width="25"
+                    Height="25"
+                    Margin="5,0,5,5"
+                    BorderBrush="Gray"
+                    Command="{Binding MouseDownCommand}"/>
         </DataTemplate>
+
+        <ItemsPanelTemplate x:Key="ItemsPanelTemplate">
+            <UniformGrid Columns="8" />
+        </ItemsPanelTemplate>
     </Window.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
@@ -43,8 +52,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="160"/>
                 <RowDefinition Height="140"/>
-                <RowDefinition Height="115"/>
-                <RowDefinition Height="115"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="70"/>
+                <RowDefinition Height="40"/>
+                <RowDefinition Height="70"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
@@ -159,8 +170,32 @@
                 Height="140"
                 Margin="5,5,5,5"
                 Background="{Binding CurrColor.SelectedColor}"/>
-            
-            
+
+            <Label Grid.Row="2"
+                   FontSize="15"
+                   VerticalAlignment="Bottom"
+                   Margin="5,5,5,0"
+                   Content="Globale Farben"/>
+
+            <ItemsControl Grid.Row="3"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="0,8,0,0"
+                    ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                    ItemsSource="{Binding GlobalColors}" />
+
+            <Label Grid.Row="4"
+                   FontSize="15"
+                   VerticalAlignment="Bottom"
+                   Margin="5,5,5,0"
+                   Content="Entity Farben"/>
+
+            <ItemsControl Grid.Row="5"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Margin="0,8,0,0"
+                    ItemsPanel="{StaticResource ItemsPanelTemplate}"
+                    ItemsSource="{Binding GlobalColors}" />
         </Grid>
         
     </Grid>

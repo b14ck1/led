@@ -16,12 +16,15 @@ namespace Led.ViewModels
         private static Color[,] _RectangleColors;
         public static System.Drawing.Size ImageSize { get; set; }
         public static WriteableBitmap ColorRectangle { get; set; }
+        public static int ColorRangeX { get; set; }
+        public static List<ColorPickerSingleVM> GlobalColors { get; set; }
 
-        public ColorARGB CurrColor { get; set; }
+        public ColorARGB CurrColor { get; set; }        
+        public List<ColorPickerSingleVM> EntityColors { get; set; }
+
         private byte[] _Color;
         private bool _LeftMouseDown;
-
-
+        
         public double ActualWidth { get; set; }
         public double ActualHeight { get; set; }
         
@@ -36,6 +39,13 @@ namespace Led.ViewModels
             ImageSize = new System.Drawing.Size(1530, 510);
 
             _InitializeColorImage();
+
+            ColorRangeX = 10;
+            GlobalColors = new List<ColorPickerSingleVM>();
+            for (int i = 0; i < 16; i++)
+            {
+                GlobalColors.Add(new ColorPickerSingleVM());
+            }
         }
 
         public ColorPickerVM()
