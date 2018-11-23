@@ -16,10 +16,10 @@ namespace Led.ViewModels
         private static Color[,] _RectangleColors;
         public static System.Drawing.Size ImageSize { get; set; }
         public static WriteableBitmap ColorRectangle { get; set; }
-        public static int ColorRangeX { get; set; }
-        public static List<ColorPickerSingleVM> GlobalColors { get; set; }
+        public static int ColorRangeX { get; set; }        
 
-        public ColorARGB CurrColor { get; set; }        
+        public ColorARGB CurrColor { get; set; }
+        public List<ColorPickerSingleVM> GlobalColors { get; set; }
         public List<ColorPickerSingleVM> EntityColors { get; set; }
 
         private byte[] _Color;
@@ -41,11 +41,6 @@ namespace Led.ViewModels
             _InitializeColorImage();
 
             ColorRangeX = 10;
-            GlobalColors = new List<ColorPickerSingleVM>();
-            for (int i = 0; i < 16; i++)
-            {
-                GlobalColors.Add(new ColorPickerSingleVM());
-            }
         }
 
         public ColorPickerVM()
@@ -58,6 +53,14 @@ namespace Led.ViewModels
             CurrColor = new ColorARGB();
             CurrColor.ColorChanged += OnColorChangeCommand;
             _Color = new byte[4];
+
+            GlobalColors = new List<ColorPickerSingleVM>();
+            for (int i = 0; i < 16; i++)
+            {
+                GlobalColors.Add(new ColorPickerSingleVM());
+                GlobalColors[i].SetColorIssued += _SetColorIssued;
+                GlobalColors[i].GetColorIssued += _GetColorIssued;
+            }
         }
 
         private static void _InitializeColorImage()
@@ -174,6 +177,16 @@ namespace Led.ViewModels
                 _scaledY = ImageSize.Height - 1;
 
             CurrColor.SetNewColor(_RectangleColors[_scaledX, _scaledY]);
+        }
+
+        private void _GetColorIssued(object sender, EventArgs e)
+        {
+            CurrColor.SetNewColor((sender as ColorPickerSingleVM).Color);
+        }
+
+        private void _SetColorIssued(object sender, EventArgs e)
+        {
+            (sender as ColorPickerSingleVM).SetColor(Color.FromArgb(CurrColor.A, CurrColor.R, CurrColor.G, CurrColor.B));
         }
 
         public void OnColorChangeCommand(object sender, EventArgs e)

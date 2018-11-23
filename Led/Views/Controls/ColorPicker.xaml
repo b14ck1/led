@@ -11,12 +11,16 @@
         Title="ColorPicker" Height="569" Width="1115">
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:ColorPickerSingleVM}">
-            <Button Background="{Binding Brush}"
-                    Width="25"
-                    Height="25"
-                    Margin="5,0,5,5"
-                    BorderBrush="Gray"
-                    Command="{Binding MouseDownCommand}"/>
+            <Border BorderBrush="Gray"
+                    BorderThickness="2"
+                    Width="28"
+                    Height="28"
+                    Margin="5,0,5,5">
+                <Canvas Background="{Binding Brush}"
+                    Width="24"
+                    Height="24"
+                    Behaviours:MouseBehaviour.MouseDownCommand="{Binding MouseDownCommand}"/>
+            </Border>
         </DataTemplate>
 
         <ItemsPanelTemplate x:Key="ItemsPanelTemplate">
@@ -53,9 +57,9 @@
                 <RowDefinition Height="160"/>
                 <RowDefinition Height="140"/>
                 <RowDefinition Height="40"/>
-                <RowDefinition Height="70"/>
+                <RowDefinition Height="75"/>
                 <RowDefinition Height="40"/>
-                <RowDefinition Height="70"/>
+                <RowDefinition Height="75"/>
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0">
