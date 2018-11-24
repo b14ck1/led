@@ -12,11 +12,13 @@ using System.Windows.Shapes;
 namespace Led.ViewModels
 {
     public class ColorPickerVM : INPC
-    {        
+    {
+        private string _ID;
+
         private static Color[,] _RectangleColors;
         public static System.Drawing.Size ImageSize { get; set; }
         public static WriteableBitmap ColorRectangle { get; set; }
-        public static int ColorRangeX { get; set; }        
+        public static int ColorRangeX { get; set; }
 
         public ColorARGB CurrColor { get; set; }
         public List<ColorPickerSingleVM> GlobalColors { get; set; }
@@ -43,8 +45,9 @@ namespace Led.ViewModels
             ColorRangeX = 10;
         }
 
-        public ColorPickerVM()
+        public ColorPickerVM(string id)
         {
+            _ID = id;
             MouseDownCommand = new Command<MouseEventArgs>(OnMouseDownCommand);
             MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
             MouseUpCommand = new Command<MouseEventArgs>(OnMouseUpCommand);
@@ -156,11 +159,14 @@ namespace Led.ViewModels
 
         private void _SendNewColor()
         {
-            _Color[0] = CurrColor.A;
-            _Color[1] = CurrColor.B;
-            _Color[2] = CurrColor.G;
-            _Color[3] = CurrColor.R;
-            App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), "B827EB04E40A");
+            if (_ID != null)
+            {
+                _Color[0] = CurrColor.A;
+                _Color[1] = CurrColor.B;
+                _Color[2] = CurrColor.G;
+                _Color[3] = CurrColor.R;
+                App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), _ID);
+            }
         }
 
         private void _GetClickedColor(Point point)

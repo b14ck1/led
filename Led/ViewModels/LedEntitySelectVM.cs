@@ -242,7 +242,7 @@ namespace Led.ViewModels
                     break;
             }
             
-            Effects.Add(new EffectBaseVM(LedEntity.Effects.Last()));
+            Effects.Add(new EffectBaseVM(LedEntity, LedEntity.Effects.Last()));
             _EffectBaseVMMapping.Add(Effects.Last(), LedEntity.Effects.Last());
 
             _UpdateCurrentEffect();
