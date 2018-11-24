@@ -18,10 +18,18 @@ namespace Led.Model
         [JsonProperty]
         public List<LedEntity> LedEntities { get; }
 
+        [JsonProperty]
+        public List<System.Windows.Media.Color> GlobalColors { get;  }
+
         public Project(string projectName)
         {
             ProjectName = projectName;
             LedEntities = new List<LedEntity>();
+            GlobalColors = new List<System.Windows.Media.Color>();
+            for(int i = 0; i < Defines.ColorsPerEntity; i++)
+            {
+                GlobalColors.Add(System.Windows.Media.Colors.Transparent);
+            }
 
             FramesPerSecond = Defines.FramesPerSecond;
         }

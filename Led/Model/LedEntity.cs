@@ -23,6 +23,9 @@ namespace Led.Model
         [JsonProperty]
         public string ClientID { get; set; }
 
+        [JsonProperty]
+        public List<System.Windows.Media.Color> EntityColors { get; }
+
         public List<Utility.LedModelID> AllLedIDs
         {
             get
@@ -56,6 +59,12 @@ namespace Led.Model
                 { LedEntityView.Back, new ImageInfo() }
             };
             ClientID = "";
+
+            EntityColors = new List<System.Windows.Media.Color>();
+            for (int i = 0; i < Defines.ColorsPerEntity; i++)
+            {
+                EntityColors.Add(System.Windows.Media.Colors.Transparent);
+            }
         }
     }
 }
