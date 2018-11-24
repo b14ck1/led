@@ -140,9 +140,7 @@ namespace Led.ViewModels
 
             //Init Mediator
             _Mediator = App.Instance.MediatorService;
-            _Mediator.Register(this);
-
-            App.Instance.WindowService.ShowNewWindow(new Views.Controls.ColorPicker(), new ColorPickerVM());
+            _Mediator.Register(this);            
         }
 
         private void _OnSaveProjectCommand()
