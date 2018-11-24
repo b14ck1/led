@@ -12,6 +12,8 @@ namespace Led.ViewModels
     {
         private Services.MediatorService _Mediator;
 
+        private Model.LedEntity _LedEntity;
+
         private Model.Effect.EffectBase _effectBase;
         public Model.Effect.EffectBase EffectBase
         {
@@ -165,13 +167,14 @@ namespace Led.ViewModels
         public Command DeleteCommand { get; set; }
         public Command RefreshCommand { get; set; }
 
-        public EffectBaseVM(Model.Effect.EffectBase effectBase)
+        public EffectBaseVM(Model.LedEntity ledEntity, Model.Effect.EffectBase effectBase)
         {
             SetColorVMs = new ObservableCollection<EffectProperties.SetColorVM>();
             BlinkVMs = new ObservableCollection<EffectProperties.BlinkVM>();
             FadeVMs = new ObservableCollection<EffectProperties.FadeVM>();
 
-            EffectBase = effectBase;            
+            EffectBase = effectBase;
+            _LedEntity = ledEntity;
 
             EditCommand = new Command(OnEditCommand);
             ClearCommand = new Command(OnClearCommand);
