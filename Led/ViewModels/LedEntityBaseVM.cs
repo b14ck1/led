@@ -181,7 +181,7 @@ namespace Led.ViewModels
             _Init();
 
             //Don't map effects in init function because it will get called every update and is a waste of time
-            LedEntity.Effects.ForEach(Effect => { Effects.Add(new EffectBaseVM(Effect)); _EffectBaseVMMapping.Add(Effects.Last(), Effect); });
+            LedEntity.Effects.ForEach(Effect => { Effects.Add(new EffectBaseVM(LedEntity, Effect)); _EffectBaseVMMapping.Add(Effects.Last(), Effect); });
 
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
