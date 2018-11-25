@@ -13,7 +13,7 @@ namespace Led.ViewModels
 {
     public class ColorPickerVM : INPC
     {
-        private string _ID;
+        private Model.LedEntity _LedEntity;
 
         private static Color[,] _RectangleColors;
         public static System.Drawing.Size ImageSize { get; set; }
@@ -21,7 +21,7 @@ namespace Led.ViewModels
         public static int ColorRangeX { get; set; }
 
         public ColorARGB CurrColor { get; set; }
-        public List<ColorPickerSingleVM> GlobalColors { get; set; }
+        public static List<ColorPickerSingleVM> GlobalColors { get; set; }
         public List<ColorPickerSingleVM> EntityColors { get; set; }
 
         private byte[] _Color;
@@ -34,35 +34,45 @@ namespace Led.ViewModels
         public Command<MouseEventArgs> MouseMoveCommand { get; set; }
         public Command<MouseEventArgs> MouseUpCommand { get; set; }
 
-        public Command<SizeChangedEventArgs> ImageSizeChanged { get; set; }
+        public Command CloseWindowCommand { get; set; }
 
         static ColorPickerVM()
         {
             ImageSize = new System.Drawing.Size(1530, 510);
-
             _InitializeColorImage();
+            ColorRangeX = Defines.ColorsPerEntity/2;
+            GlobalColors = new List<ColorPickerSingleVM>();
 
-            ColorRangeX = 10;
+            for (int i = 0; i < Defines.ColorsPerEntity; i++)
+            {
+                GlobalColors.Add(new ColorPickerSingleVM(App.Instance.MainWindowVM.Project.GlobalColors[i]));
+            }
         }
 
-        public ColorPickerVM(string id)
+        public ColorPickerVM(Color color, Model.LedEntity ledEntity)
         {
-            _ID = id;
+            _LedEntity = ledEntity;
             MouseDownCommand = new Command<MouseEventArgs>(OnMouseDownCommand);
             MouseMoveCommand = new Command<MouseEventArgs>(OnMouseMoveCommand);
             MouseUpCommand = new Command<MouseEventArgs>(OnMouseUpCommand);
-            ImageSizeChanged = new Command<SizeChangedEventArgs>(OnImageSizeChanged);
+            CloseWindowCommand = new Command(_OnCloseWindowCommand);
 
             CurrColor = new ColorARGB();
+            CurrColor.SetNewColor(color);
             CurrColor.ColorChanged += OnColorChangeCommand;
             _Color = new byte[4];
 
-            GlobalColors = new List<ColorPickerSingleVM>();
-            for (int i = 0; i < 16; i++)
+            EntityColors = new List<ColorPickerSingleVM>();
+            for (int i = 0; i < GlobalColors.Count; i++)
             {
-                GlobalColors.Add(new ColorPickerSingleVM());
+                EntityColors.Add(new ColorPickerSingleVM(ledEntity.EntityColors[i]));
+
+                EntityColors[i].SetColorIssued += _SetColorIssued;
+                EntityColors[i].GetColorIssued += _GetColorIssued;
+
                 GlobalColors[i].SetColorIssued += _SetColorIssued;
                 GlobalColors[i].GetColorIssued += _GetColorIssued;
+
             }
         }
 
@@ -157,15 +167,26 @@ namespace Led.ViewModels
             ColorRectangle.WritePixels(_pixelRect, _pixelArray, stride, 0);
         }
 
+        private void _OnCloseWindowCommand()
+        {
+            for (int i = 0; i < GlobalColors.Count; i++)
+            {
+                _LedEntity.EntityColors[i] = EntityColors[i].Color;
+
+                GlobalColors[i].SetColorIssued -= _SetColorIssued;
+                GlobalColors[i].GetColorIssued -= _GetColorIssued;
+            }
+        }
+
         private void _SendNewColor()
         {
-            if (_ID != null)
+            if (_LedEntity.ClientID != null)
             {
                 _Color[0] = CurrColor.A;
                 _Color[1] = CurrColor.B;
                 _Color[2] = CurrColor.G;
                 _Color[3] = CurrColor.R;
-                App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), _ID);
+                App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), _LedEntity.ClientID);
             }
         }
 
@@ -222,11 +243,6 @@ namespace Led.ViewModels
         public void OnMouseUpCommand(MouseEventArgs e)
         {
             _LeftMouseDown = false;
-        }
-
-        public void OnImageSizeChanged(SizeChangedEventArgs e)
-        {
-            Console.WriteLine("Imagesize: X: {0], Y: {1}", e.NewSize.Width, e.NewSize.Height);
         }
 
         public class ColorARGB : INPC

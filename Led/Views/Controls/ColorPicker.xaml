@@ -7,6 +7,7 @@
         xmlns:vm="clr-namespace:Led.ViewModels"
         xmlns:Behaviours="clr-namespace:Led.Behaviours"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        Behaviours:WindowClosingBehaviour.Closing="{Binding CloseWindowCommand}"
         mc:Ignorable="d"
         Title="ColorPicker" Height="569" Width="1115">
     <Window.Resources>
@@ -199,7 +200,7 @@
                     VerticalAlignment="Top"
                     Margin="0,8,0,0"
                     ItemsPanel="{StaticResource ItemsPanelTemplate}"
-                    ItemsSource="{Binding GlobalColors}" />
+                    ItemsSource="{Binding EntityColors}" />
         </Grid>
         
     </Grid>

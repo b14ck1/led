@@ -102,6 +102,7 @@
     <Compile Include="Services\lib\TCP\TcpServiceProvider.cs" />
     <Compile Include="Services\lib\UdpSocket.cs" />
     <Compile Include="Services\MediatorService.cs" />
+    <Compile Include="Services\ProjectService.cs" />
     <Compile Include="Utility\AccurateTimer.cs" />
     <Compile Include="Utility\AudioPlayer.cs" />
     <Compile Include="Controllers\TimeController.cs" />

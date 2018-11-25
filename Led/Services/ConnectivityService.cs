@@ -30,20 +30,6 @@ namespace Led.Services
             _TcpServer.Stop();
         }
 
-        public string GetID(Model.Effect.EffectBase effectBase)
-        {
-            foreach (var ledEntity in App.Instance.MainWindowVM.Project.LedEntities)
-            {
-                foreach (var eBase in ledEntity.Effects)
-                {
-                    if (eBase == effectBase)
-                        return ledEntity.ClientID;
-                }
-            }
-
-            return null;
-        }
-
         public void SendMessage(EntityMessage entityMessage, string id)
         {
             _TcpServer.SendMessage(entityMessage, id);

@@ -51,7 +51,7 @@ namespace Led.ViewModels.EffectProperties
 
         private void _OnPickColorCommand()
         {
-            ColorPickerVM colorPickerVM = new ColorPickerVM(App.Instance.ConnectivityService.GetID(_EffectBase));
+            ColorPickerVM colorPickerVM = new ColorPickerVM(Color, App.Instance.ProjectService.GetLedEntity(_EffectBase));
             App.Instance.WindowService.ShowNewWindow(new Views.Controls.ColorPicker(), colorPickerVM);
             Color = Color.FromArgb(colorPickerVM.CurrColor.AScaled, colorPickerVM.CurrColor.R, colorPickerVM.CurrColor.G, colorPickerVM.CurrColor.B);
         }

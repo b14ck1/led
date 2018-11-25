@@ -55,11 +55,11 @@ namespace Led.ViewModels
         {
             if(e.LeftButton == MouseButtonState.Pressed)
             {
-                SetColorIssued?.Invoke(this, null);
+                GetColorIssued?.Invoke(this, null);
             }
             else if(e.RightButton == MouseButtonState.Pressed)
             {
-                GetColorIssued?.Invoke(this, null);
+                SetColorIssued?.Invoke(this, null);
             }
         }
     }

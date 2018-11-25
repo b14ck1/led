@@ -16,6 +16,7 @@ namespace Led
         public Services.MediatorService MediatorService;
         public Services.EffectService EffectService;
         public Services.ConnectivityService ConnectivityService;
+        public Services.ProjectService ProjectService;
 
         public ViewModels.MainWindowVM MainWindowVM;
 
@@ -32,6 +33,7 @@ namespace Led
             Instance.EffectService = new Services.EffectService();
             Instance.ConnectivityService = new Services.ConnectivityService();
             Instance.ConnectivityService.StartServer();
+            Instance.ProjectService = new Services.ProjectService();
             MainWindowTest();
         }
 
