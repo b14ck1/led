@@ -60,7 +60,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Content="Blinktakt (Frames)" Margin="3,3,3,3" Grid.Column="0" />
-                    <TextBox Text="{Binding BlinkFrames, Mode=TwoWay}" Margin="3,3,3,3" Grid.Column="1" />
+                    <xctk:DecimalUpDown Minimum="1" Value="{Binding BlinkFrames, Mode=TwoWay}" Margin="3,3,3,3" Grid.Column="1" />
                 </Grid>
                 <ItemsControl ItemsPanel="{StaticResource ITP}"
                               ItemsSource="{Binding Colors}" 

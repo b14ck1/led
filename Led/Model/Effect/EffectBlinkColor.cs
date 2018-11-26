@@ -18,7 +18,7 @@ namespace Led.Model.Effect
                 System.Windows.Media.Colors.Black,
                 System.Windows.Media.Colors.Black
             };
-            BlinkFrames = 0;
+            BlinkFrames = 1;
         }
 
         public override List<LedChangeData> LedChangeDatas(long frame)
