@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels.EffectProperties
 {
-    public class FadeVM : INPC
+    public class FadeVM : BaseVM
     {
         private Model.Effect.EffectFadeColor _EffectFadeColor { get; }
 
@@ -58,36 +58,12 @@ namespace Led.ViewModels.EffectProperties
                     RaisePropertyChanged(nameof(NumberOfRepetitions));
                 }
             }
-        }
-
-        public int Dauer
-        {
-            get => _EffectFadeColor.Dauer;
-        }
-
-        private ObservableCollection<EffectColorVM> _colors;
-        public ObservableCollection<EffectColorVM> Colors
-        {
-            get => _colors;
-            set
-            {
-                if (_colors != value)
-                {
-                    _colors = value;
-                    RaisePropertyChanged(nameof(Colors));
-                }
-            }
-        }
+        } 
 
         public FadeVM(Model.Effect.EffectFadeColor effectFadeColor)
+            :base(effectFadeColor)
         {
             _EffectFadeColor = effectFadeColor;
-
-            Colors = new ObservableCollection<EffectColorVM>();
-            for (int i = 0; i < effectFadeColor.Colors.Count; i++)
-            {
-                Colors.Add(new EffectColorVM((effectFadeColor as Model.Effect.EffectBase), i));
-            }
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace Led.ViewModels.EffectProperties
 {
-    public class BlinkVM : INPC
+    public class BlinkVM : BaseVM
     {
         private Model.Effect.EffectBlinkColor _EffectBlinkColor { get; }
 
@@ -25,30 +25,10 @@ namespace Led.ViewModels.EffectProperties
             }
         }
 
-        private ObservableCollection<EffectColorVM> _colors;
-        public ObservableCollection<EffectColorVM> Colors
-        {
-            get => _colors;
-            set
-            {
-                if (_colors != value)
-                {
-                    _colors = value;
-                    RaisePropertyChanged(nameof(Colors));
-                }
-            }
-        }
-
         public BlinkVM(Model.Effect.EffectBlinkColor effectBlinkColor)
+            :base(effectBlinkColor)
         {
             _EffectBlinkColor = effectBlinkColor;
-;
-
-            Colors = new ObservableCollection<EffectColorVM>();
-            for (int i = 0; i < effectBlinkColor.Colors.Count; i++)
-            {
-                Colors.Add(new EffectColorVM(effectBlinkColor as Model.Effect.EffectBase, i));
-            }
         }
     }
 }
