@@ -10,13 +10,13 @@ namespace Led.ViewModels
 {
     public class ColorPickerSingleVM : INPC
     {
-        private Color _Color;
-        public Color Color {
-            get => _Color;
+        private ColorPickerVM.ColorARGB _CurrColor;
+        public ColorPickerVM.ColorARGB CurrColor {
+            get => _CurrColor;
             set {
-                if (_Color != value)
+                if (_CurrColor != value)
                 {
-                    _Color = value;
+                    _CurrColor = value;
                     RaisePropertyChanged(nameof(Brush));
                 }
             }
@@ -24,7 +24,7 @@ namespace Led.ViewModels
 
         public Brush Brush
         {
-            get => new SolidColorBrush(Color.FromArgb((byte)(Math.Round(Color.A * (double)255 / 31)), Color.R, Color.G, Color.B));
+            get => new SolidColorBrush(CurrColor.ColorScaled);
         }
 
         public Command<MouseEventArgs> MouseDownCommand { get; set; }
@@ -34,19 +34,20 @@ namespace Led.ViewModels
 
         public void SetColor(Color color)
         {
-            Color = color;
+            CurrColor.SetNewColor(color, true);
+            RaisePropertyChanged(nameof(Brush));
         }
 
         public ColorPickerSingleVM()
         {
-            Color = Colors.Transparent;
+            CurrColor = new ColorPickerVM.ColorARGB(Colors.Transparent);
 
             MouseDownCommand = new Command<MouseEventArgs>(_OnMouseDownCommand);
         }
 
         public ColorPickerSingleVM(Color color)
         {
-            Color = color;
+            CurrColor = new ColorPickerVM.ColorARGB(color);
 
             MouseDownCommand = new Command<MouseEventArgs>(_OnMouseDownCommand);
         }
@@ -61,6 +62,12 @@ namespace Led.ViewModels
             {
                 SetColorIssued?.Invoke(this, null);
             }
+        }
+
+        public enum ColorType
+        {
+            global,
+            entity
         }
     }
 }

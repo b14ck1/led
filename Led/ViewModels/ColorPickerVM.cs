@@ -57,8 +57,7 @@ namespace Led.ViewModels
             MouseUpCommand = new Command<MouseEventArgs>(OnMouseUpCommand);
             CloseWindowCommand = new Command(_OnCloseWindowCommand);
 
-            CurrColor = new ColorARGB();
-            CurrColor.SetNewColor(color);
+            CurrColor = new ColorARGB(color);            
             CurrColor.ColorChanged += OnColorChangeCommand;
             _Color = new byte[4];
 
@@ -72,8 +71,9 @@ namespace Led.ViewModels
 
                 GlobalColors[i].SetColorIssued += _SetColorIssued;
                 GlobalColors[i].GetColorIssued += _GetColorIssued;
-
             }
+
+            _SendNewColor();
         }
 
         private static void _InitializeColorImage()
@@ -171,21 +171,33 @@ namespace Led.ViewModels
         {
             for (int i = 0; i < GlobalColors.Count; i++)
             {
-                _LedEntity.EntityColors[i] = EntityColors[i].Color;
+                _LedEntity.EntityColors[i] = EntityColors[i].CurrColor.ColorScaled;
 
                 GlobalColors[i].SetColorIssued -= _SetColorIssued;
                 GlobalColors[i].GetColorIssued -= _GetColorIssued;
             }
+
+            _SendNewColor(true);
         }
 
-        private void _SendNewColor()
+        private void _SendNewColor(bool black = false)
         {
             if (_LedEntity.ClientID != null)
             {
-                _Color[0] = CurrColor.A;
-                _Color[1] = CurrColor.B;
-                _Color[2] = CurrColor.G;
-                _Color[3] = CurrColor.R;
+                if (black)
+                {
+                    _Color[0] = 0;
+                    _Color[1] = 0;
+                    _Color[2] = 0;
+                    _Color[3] = 0;
+                }
+                else
+                {
+                    _Color[0] = CurrColor.A;
+                    _Color[1] = CurrColor.B;
+                    _Color[2] = CurrColor.G;
+                    _Color[3] = CurrColor.R;
+                }
                 App.Instance.ConnectivityService.SendMessage(new Services.lib.TCP.EntityMessage(TcpMessages.Color, _Color), _LedEntity.ClientID);
             }
         }
@@ -208,12 +220,22 @@ namespace Led.ViewModels
 
         private void _GetColorIssued(object sender, EventArgs e)
         {
-            CurrColor.SetNewColor((sender as ColorPickerSingleVM).Color);
+            CurrColor.SetNewColor((sender as ColorPickerSingleVM).CurrColor.ColorScaled, true);
+            _SendNewColor();
         }
 
         private void _SetColorIssued(object sender, EventArgs e)
         {
-            (sender as ColorPickerSingleVM).SetColor(Color.FromArgb(CurrColor.A, CurrColor.R, CurrColor.G, CurrColor.B));
+            (sender as ColorPickerSingleVM).SetColor(CurrColor.ColorScaled);
+            int index = GlobalColors.IndexOf(sender as ColorPickerSingleVM);
+            if (index >= 0)
+                App.Instance.MainWindowVM.Project.GlobalColors[index] = CurrColor.ColorScaled;
+            else
+            {
+                index = EntityColors.IndexOf(sender as ColorPickerSingleVM);
+                if (index >= 0)
+                    _LedEntity.EntityColors[index] = CurrColor.ColorScaled;
+            }
         }
 
         public void OnColorChangeCommand(object sender, EventArgs e)
@@ -312,17 +334,26 @@ namespace Led.ViewModels
                 }
             }
 
+            public Color ColorScaled
+            {
+                get => Color.FromArgb(AScaled, R, G, B);
+            }
+
             public Brush SelectedColor
             {
                 get => new SolidColorBrush(Color.FromArgb(AScaled, R, G, B));
             }
 
-            public void SetNewColor(Color color)
+            public void SetNewColor(Color color, bool setAlpha = false)
             {
+                if(setAlpha)
+                    _A = (byte)(color.A / (255 / 31));
+
                 _R = color.R;
                 _G = color.G;
                 _B = color.B;
 
+                RaisePropertyChanged(nameof(A));
                 RaisePropertyChanged(nameof(R));
                 RaisePropertyChanged(nameof(G));
                 RaisePropertyChanged(nameof(B));
@@ -334,6 +365,14 @@ namespace Led.ViewModels
             public ColorARGB()
             {
                 A = 31;
+            }
+
+            public ColorARGB(Color color)
+            {
+                _A = (byte)(color.A / (255 / 31));
+                _R = color.R;
+                _G = color.G;
+                _B = color.B;
             }
         }
     }
