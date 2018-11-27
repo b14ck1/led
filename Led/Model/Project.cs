@@ -19,7 +19,14 @@ namespace Led.Model
         public List<LedEntity> LedEntities { get; }
 
         [JsonProperty]
-        public List<System.Windows.Media.Color> GlobalColors { get;  }
+        public List<System.Windows.Media.Color> GlobalColors { get; }
+
+        [JsonConstructor]
+        private Project()
+        {
+            LedEntities = new List<LedEntity>();
+            GlobalColors = new List<System.Windows.Media.Color>();
+        }
 
         public Project(string projectName)
         {
@@ -32,6 +39,6 @@ namespace Led.Model
             }
 
             FramesPerSecond = Defines.FramesPerSecond;
-        }
+        }        
     }
 }

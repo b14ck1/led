@@ -49,6 +49,19 @@ namespace Led.Model
 
         public Second[] Seconds { get; set; }
 
+        [JsonConstructor]
+        private LedEntity(bool temp)
+        {
+            LedBuses = new Dictionary<byte, LedBus>();
+            Effects = new List<Effect.EffectBase>();
+            ImageInfos = new Dictionary<LedEntityView, ImageInfo>
+            {
+                { LedEntityView.Front, new ImageInfo() },
+                { LedEntityView.Back, new ImageInfo() }
+            };
+            EntityColors = new List<System.Windows.Media.Color>();
+        }
+
         public LedEntity()
         {
             LedBuses = new Dictionary<byte, LedBus>();
