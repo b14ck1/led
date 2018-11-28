@@ -135,6 +135,8 @@
     <Compile Include="Utility\SaveLoad.cs" />
     <Compile Include="Utility\Timeline\TimeLineControl.cs" />
     <Compile Include="Utility\Timeline\TimeLineItemControl.cs" />
+    <Compile Include="Utility\Timeline\TimelineItemUserControl.cs" />
+    <Compile Include="Utility\Timeline\TimelineUserControl.cs" />
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />
