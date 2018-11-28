@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
-namespace Led.Utility.Timeline
+namespace Led.UserControls.Timeline
 {
     class TimelineItemUserControl : Button
     {
