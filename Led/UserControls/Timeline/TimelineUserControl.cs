@@ -12,28 +12,82 @@ using Led.Interfaces;
 
 namespace Led.UserControls.Timeline
 {
+    internal enum TimelineViewLevel
+    {
+        
+    }
+
     class TimelineUserControl : Canvas, IParticipant
     {
         private IMediator _Mediator;
+
         /// <summary>
-        /// Items to display
+        /// Items to display.
         /// </summary>
-        private ObservableCollection<ViewModels.EffectBaseVM> _EffectBaseVMs;        
+        private ObservableCollection<ViewModels.EffectBaseVM> _EffectBaseVMs;
         /// <summary>
         /// When two items would overlap we would draw them on two different lanes.
         /// E.g.: this would bet set to two.
         /// </summary>
         private int _LanesToDraw;
+        /// <summary>
+        /// On which lane is the item drawn.
+        /// </summary>
+        private Dictionary<ViewModels.EffectBaseVM, int> _LaneMapping;
 
+        /// <summary>
+        /// This canvas holds holds the background and all grid lines.
+        /// </summary>
+        private Canvas _GridCanvas;
+
+        /// <summary>Gets or sets the total time of the timeline.</summary>
+        /// <value>Time as TimeSpan this element should display.</value>
+        /// <remarks><param>Must be the same as coupled TimelineUserControls. If not the behaviour is undefined.</param></remarks>
+        public TimeSpan TotalTime
+        {
+            get => (TimeSpan)GetValue(TotalTimeProperty);
+            set { SetValue(TotalTimeProperty, value); }
+        }
+        /// <dpdoc />
+        public static readonly DependencyProperty TotalTimeProperty =
+            DependencyProperty.Register(nameof(TotalTime), typeof(TimeSpan), typeof(TimelineUserControl), new UIPropertyMetadata(0));
+
+        /// <summary>Gets or sets the background color of the timeline.</summary>
+        /// <value>Background color of the GridCanvas which represents the background of the timeline.</value>
+        /// <remarks><param>Default Brushes.DarkGray.</param></remarks>
+        public Brush BackgroundColor
+        {
+            get => (Brush)GetValue(BackgroundColorProperty);
+            set { SetValue(BackgroundColorProperty, value); }
+        }
+        /// <dpdoc />
+        public static readonly DependencyProperty BackgroundColorProperty =
+            DependencyProperty.Register(nameof(BackgroundColor), typeof(Brush), typeof(TimelineUserControl), new UIPropertyMetadata(Brushes.DarkGray));
+
+        /// <summary>Gets or sets the grid line color of the timeline.</summary>
+        /// <value>Line color of the grid lines in the GridCanvas.</value>
+        /// <remarks><param>Default Brushes.LightGray.</param></remarks>
+        public Brush GridlineColor
+        {
+            get => (Brush)GetValue(GridlineColorProperty);
+            set { SetValue(GridlineColorProperty, value); }
+        }
+        /// <dpdoc />
+        public static readonly DependencyProperty GridlineColorProperty =
+            DependencyProperty.Register(nameof(GridlineColor), typeof(Brush), typeof(TimelineUserControl), new UIPropertyMetadata(Brushes.LightGray));
+
+        /// <summary>Gets or sets the zoom lock of this timeline.</summary>
+        /// <value>Bool if the zoom is locked or not.</value>
+        /// <remarks><param>If true, this timeline synchronizes its zooming level with timelines coupled through the mediator pattern.</param></remarks>
         public bool ZoomLock
         {
             get => (bool)GetValue(ZoomLockProperty);
             set { SetValue(ZoomLockProperty, value); }
         }
-
+        /// <dpdoc />
         public static readonly DependencyProperty ZoomLockProperty =
             DependencyProperty.Register("ZoomLock", typeof(bool), typeof(TimelineUserControl), new PropertyMetadata(true));
-        
+
         public TimelineUserControl()
         {
             _EffectBaseVMs.CollectionChanged += _OnCollectionChanged;
@@ -58,7 +112,7 @@ namespace Led.UserControls.Timeline
         /// Following method calls will override the previous calls.
         /// </summary>
         /// <param name="pixels">Positive values for scrolling to the right. Negative values for scrolling to the left.</param>
-        /// /// <param name="speed">Speed for scrolling from 0-1 in seconds.</param>
+        /// <param name="speed">Speed for scrolling from 0-1 in seconds.</param>
         private void _ScrollPixel(int pixels, double speed)
         {
 
@@ -75,7 +129,12 @@ namespace Led.UserControls.Timeline
 
         }
 
-        //Gets called when we add or remove an effect
+        /// <summary>
+        /// Gets called when we add or remove an EffectBaseVM.
+        /// Handles add / remove / reset events and updates the view accordingly.
+        /// </summary>
+        /// <param name="sender">ObservableCollection with EffectBaseVMs.</param>
+        /// <param name="e">Add/remove/reset happened.</param>
         private void _OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
 
