@@ -14,12 +14,15 @@ namespace Led.UserControls.Timeline
 {
     internal enum TimelineViewLevel
     {
-        
+        Minutes,
+        Seconds,
+        Frames
     }
 
     class TimelineUserControl : Canvas, IParticipant
     {
         private IMediator _Mediator;
+        private TimelineViewLevel _TimelineViewLevel;
 
         /// <summary>
         /// Items to display.
@@ -43,14 +46,20 @@ namespace Led.UserControls.Timeline
         /// <summary>Gets or sets the total time of the timeline.</summary>
         /// <value>Time as TimeSpan this element should display.</value>
         /// <remarks><param>Must be the same as coupled TimelineUserControls. If not the behaviour is undefined.</param></remarks>
-        public TimeSpan TotalTime
+        public TimeSpan TimelineLength
         {
-            get => (TimeSpan)GetValue(TotalTimeProperty);
-            set { SetValue(TotalTimeProperty, value); }
+            get => (TimeSpan)GetValue(TimelineLengthProperty);
+            set { SetValue(TimelineLengthProperty, value); }
         }
         /// <dpdoc />
-        public static readonly DependencyProperty TotalTimeProperty =
-            DependencyProperty.Register(nameof(TotalTime), typeof(TimeSpan), typeof(TimelineUserControl), new UIPropertyMetadata(0));
+        public static readonly DependencyProperty TimelineLengthProperty =
+            DependencyProperty.Register(nameof(TimelineLength), typeof(TimeSpan), typeof(TimelineUserControl),
+                new UIPropertyMetadata(0, new PropertyChangedCallback(_OnTimelineLengthChanged)));
+
+        private static void _OnTimelineLengthChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+
+        }
 
         /// <summary>Gets or sets the background color of the timeline.</summary>
         /// <value>Background color of the GridCanvas which represents the background of the timeline.</value>
@@ -62,7 +71,13 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty BackgroundColorProperty =
-            DependencyProperty.Register(nameof(BackgroundColor), typeof(Brush), typeof(TimelineUserControl), new UIPropertyMetadata(Brushes.DarkGray));
+            DependencyProperty.Register(nameof(BackgroundColor), typeof(Brush), typeof(TimelineUserControl),
+                new UIPropertyMetadata(Brushes.DarkGray, new PropertyChangedCallback(_OnBackgroundColorChanged)));
+
+        private static void _OnBackgroundColorChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+            (sender as TimelineItemUserControl).Background = (sender as TimelineUserControl).BackgroundColor;
+        }
 
         /// <summary>Gets or sets the grid line color of the timeline.</summary>
         /// <value>Line color of the grid lines in the GridCanvas.</value>
@@ -74,7 +89,13 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty GridlineColorProperty =
-            DependencyProperty.Register(nameof(GridlineColor), typeof(Brush), typeof(TimelineUserControl), new UIPropertyMetadata(Brushes.LightGray));
+            DependencyProperty.Register(nameof(GridlineColor), typeof(Brush), typeof(TimelineUserControl),
+                new UIPropertyMetadata(Brushes.LightGray, new PropertyChangedCallback(_OnGridlineColorChanged)));
+
+        private static void _OnGridlineColorChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+
+        }
 
         /// <summary>Gets or sets the zoom lock of this timeline.</summary>
         /// <value>Bool if the zoom is locked or not.</value>
@@ -143,6 +164,11 @@ namespace Led.UserControls.Timeline
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
+        }
+
+        private void _RenderGrid(Canvas grid)
+        {
+
         }
 
         private void _SendMessage(MediatorMessages message, object data)
