@@ -79,6 +79,24 @@ namespace Led.UserControls.Timeline
             (sender as TimelineItemUserControl).Background = (sender as TimelineUserControl).BackgroundColor;
         }
 
+        /// <summary>Gets or sets the background image of the timeline.</summary>
+        /// <value>Background image of the GridCanvas which represents the background of the timeline.</value>
+        /// <remarks><param>Default null.</param></remarks>
+        public ImageSource BackgroundImage
+        {
+            get => (ImageSource)GetValue(BackgroundImageProperty);
+            set { SetValue(BackgroundImageProperty, value); }
+        }
+        /// <dpdoc />
+        public static readonly DependencyProperty BackgroundImageProperty =
+            DependencyProperty.Register(nameof(BackgroundImage), typeof(ImageSource), typeof(TimelineUserControl),
+                new UIPropertyMetadata(null, new PropertyChangedCallback(_OnBackgroundImageChanged)));
+
+        private static void _OnBackgroundImageChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
+        {
+
+        }
+
         /// <summary>Gets or sets the grid line color of the timeline.</summary>
         /// <value>Line color of the grid lines in the GridCanvas.</value>
         /// <remarks><param>Default Brushes.LightGray.</param></remarks>
