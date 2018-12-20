@@ -85,10 +85,10 @@ namespace Led
             System.Windows.Controls.Grid.SetRow(effectProperties, 1);
             mainWindow.Grid.Children.Add(effectProperties);           
 
-            System.Windows.Controls.Grid.SetRow(timelineUserControl, 2);
-            System.Windows.Controls.Grid.SetColumn(timelineUserControl, 0);
-            System.Windows.Controls.Grid.SetColumnSpan(timelineUserControl, 3);
-            mainWindow.Grid.Children.Add(timelineUserControl);
+            //System.Windows.Controls.Grid.SetRow(timelineUserControl, 2);
+            //System.Windows.Controls.Grid.SetColumn(timelineUserControl, 0);
+            //System.Windows.Controls.Grid.SetColumnSpan(timelineUserControl, 3);
+            //mainWindow.Grid.Children.Add(timelineUserControl);
 
             System.Windows.Controls.Grid.SetRow(audioUserControl, 3);
             System.Windows.Controls.Grid.SetColumn(audioUserControl, 0);
