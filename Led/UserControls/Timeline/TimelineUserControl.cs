@@ -50,6 +50,7 @@ namespace Led.UserControls.Timeline
         /// </summary>
         private ScrollViewer _ScrollViewer;
 
+        private Grid _LineGridOverlay;
         private Grid _ScrollViewerContentWrapper;
         /// <summary>
         /// Holds the dynamic Tooltips above the LineGridCanvas.
@@ -90,15 +91,7 @@ namespace Led.UserControls.Timeline
         /// Items to display.
         /// </summary>
         private ObservableCollection<ViewModels.EffectBaseVM> _EffectBaseVMs;
-        /// <summary>
-        /// When two items would overlap we would draw them on two different lanes.
-        /// E.g.: this would bet set to two.
-        /// </summary>
-        private int _LanesToDraw;
-        /// <summary>
-        /// On which lane is the item drawn.
-        /// </summary>
-        private Dictionary<ViewModels.EffectBaseVM, int> _LaneMapping;
+        private List<TimelineItemUserControl> _Items;
 
         /// <summary>Gets or sets the total time of the timeline.</summary>
         /// <value>Time as TimeSpan this element should display.</value>
@@ -166,7 +159,6 @@ namespace Led.UserControls.Timeline
         public TimelineUserControl()
         {
             //_EffectBaseVMs.CollectionChanged += _OnCollectionChanged;
-            _LanesToDraw = 1;
             _InitComponents();
 
             _ZoomSlider.MouseWheel += _ZoomSlider_MouseWheel;
@@ -175,6 +167,10 @@ namespace Led.UserControls.Timeline
             _LineGridCanvas.MouseEnter += _LineGridCanvas_MouseEnter;
             _LineGridCanvas.MouseLeave += (object sender, MouseEventArgs e) => { _MouseTooltip.Visibility = Visibility.Hidden; _MouseTooltipLine.Visibility = Visibility.Hidden; };
             _ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged;
+
+            _Items = new List<TimelineItemUserControl>();
+            _Items.Add(new TimelineItemUserControl(null));
+            Children.Add(_Items[0]);
         }
 
         private void _LineGridCanvas_MouseEnter(object sender, MouseEventArgs e)
@@ -459,12 +455,32 @@ namespace Led.UserControls.Timeline
             _MouseTooltipLine.Fill = Brushes.Red;
             _MouseTooltipLine.Visibility = Visibility.Hidden;
             _LineGridCanvas.Children.Add(_MouseTooltipLine);
-            _LineGridCanvasChildrenOffset++;
+            _LineGridCanvasChildrenOffset++;            
 
             _ScrollViewerContentWrapper = new Grid();            
             _ScrollViewerContentWrapper.Children.Add(_LineGridCanvas);
-            _ScrollViewerContentWrapper.Children.Add(_DynamicTooltipCanvas);
-            
+            //_ScrollViewerContentWrapper.Children.Add(_DynamicTooltipCanvas);
+
+            _LineGridOverlay = new Grid();
+            RowDefinition r1 = new RowDefinition();
+            r1.Height = new GridLength(20);
+            RowDefinition r2 = new RowDefinition();
+            r2.Height = new GridLength(1, GridUnitType.Star);
+            _LineGridOverlay.RowDefinitions.Add(r1);
+            _LineGridOverlay.RowDefinitions.Add(r2);
+
+            TimelineLanes _TimelineLanes = new TimelineLanes();
+            _TimelineLanes.Add();
+
+            Grid.SetRow(_DynamicTooltipCanvas, 0);
+            Grid.SetRow(_TimelineLanes, 1);
+
+            _LineGridOverlay.Children.Add(_TimelineLanes);
+            _LineGridOverlay.Children.Add(_DynamicTooltipCanvas);
+
+            _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);
+
+            _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);
 
             _ScrollViewer = new ScrollViewer();
             _ScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
