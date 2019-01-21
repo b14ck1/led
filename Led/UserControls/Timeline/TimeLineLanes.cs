@@ -10,13 +10,10 @@ namespace Led.UserControls.Timeline
 {
     class TimelineLanes : Grid
     {
-        private static int _LaneHeight = 30;
-
-        private List<Canvas> _Lanes;
+        private static int _LaneHeight = 30;        
 
         public TimelineLanes()
         {
-            _Lanes = new List<Canvas>();
             
         }
 
@@ -35,10 +32,15 @@ namespace Led.UserControls.Timeline
                 MinWidth = 200,
                 Height = _LaneHeight
             };
-            SetRow(c, RowDefinitions.Count - 1);
-            _Lanes.Add(c);
+            SetRow(c, RowDefinitions.Count - 1);            
 
             Children.Add(c);
+        }
+        
+        public void Remove()
+        {
+            RowDefinitions.Remove(RowDefinitions.Last());
+            Children.RemoveAt(Children.Count - 1);
         }
 
         public void UpdateWidth(int width, double frameToPixelRatio)

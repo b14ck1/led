@@ -475,10 +475,8 @@ namespace Led.UserControls.Timeline
             Grid.SetRow(_DynamicTooltipCanvas, 0);
             Grid.SetRow(_TimelineLanes, 1);
 
-            _LineGridOverlay.Children.Add(_TimelineLanes);
             _LineGridOverlay.Children.Add(_DynamicTooltipCanvas);
-
-            _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);
+            _LineGridOverlay.Children.Add(_TimelineLanes);
 
             _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);
 
@@ -518,7 +516,15 @@ namespace Led.UserControls.Timeline
             _MainGrid.Children.Add(_ZoomSlider);
 
             Children.Add(_MainGrid);
+
+            //_ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged1;
         }
+
+        //private void _ScrollViewer_ScrollChanged1(object sender, ScrollChangedEventArgs e)
+        //{
+        //    if (e.VerticalChange != 0)
+        //        _DynamicTooltipCanvas.MinHeight = 20 + e.VerticalOffset;
+        //}
 
         internal class GridLineParameters
         {
