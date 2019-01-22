@@ -35,9 +35,7 @@ namespace Led.UserControls.Timeline
 
         private Rectangle _ColorDisplay;
 
-        private Label _Information;
-
-        
+        private Label _Information;        
 
         public TimelineItemUserControl(ViewModels.EffectBaseVM effectBaseVM)
         {

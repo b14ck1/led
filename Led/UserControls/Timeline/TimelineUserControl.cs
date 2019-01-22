@@ -43,7 +43,7 @@ namespace Led.UserControls.Timeline
         /// <summary>
         /// Wrapper for the height of the tooltips.
         /// </summary>
-        private double _TooltipHeight { get => _StaticTooltipCanvas.ActualHeight; set { _StaticTooltipCanvas.Height = value; _DynamicTooltipCanvas.Height = value; } }
+        private double _TooltipHeight { get => _StaticTooltipCanvas.ActualHeight; set { _StaticTooltipCanvas.Height = value; /*_DynamicTooltipCanvas.Height = value;*/ } }
 
         /// <summary>
         /// Holds the LineGridCanvas and dynamic Tooltips.
@@ -55,9 +55,10 @@ namespace Led.UserControls.Timeline
         /// <summary>
         /// Holds the dynamic Tooltips above the LineGridCanvas.
         /// </summary>
-        private Canvas _DynamicTooltipCanvas;
+        //private Canvas _DynamicTooltipCanvas;
 
         private Layer.GridLines _GridLineLayer;
+        private Layer.GridLineTooltips _GridLineTooltipLayer;
 
         /// <summary>
         /// ZoomSlider to zoom the timeline.
@@ -176,28 +177,33 @@ namespace Led.UserControls.Timeline
             _GridLineLayer.Update(_ZoomSlider.Value * (ActualWidth - _MainGrid.ColumnDefinitions[1].ActualWidth), ActualHeight);            
         }
 
-        private void _UpdateDynamicTooltips(GridLineParameters parameters)
+        private void _UpdateGridLineTooltipLayer()
         {
-            TimelineTimeTooltipUserControl[] _tooltips = new TimelineTimeTooltipUserControl[parameters.NumLines / parameters.ModuloBoldLines + 1];
-
-            for (int i = 0; i < _tooltips.Length; i++)
-            {
-                if (_DynamicTooltipCanvas.Children.Count >= i + 1)
-                    _tooltips[i] = (TimelineTimeTooltipUserControl)_DynamicTooltipCanvas.Children[i];
-                else
-                {
-                    _tooltips[i] = new TimelineTimeTooltipUserControl(TimeSpan.FromSeconds(0));
-                    _DynamicTooltipCanvas.Children.Add(_tooltips[i]);
-                }
-
-                _tooltips[i].Time = TimeSpan.FromMilliseconds(parameters.ModuloBoldLines * i * parameters.MillisecondsBetweenLines);
-                _tooltips[i].UpdateLayout();
-                _tooltips[i].XOffset = parameters.ModuloBoldLines * i * parameters.LineSpacing - _tooltips[i].ActualWidth / 2;
-            }            
-
-            if (_DynamicTooltipCanvas.Children.Count > _tooltips.Length)
-                _DynamicTooltipCanvas.Children.RemoveRange(_tooltips.Length, _DynamicTooltipCanvas.Children.Count - _tooltips.Length);
+            _GridLineTooltipLayer.Update();
         }
+
+        //private void _UpdateDynamicTooltips(GridLineParameters parameters)
+        //{
+        //    TimelineTimeTooltipUserControl[] _tooltips = new TimelineTimeTooltipUserControl[parameters.NumLines / parameters.ModuloBoldLines + 1];
+
+        //    for (int i = 0; i < _tooltips.Length; i++)
+        //    {
+        //        if (_DynamicTooltipCanvas.Children.Count >= i + 1)
+        //            _tooltips[i] = (TimelineTimeTooltipUserControl)_DynamicTooltipCanvas.Children[i];
+        //        else
+        //        {
+        //            _tooltips[i] = new TimelineTimeTooltipUserControl(TimeSpan.FromSeconds(0));
+        //            _DynamicTooltipCanvas.Children.Add(_tooltips[i]);
+        //        }
+
+        //        _tooltips[i].Time = TimeSpan.FromMilliseconds(parameters.ModuloBoldLines * i * parameters.MillisecondsBetweenLines);
+        //        _tooltips[i].UpdateLayout();
+        //        _tooltips[i].XOffset = parameters.ModuloBoldLines * i * parameters.LineSpacing - _tooltips[i].ActualWidth / 2;
+        //    }            
+
+        //    if (_DynamicTooltipCanvas.Children.Count > _tooltips.Length)
+        //        _DynamicTooltipCanvas.Children.RemoveRange(_tooltips.Length, _DynamicTooltipCanvas.Children.Count - _tooltips.Length);
+        //}
 
         private void _UpdateStaticTooltips()
         {
@@ -268,6 +274,9 @@ namespace Led.UserControls.Timeline
         {
             if (e.HorizontalChange != 0)
                 _UpdateStaticTooltips();
+
+            if (e.VerticalChange != 0)
+                _GridLineTooltipLayer.UpdateScrolling(e.VerticalOffset);
         }
 
 
@@ -352,10 +361,12 @@ namespace Led.UserControls.Timeline
             _GridLineLayer.Background = Brushes.DarkSlateGray;
             _GridLineLayer.TimelineLength = TimelineLength;
 
-            _DynamicTooltipCanvas = new Canvas();
-            //_DynamicTooltipCanvas.Background = Brushes.Red;
-            _DynamicTooltipCanvas.VerticalAlignment = VerticalAlignment.Top;
-            _DynamicTooltipCanvas.MinHeight = 20;
+            //_DynamicTooltipCanvas = new Canvas();
+            ////_DynamicTooltipCanvas.Background = Brushes.Red;
+            //_DynamicTooltipCanvas.VerticalAlignment = VerticalAlignment.Top;
+            //_DynamicTooltipCanvas.MinHeight = 20;
+
+            _GridLineTooltipLayer = new Layer.GridLineTooltips(_GridLineLayer.GridLineParameters);
 
             //TODO: somehow implement this MouseTooltipLine to not flicker like hell, idk why it does
             _MouseTooltipLine = new Rectangle();
@@ -366,8 +377,8 @@ namespace Led.UserControls.Timeline
             //_LineGridCanvasChildrenOffset++;            
 
             _ScrollViewerContentWrapper = new Grid();            
-            _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);            
-            //_ScrollViewerContentWrapper.Children.Add(_DynamicTooltipCanvas);
+            _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);
+            _ScrollViewerContentWrapper.Children.Add(_GridLineTooltipLayer);
 
             _LineGridOverlay = new Grid();
             RowDefinition r1 = new RowDefinition();
@@ -380,10 +391,10 @@ namespace Led.UserControls.Timeline
             TimelineLanes _TimelineLanes = new TimelineLanes();
             _TimelineLanes.Add();
 
-            Grid.SetRow(_DynamicTooltipCanvas, 0);
+            //Grid.SetRow(_DynamicTooltipCanvas, 0);
             Grid.SetRow(_TimelineLanes, 1);
 
-            _LineGridOverlay.Children.Add(_DynamicTooltipCanvas);
+            //_LineGridOverlay.Children.Add(_DynamicTooltipCanvas);
             _LineGridOverlay.Children.Add(_TimelineLanes);
 
             _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);

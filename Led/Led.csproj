@@ -110,7 +110,7 @@
     <Compile Include="Services\MediatorService.cs" />
     <Compile Include="Services\ProjectService.cs" />
     <Compile Include="UserControls\Timeline\GridLineShape.cs" />
-    <Compile Include="UserControls\Timeline\Layer\DynamicTooltips.cs" />
+    <Compile Include="UserControls\Timeline\Layer\GridLineTooltips.cs" />
     <Compile Include="UserControls\Timeline\Layer\GridLines.cs" />
     <Compile Include="UserControls\Timeline\TimelineLanes.cs" />
     <Compile Include="UserControls\Timeline\TimelineTimeTooltipUserControl.cs" />

@@ -47,7 +47,8 @@ namespace Led.UserControls.Timeline
 
         protected override void OnRender(DrawingContext dc)
         {
-            MaxHeight = ((Canvas)Parent).ActualHeight;
+            if (double.IsPositiveInfinity(MaxHeight))
+                MaxHeight = 20;
             _Label.FontSize = MaxHeight > 0 ? 0.6 * MaxHeight : 10;
             base.OnRender(dc);
         }

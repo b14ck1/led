@@ -86,12 +86,13 @@ namespace Led.UserControls.Timeline.Layer
         }
         private Brush _LineBrushBold;
 
-        private TimelineViewLevel _TimelineViewLevel;
-        private GridLineParameters _GridLineParameters;     
+        public GridLineParameters GridLineParameters { get; private set; }
+
+        private TimelineViewLevel _TimelineViewLevel;        
 
         public GridLines()
         {
-            _GridLineParameters = new GridLineParameters();
+            GridLineParameters = new GridLineParameters();
 
             //Set Defaults
             _TimelineLength = new TimeSpan(0);
@@ -117,18 +118,17 @@ namespace Led.UserControls.Timeline.Layer
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-
             Update(ActualWidth, ActualHeight);
         }
 
         private void _DrawLines()
         {
-            for (int i = 0; i < _GridLineParameters.NumLines; i++)
+            for (int i = 0; i < GridLineParameters.NumLines; i++)
             {
                 if (Children.Count < i + 1)
                     Children.Add(new Rectangle());
 
-                if(i % _GridLineParameters.ModuloBoldLines == 0)
+                if(i % GridLineParameters.ModuloBoldLines == 0)
                 {
                     ((Rectangle)Children[i]).Width = _LineWidthBold;                    
                     ((Rectangle)Children[i]).Fill = _LineBrushNormal;
@@ -140,11 +140,11 @@ namespace Led.UserControls.Timeline.Layer
                 }
 
                 ((Rectangle)Children[i]).Height = ActualHeight;
-                SetLeft((Rectangle)Children[i], i * _GridLineParameters.LineSpacing);
+                SetLeft((Rectangle)Children[i], i * GridLineParameters.LineSpacing);
             }
 
-            if (Children.Count > _GridLineParameters.NumLines)
-                Children.RemoveRange(_GridLineParameters.NumLines, Children.Count - _GridLineParameters.NumLines);
+            if (Children.Count > GridLineParameters.NumLines)
+                Children.RemoveRange(GridLineParameters.NumLines, Children.Count - GridLineParameters.NumLines);
         }
 
         private void _UpdateViewLevel()
@@ -166,19 +166,19 @@ namespace Led.UserControls.Timeline.Layer
             switch (_TimelineViewLevel)
             {
                 case TimelineViewLevel.Minutes:
-                    _GridLineParameters.Update(6, 10000, TimelineLength, ActualWidth);
+                    GridLineParameters.Update(6, 10000, TimelineLength, ActualWidth);
                     break;
                 case TimelineViewLevel.HalfMinutes:
-                    _GridLineParameters.Update(6, 5000, TimelineLength, ActualWidth);
+                    GridLineParameters.Update(6, 5000, TimelineLength, ActualWidth);
                     break;
                 case TimelineViewLevel.QuarterMinutes:
-                    _GridLineParameters.Update(6, 2500, TimelineLength, ActualWidth);
+                    GridLineParameters.Update(6, 2500, TimelineLength, ActualWidth);
                     break;
                 case TimelineViewLevel.Seconds:
-                    _GridLineParameters.Update(10, 1000, TimelineLength, ActualWidth);
+                    GridLineParameters.Update(10, 1000, TimelineLength, ActualWidth);
                     break;
                 case TimelineViewLevel.Frames:
-                    _GridLineParameters.Update(6, 5000, TimelineLength, ActualWidth);
+                    GridLineParameters.Update(6, 5000, TimelineLength, ActualWidth);
                     break;
                 default:
                     break;
@@ -191,15 +191,17 @@ namespace Led.UserControls.Timeline.Layer
         public int NumLines { get; private set; }
         public double LineSpacing { get; private set; }
         public double ModuloBoldLines { get; private set; }
+        public long MillisecondsBetweenLines { get; private set; }
 
         public void Update(int moduloBoldLines, long millisecondsBetweenLines, TimeSpan length, double availableWidth)
         {
             ModuloBoldLines = moduloBoldLines;
+            MillisecondsBetweenLines = millisecondsBetweenLines;
 
             //Total number of lines we need to draw, the "0"-Line is not included here
-            NumLines = (int)(length.TotalMilliseconds / millisecondsBetweenLines);
+            NumLines = (int)(length.TotalMilliseconds / MillisecondsBetweenLines);
 
-            LineSpacing = millisecondsBetweenLines / length.TotalMilliseconds * availableWidth;
+            LineSpacing = MillisecondsBetweenLines / length.TotalMilliseconds * availableWidth;
 
             //Add one more line so the "Zero-Line" can be drawn
             NumLines++;
