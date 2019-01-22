@@ -56,14 +56,8 @@ namespace Led.UserControls.Timeline
         /// Holds the dynamic Tooltips above the LineGridCanvas.
         /// </summary>
         private Canvas _DynamicTooltipCanvas;
-        /// <summary>
-        /// Holds all lines for our timeline.
-        /// </summary>
-        private Canvas _LineGridCanvas;
-        /// <summary>
-        /// Offset where the real Children start (the lines seen in the Background) not some Mouse-Shit
-        /// </summary>
-        private int _LineGridCanvasChildrenOffset;
+
+        private Layer.GridLines _GridLineLayer;
 
         /// <summary>
         /// ZoomSlider to zoom the timeline.
@@ -80,9 +74,6 @@ namespace Led.UserControls.Timeline
         private TimelineTimeTooltipUserControl _MouseTooltip;
 
         private Rectangle _MouseTooltipLine;
-
-        private double _lineWidthNormal = 2;
-        private double _lineWidthBold = 4;
 
         private bool _IsZoomWithMouseWheel_OnLineGrid;
         private Point _MousePosition;
@@ -162,10 +153,10 @@ namespace Led.UserControls.Timeline
             _InitComponents();
 
             _ZoomSlider.MouseWheel += _ZoomSlider_MouseWheel;
-            _LineGridCanvas.MouseWheel += _LineGridCanvas_MouseWheel;
-            _LineGridCanvas.MouseMove += _LineGridCanvas_MouseMove;
-            _LineGridCanvas.MouseEnter += _LineGridCanvas_MouseEnter;
-            _LineGridCanvas.MouseLeave += (object sender, MouseEventArgs e) => { _MouseTooltip.Visibility = Visibility.Hidden; _MouseTooltipLine.Visibility = Visibility.Hidden; };
+            //_LineGridCanvas.MouseWheel += _LineGridCanvas_MouseWheel;
+            //_LineGridCanvas.MouseMove += _LineGridCanvas_MouseMove;
+            //_LineGridCanvas.MouseEnter += _LineGridCanvas_MouseEnter;
+            //_LineGridCanvas.MouseLeave += (object sender, MouseEventArgs e) => { _MouseTooltip.Visibility = Visibility.Hidden; _MouseTooltipLine.Visibility = Visibility.Hidden; };
             _ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged;
 
             _Items = new List<TimelineItemUserControl>();
@@ -177,18 +168,12 @@ namespace Led.UserControls.Timeline
         {
             _MouseTooltip.Visibility = Visibility.Visible;
             _MouseTooltipLine.Visibility = Visibility.Visible;
-            _MouseTooltipLine.Height = _LineGridCanvas.ActualHeight;
+            //_MouseTooltipLine.Height = _LineGridCanvas.ActualHeight;
         }
 
-        private void _UpdateLineGridCanvas()
+        private void _UpdateGridLineLayer()
         {
-            _LineGridCanvas.Width = _ZoomSlider.Value * (ActualWidth - _MainGrid.ColumnDefinitions[1].ActualWidth);
-            _LineGridCanvas.Height = ActualHeight;
-            _LineGridCanvas.UpdateLayout();
-
-            GridLineParameters _parameters = _GetGridLineParameters();
-            _DrawLinesOnLineGridCanvas(_parameters);
-            _UpdateDynamicTooltips(_parameters);
+            _GridLineLayer.Update(_ZoomSlider.Value * (ActualWidth - _MainGrid.ColumnDefinitions[1].ActualWidth), ActualHeight);            
         }
 
         private void _UpdateDynamicTooltips(GridLineParameters parameters)
@@ -216,8 +201,8 @@ namespace Led.UserControls.Timeline
 
         private void _UpdateStaticTooltips()
         {
-            _StaticTooltips[0].Time = TimeSpan.FromMilliseconds((long)(_ScrollViewer.HorizontalOffset / _LineGridCanvas.ActualWidth * TimelineLength.TotalMilliseconds));
-            _StaticTooltips[1].Time = TimeSpan.FromMilliseconds((long)((_ScrollViewer.HorizontalOffset + _ScrollViewer.ActualWidth) / _LineGridCanvas.ActualWidth * TimelineLength.TotalMilliseconds));
+            _StaticTooltips[0].Time = TimeSpan.FromMilliseconds((long)(_ScrollViewer.HorizontalOffset / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds));
+            _StaticTooltips[1].Time = TimeSpan.FromMilliseconds((long)((_ScrollViewer.HorizontalOffset + _ScrollViewer.ActualWidth) / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds));
         }
 
         private void _UpdateZoom()
@@ -232,13 +217,13 @@ namespace Led.UserControls.Timeline
             else
                 //Keep the timeline focussed on the center
                 _offsetAbsolutToScrollViewer = _ScrollViewer.ActualWidth / 2;
-            _offsetPercentageToCanvas = (_ScrollViewer.HorizontalOffset + _offsetAbsolutToScrollViewer) / _LineGridCanvas.ActualWidth;
+            _offsetPercentageToCanvas = (_ScrollViewer.HorizontalOffset + _offsetAbsolutToScrollViewer) / _GridLineLayer.ActualWidth;
 
             //Update our grid
-            _UpdateLineGridCanvas();
+            _UpdateGridLineLayer();
 
             //Scroll to saved position and update layout for further functions
-            _ScrollViewer.ScrollToHorizontalOffset(_offsetPercentageToCanvas * _LineGridCanvas.ActualWidth - _offsetAbsolutToScrollViewer);
+            _ScrollViewer.ScrollToHorizontalOffset(_offsetPercentageToCanvas * _GridLineLayer.ActualWidth - _offsetAbsolutToScrollViewer);
             _ScrollViewer.UpdateLayout();
 
             _UpdateStaticTooltips();
@@ -270,7 +255,7 @@ namespace Led.UserControls.Timeline
         private void _LineGridCanvas_MouseMove(object sender, MouseEventArgs e)
         {
             double _XPosition = e.GetPosition(sender as IInputElement).X;
-            _MouseTooltip.Time = TimeSpan.FromMilliseconds(_XPosition / _LineGridCanvas.ActualWidth * TimelineLength.TotalMilliseconds);
+            _MouseTooltip.Time = TimeSpan.FromMilliseconds(_XPosition / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds);
             _MouseTooltip.UpdateLayout();
             _MouseTooltip.XOffset = _XPosition - _ScrollViewer.HorizontalOffset - _MouseTooltip.ActualWidth / 2;
 
@@ -283,84 +268,6 @@ namespace Led.UserControls.Timeline
         {
             if (e.HorizontalChange != 0)
                 _UpdateStaticTooltips();
-        }
-
-        private void _DrawLinesOnLineGridCanvas(GridLineParameters parameters)
-        {
-            //Rectangle[] _lines = new Rectangle[parameters.NumLines];
-
-            double _drawStartHeight = 0;
-            double _drawStopHeight = _LineGridCanvas.ActualHeight;
-            double _rectangleHeight = _drawStopHeight - _drawStartHeight;
-
-            for (int i = _LineGridCanvasChildrenOffset; i < parameters.NumLines; i++)
-            {
-                if (_LineGridCanvas.Children.Count - _LineGridCanvasChildrenOffset < i + 1)
-                {
-                    _LineGridCanvas.Children.Add(new Rectangle());
-                }
-
-                if (i % parameters.ModuloBoldLines == 0)
-                {
-                    ((Rectangle)_LineGridCanvas.Children[i]).Width = _lineWidthBold;
-                    ((Rectangle)_LineGridCanvas.Children[i]).Height = _rectangleHeight;
-                    ((Rectangle)_LineGridCanvas.Children[i]).Fill = Brushes.ForestGreen;
-                }
-                else
-                {
-                    ((Rectangle)_LineGridCanvas.Children[i]).Width = _lineWidthNormal;
-                    ((Rectangle)_LineGridCanvas.Children[i]).Height = _rectangleHeight;
-                    ((Rectangle)_LineGridCanvas.Children[i]).Fill = Brushes.LightGray;
-                }
-
-                SetTop((Rectangle)_LineGridCanvas.Children[i], _drawStartHeight);
-                SetLeft((Rectangle)_LineGridCanvas.Children[i], i * parameters.LineSpacing);
-            }
-
-            if (_LineGridCanvas.Children.Count - _LineGridCanvasChildrenOffset > parameters.NumLines)
-            {
-                _LineGridCanvas.Children.RemoveRange(parameters.NumLines, _LineGridCanvas.Children.Count - parameters.NumLines);
-            }
-        }
-
-        private GridLineParameters _GetGridLineParameters()
-        {
-            GridLineParameters _params;
-
-            //Console.WriteLine("Factor: " + _GridLineCanvas.ActualWidth / TimelineLength.TotalMilliseconds);
-            double _scaleFactor = _LineGridCanvas.ActualWidth / TimelineLength.TotalMilliseconds;
-
-            if (_scaleFactor >= 0.035)
-                _TimelineViewLevel = TimelineViewLevel.Seconds;
-            else if (_scaleFactor >= 0.02)
-                _TimelineViewLevel = TimelineViewLevel.QuarterMinutes;
-            else if (_scaleFactor >= 0.01)
-                _TimelineViewLevel = TimelineViewLevel.HalfMinutes;
-
-            switch (_TimelineViewLevel)
-            {
-                case TimelineViewLevel.Minutes:
-                    _params = new GridLineParameters(6, 10000);
-                    break;
-                case TimelineViewLevel.HalfMinutes:
-                    _params = new GridLineParameters(6, 5000);
-                    break;
-                case TimelineViewLevel.QuarterMinutes:
-                    _params = new GridLineParameters(6, 2500);
-                    break;
-                case TimelineViewLevel.Seconds:
-                    _params = new GridLineParameters(10, 1000);
-                    break;
-                case TimelineViewLevel.Frames:
-                    _params = new GridLineParameters(6, 5000);
-                    break;
-                default:
-                    _params = new GridLineParameters(6, 5000);
-                    break;
-            }
-            _params.Calc(TimelineLength, _LineGridCanvas.ActualWidth, _lineWidthNormal, _lineWidthBold);           
-
-            return _params;
         }
 
 
@@ -416,7 +323,7 @@ namespace Led.UserControls.Timeline
 
             _StaticTooltips[1].XOffset = _MainGrid.ColumnDefinitions[0].ActualWidth - _StaticTooltips[1].ActualWidth;
 
-            _UpdateLineGridCanvas();
+            _UpdateGridLineLayer();
         }
 
         private void _SendMessage(MediatorMessages message, object data)
@@ -438,11 +345,12 @@ namespace Led.UserControls.Timeline
             ColumnDefinition c2 = new ColumnDefinition();
             c2.Width = GridLength.Auto;
             _MainGrid.ColumnDefinitions.Add(c1);
-            _MainGrid.ColumnDefinitions.Add(c2);            
-            
+            _MainGrid.ColumnDefinitions.Add(c2);
+
             //LineGridCanvas inside the ScrollViewer
-            _LineGridCanvas = new Canvas();
-            _LineGridCanvas.Background = Brushes.DarkSlateGray;
+            _GridLineLayer = new Layer.GridLines();
+            _GridLineLayer.Background = Brushes.DarkSlateGray;
+            _GridLineLayer.TimelineLength = TimelineLength;
 
             _DynamicTooltipCanvas = new Canvas();
             //_DynamicTooltipCanvas.Background = Brushes.Red;
@@ -454,11 +362,11 @@ namespace Led.UserControls.Timeline
             _MouseTooltipLine.Width = 2;
             _MouseTooltipLine.Fill = Brushes.Red;
             _MouseTooltipLine.Visibility = Visibility.Hidden;
-            _LineGridCanvas.Children.Add(_MouseTooltipLine);
-            _LineGridCanvasChildrenOffset++;            
+            //_LineGridCanvas.Children.Add(_MouseTooltipLine);
+            //_LineGridCanvasChildrenOffset++;            
 
             _ScrollViewerContentWrapper = new Grid();            
-            _ScrollViewerContentWrapper.Children.Add(_LineGridCanvas);
+            _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);            
             //_ScrollViewerContentWrapper.Children.Add(_DynamicTooltipCanvas);
 
             _LineGridOverlay = new Grid();
@@ -525,39 +433,5 @@ namespace Led.UserControls.Timeline
         //    if (e.VerticalChange != 0)
         //        _DynamicTooltipCanvas.MinHeight = 20 + e.VerticalOffset;
         //}
-
-        internal class GridLineParameters
-        {
-            public int NumLines { get; set; }
-            public int ModuloBoldLines { get; private set; }
-            public long MillisecondsBetweenLines { get; private set; }
-            public double LineSpacing { get; set; }
-            public double StartOffset { get; private set; }
-            public double WidthTillLastLine { get; set; }
-
-            public GridLineParameters(int moduloBoldLines, long millisecondsBetweenLines)
-            {
-                ModuloBoldLines = moduloBoldLines;
-                MillisecondsBetweenLines = millisecondsBetweenLines;
-            }
-
-            public void Calc(TimeSpan length, double availableWidth, double lineWidthNormal, double lineWidthBold)
-            {
-                NumLines = (int)(length.TotalMilliseconds / MillisecondsBetweenLines);
-                StartOffset = lineWidthBold / 2;
-
-                bool _isLastLineBold = NumLines % ModuloBoldLines == 0 ? true : false;
-                double _lastLineNeededSpace = _isLastLineBold ? lineWidthBold / 2 : lineWidthNormal / 2;
-                double _endWithWithoutLines = length.TotalMilliseconds % MillisecondsBetweenLines;
-                double _endOffset = 0;
-                if (_endWithWithoutLines <= _lastLineNeededSpace)
-                    _endOffset = _lastLineNeededSpace - _endWithWithoutLines;
-
-                LineSpacing = MillisecondsBetweenLines / length.TotalMilliseconds * (availableWidth - StartOffset - _endOffset);
-
-                //Add one more line so the "Zero-Line" can be drawn
-                NumLines++;
-            }
-        }
     }
 }
