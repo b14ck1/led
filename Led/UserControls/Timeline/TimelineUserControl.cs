@@ -26,7 +26,6 @@ namespace Led.UserControls.Timeline
     class TimelineUserControl : Canvas, IParticipant
     {
         private IMediator _Mediator;
-        private TimelineViewLevel _TimelineViewLevel;
 
         /// <summary>
         /// One main grid to rule them all.
@@ -37,45 +36,20 @@ namespace Led.UserControls.Timeline
         private Grid _MainGrid;
 
         /// <summary>
-        /// Holds the static Tooltips on top of the ScrollViewer.
-        /// </summary>
-        private Canvas _StaticTooltipCanvas;
-        /// <summary>
-        /// Wrapper for the height of the tooltips.
-        /// </summary>
-        private double _TooltipHeight { get => _StaticTooltipCanvas.ActualHeight; set { _StaticTooltipCanvas.Height = value; /*_DynamicTooltipCanvas.Height = value;*/ } }
-
-        /// <summary>
         /// Holds the LineGridCanvas and dynamic Tooltips.
         /// </summary>
         private ScrollViewer _ScrollViewer;
-
-        private Grid _LineGridOverlay;
         private Grid _ScrollViewerContentWrapper;
-        /// <summary>
-        /// Holds the dynamic Tooltips above the LineGridCanvas.
-        /// </summary>
-        //private Canvas _DynamicTooltipCanvas;
 
         private Layer.GridLines _GridLineLayer;
         private Layer.GridLineTooltips _GridLineTooltipLayer;
+        private Layer.MouseTooltip _MouseTooltipLayer;
 
         /// <summary>
         /// ZoomSlider to zoom the timeline.
         /// </summary>
         private Slider _ZoomSlider;
-
-        /// <summary>
-        /// Tooltips at the beginning and end of the ScrollViewer
-        /// </summary>
-        private TimelineTimeTooltipUserControl[] _StaticTooltips;
-        /// <summary>
-        /// Tooltip to show when the mouse is hovered over the GridLines
-        /// </summary>
-        private TimelineTimeTooltipUserControl _MouseTooltip;
-
-        private Rectangle _MouseTooltipLine;
-
+        
         private bool _IsZoomWithMouseWheel_OnLineGrid;
         private Point _MousePosition;
 
@@ -154,10 +128,10 @@ namespace Led.UserControls.Timeline
             _InitComponents();
 
             _ZoomSlider.MouseWheel += _ZoomSlider_MouseWheel;
-            //_LineGridCanvas.MouseWheel += _LineGridCanvas_MouseWheel;
-            //_LineGridCanvas.MouseMove += _LineGridCanvas_MouseMove;
-            //_LineGridCanvas.MouseEnter += _LineGridCanvas_MouseEnter;
-            //_LineGridCanvas.MouseLeave += (object sender, MouseEventArgs e) => { _MouseTooltip.Visibility = Visibility.Hidden; _MouseTooltipLine.Visibility = Visibility.Hidden; };
+            _GridLineLayer.MouseWheel += _GridLineLayer_MouseWheel;
+            _GridLineLayer.MouseMove += _GridLineLayer_MouseMove;
+            _GridLineLayer.MouseEnter += _GridLineLayer_MouseEnter;
+            _GridLineLayer.MouseLeave += _GridLineLayer_MouseLeave;
             _ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged;
 
             _Items = new List<TimelineItemUserControl>();
@@ -165,11 +139,33 @@ namespace Led.UserControls.Timeline
             Children.Add(_Items[0]);
         }
 
-        private void _LineGridCanvas_MouseEnter(object sender, MouseEventArgs e)
+        private void _GridLineLayer_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            _MouseTooltip.Visibility = Visibility.Visible;
-            _MouseTooltipLine.Visibility = Visibility.Visible;
-            //_MouseTooltipLine.Height = _LineGridCanvas.ActualHeight;
+            //Zoom relative to where our mouse is pointed
+            _IsZoomWithMouseWheel_OnLineGrid = true;
+            _MousePosition = e.GetPosition(sender as IInputElement);
+
+            _ZoomSlider.Value += e.Delta * _ZoomSlider.TickFrequency / 240;
+
+            _IsZoomWithMouseWheel_OnLineGrid = false;
+            e.Handled = true;
+        }
+
+        private void _GridLineLayer_MouseMove(object sender, MouseEventArgs e)
+        {
+            double _xPosition = e.GetPosition(sender as IInputElement).X;
+            TimeSpan _mouseTooltipTime = TimeSpan.FromMilliseconds(_xPosition / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds);
+            _MouseTooltipLayer.Update(_xPosition - _ScrollViewer.HorizontalOffset, _mouseTooltipTime);
+        }
+
+        private void _GridLineLayer_MouseEnter(object sender, MouseEventArgs e)
+        {
+            _MouseTooltipLayer.Visibility = Visibility.Visible;
+        }
+
+        private void _GridLineLayer_MouseLeave(object sender, MouseEventArgs e)
+        {
+            _MouseTooltipLayer.Visibility = Visibility.Hidden;
         }
 
         private void _UpdateGridLineLayer()
@@ -180,35 +176,6 @@ namespace Led.UserControls.Timeline
         private void _UpdateGridLineTooltipLayer()
         {
             _GridLineTooltipLayer.Update();
-        }
-
-        //private void _UpdateDynamicTooltips(GridLineParameters parameters)
-        //{
-        //    TimelineTimeTooltipUserControl[] _tooltips = new TimelineTimeTooltipUserControl[parameters.NumLines / parameters.ModuloBoldLines + 1];
-
-        //    for (int i = 0; i < _tooltips.Length; i++)
-        //    {
-        //        if (_DynamicTooltipCanvas.Children.Count >= i + 1)
-        //            _tooltips[i] = (TimelineTimeTooltipUserControl)_DynamicTooltipCanvas.Children[i];
-        //        else
-        //        {
-        //            _tooltips[i] = new TimelineTimeTooltipUserControl(TimeSpan.FromSeconds(0));
-        //            _DynamicTooltipCanvas.Children.Add(_tooltips[i]);
-        //        }
-
-        //        _tooltips[i].Time = TimeSpan.FromMilliseconds(parameters.ModuloBoldLines * i * parameters.MillisecondsBetweenLines);
-        //        _tooltips[i].UpdateLayout();
-        //        _tooltips[i].XOffset = parameters.ModuloBoldLines * i * parameters.LineSpacing - _tooltips[i].ActualWidth / 2;
-        //    }            
-
-        //    if (_DynamicTooltipCanvas.Children.Count > _tooltips.Length)
-        //        _DynamicTooltipCanvas.Children.RemoveRange(_tooltips.Length, _DynamicTooltipCanvas.Children.Count - _tooltips.Length);
-        //}
-
-        private void _UpdateStaticTooltips()
-        {
-            _StaticTooltips[0].Time = TimeSpan.FromMilliseconds((long)(_ScrollViewer.HorizontalOffset / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds));
-            _StaticTooltips[1].Time = TimeSpan.FromMilliseconds((long)((_ScrollViewer.HorizontalOffset + _ScrollViewer.ActualWidth) / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds));
         }
 
         private void _UpdateZoom()
@@ -232,7 +199,7 @@ namespace Led.UserControls.Timeline
             _ScrollViewer.ScrollToHorizontalOffset(_offsetPercentageToCanvas * _GridLineLayer.ActualWidth - _offsetAbsolutToScrollViewer);
             _ScrollViewer.UpdateLayout();
 
-            _UpdateStaticTooltips();
+            //_UpdateStaticTooltips();
         }
 
         private void _ZoomSlider_ValueChanged(object sender, EventArgs e)
@@ -245,41 +212,13 @@ namespace Led.UserControls.Timeline
             _ZoomSlider.Value += e.Delta * _ZoomSlider.TickFrequency / 240;
             e.Handled = true;
         }
-
-        private void _LineGridCanvas_MouseWheel(object sender, MouseWheelEventArgs e)
-        {
-            //Zoom relative to where our mouse is pointed
-            _IsZoomWithMouseWheel_OnLineGrid = true;
-            _MousePosition = e.GetPosition(sender as IInputElement);
-
-            _ZoomSlider.Value += e.Delta * _ZoomSlider.TickFrequency / 240;
-
-            _IsZoomWithMouseWheel_OnLineGrid = false;
-            e.Handled = true;
-        }
-
-        private void _LineGridCanvas_MouseMove(object sender, MouseEventArgs e)
-        {
-            double _XPosition = e.GetPosition(sender as IInputElement).X;
-            _MouseTooltip.Time = TimeSpan.FromMilliseconds(_XPosition / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds);
-            _MouseTooltip.UpdateLayout();
-            _MouseTooltip.XOffset = _XPosition - _ScrollViewer.HorizontalOffset - _MouseTooltip.ActualWidth / 2;
-
-            SetLeft(_MouseTooltipLine, _XPosition - _MouseTooltipLine.ActualWidth / 2);
-            //Console.WriteLine(_ScrollViewerContentWrapper.ActualWidth);
-            //Console.WriteLine(_XPosition);
-        }
-
+        
         private void _ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (e.HorizontalChange != 0)
-                _UpdateStaticTooltips();
-
             if (e.VerticalChange != 0)
                 _GridLineTooltipLayer.UpdateScrolling(e.VerticalOffset);
         }
-
-
+        
         /// <summary>
         /// Issues the TimelineUserControl to scroll to the given frame (centered).
         /// Following method calls will override the previous calls.
@@ -330,9 +269,8 @@ namespace Led.UserControls.Timeline
             _MainGrid.MaxWidth = ((Canvas)_MainGrid.Parent).ActualWidth;
             _MainGrid.MaxHeight = ((Canvas)_MainGrid.Parent).ActualHeight;
 
-            _StaticTooltips[1].XOffset = _MainGrid.ColumnDefinitions[0].ActualWidth - _StaticTooltips[1].ActualWidth;
-
             _UpdateGridLineLayer();
+            _UpdateGridLineTooltipLayer();
         }
 
         private void _SendMessage(MediatorMessages message, object data)
@@ -347,102 +285,57 @@ namespace Led.UserControls.Timeline
 
         private void _InitComponents()
         {
-            //MainGrid with 2 columns
-            _MainGrid = new Grid();
-            ColumnDefinition c1 = new ColumnDefinition();
-            c1.Width = new GridLength(1, GridUnitType.Star);
-            ColumnDefinition c2 = new ColumnDefinition();
-            c2.Width = GridLength.Auto;
-            _MainGrid.ColumnDefinitions.Add(c1);
-            _MainGrid.ColumnDefinitions.Add(c2);
-
-            //LineGridCanvas inside the ScrollViewer
-            _GridLineLayer = new Layer.GridLines();
-            _GridLineLayer.Background = Brushes.DarkSlateGray;
-            _GridLineLayer.TimelineLength = TimelineLength;
-
-            //_DynamicTooltipCanvas = new Canvas();
-            ////_DynamicTooltipCanvas.Background = Brushes.Red;
-            //_DynamicTooltipCanvas.VerticalAlignment = VerticalAlignment.Top;
-            //_DynamicTooltipCanvas.MinHeight = 20;
+            //Layers
+            _GridLineLayer = new Layer.GridLines
+            {
+                Background = Brushes.DarkSlateGray,
+                TimelineLength = TimelineLength
+            };
 
             _GridLineTooltipLayer = new Layer.GridLineTooltips(_GridLineLayer.GridLineParameters);
 
-            //TODO: somehow implement this MouseTooltipLine to not flicker like hell, idk why it does
-            _MouseTooltipLine = new Rectangle();
-            _MouseTooltipLine.Width = 2;
-            _MouseTooltipLine.Fill = Brushes.Red;
-            _MouseTooltipLine.Visibility = Visibility.Hidden;
-            //_LineGridCanvas.Children.Add(_MouseTooltipLine);
-            //_LineGridCanvasChildrenOffset++;            
-
-            _ScrollViewerContentWrapper = new Grid();            
-            _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);
-            _ScrollViewerContentWrapper.Children.Add(_GridLineTooltipLayer);
-
-            _LineGridOverlay = new Grid();
-            RowDefinition r1 = new RowDefinition();
-            r1.Height = new GridLength(20);
-            RowDefinition r2 = new RowDefinition();
-            r2.Height = new GridLength(1, GridUnitType.Star);
-            _LineGridOverlay.RowDefinitions.Add(r1);
-            _LineGridOverlay.RowDefinitions.Add(r2);
+            _MouseTooltipLayer = new Layer.MouseTooltip();            
 
             TimelineLanes _TimelineLanes = new TimelineLanes();
             _TimelineLanes.Add();
 
-            //Grid.SetRow(_DynamicTooltipCanvas, 0);
-            Grid.SetRow(_TimelineLanes, 1);
+            //Wrapper
+            _ScrollViewerContentWrapper = new Grid();
+            _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);
+            _ScrollViewerContentWrapper.Children.Add(_GridLineTooltipLayer);
 
-            //_LineGridOverlay.Children.Add(_DynamicTooltipCanvas);
-            _LineGridOverlay.Children.Add(_TimelineLanes);
-
-            _ScrollViewerContentWrapper.Children.Add(_LineGridOverlay);
-
-            _ScrollViewer = new ScrollViewer();
-            _ScrollViewer.VerticalScrollBarVisibility = ScrollBarVisibility.Hidden;
-            _ScrollViewer.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible;
-            _ScrollViewer.Content = _ScrollViewerContentWrapper;
-            Grid.SetRow(_ScrollViewer, 0);
-            Grid.SetColumn(_ScrollViewer, 0);
-            _MainGrid.Children.Add(_ScrollViewer);
-
-            _StaticTooltips = new TimelineTimeTooltipUserControl[]
+            //ScrollViewer
+            _ScrollViewer = new ScrollViewer
             {
-                new TimelineTimeTooltipUserControl(TimeSpan.FromSeconds(0)),
-                new TimelineTimeTooltipUserControl(TimelineLength)
-            };            
-            _MouseTooltip = new TimelineTimeTooltipUserControl(TimeSpan.MinValue);
-            _MouseTooltip.Visibility = Visibility.Hidden;
+                VerticalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Visible,
+                Content = _ScrollViewerContentWrapper
+            };
 
-            _StaticTooltipCanvas = new Canvas();
-            //_StaticTooltipCanvas.Background = Brushes.Red;
-            _StaticTooltipCanvas.VerticalAlignment = VerticalAlignment.Top;
-            _StaticTooltipCanvas.MinHeight = 20;
-            _StaticTooltips.ToList().ForEach(tooltip => _StaticTooltipCanvas.Children.Add(tooltip));            
-            _StaticTooltipCanvas.Children.Add(_MouseTooltip);
-            _MainGrid.Children.Add(_StaticTooltipCanvas);
-
-            _ZoomSlider = new Slider();
-            _ZoomSlider.Orientation = Orientation.Vertical;
-            _ZoomSlider.Margin = new Thickness(7, 5, 7, 5);
-            _ZoomSlider.Minimum = 1;
-            _ZoomSlider.Maximum = 10;
-            _ZoomSlider.TickFrequency = 0.5;
+            //ZoomSlider
+            _ZoomSlider = new Slider
+            {
+                Orientation = Orientation.Vertical,
+                Margin = new Thickness(7, 5, 7, 5),
+                Minimum = 1,
+                Maximum = 10,
+                TickFrequency = 0.5
+            };
             _ZoomSlider.ValueChanged += _ZoomSlider_ValueChanged;
-            Grid.SetRow(_ZoomSlider, 0);
             Grid.SetColumn(_ZoomSlider, 1);
+
+            //MainGrid with 2 columns
+            _MainGrid = new Grid();
+            ColumnDefinition c1 = new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) };
+            ColumnDefinition c2 = new ColumnDefinition { Width = GridLength.Auto };            
+            _MainGrid.ColumnDefinitions.Add(c1);
+            _MainGrid.ColumnDefinitions.Add(c2);
+
+            _MainGrid.Children.Add(_ScrollViewer);
+            _MainGrid.Children.Add(_MouseTooltipLayer);
             _MainGrid.Children.Add(_ZoomSlider);
 
             Children.Add(_MainGrid);
-
-            //_ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged1;
         }
-
-        //private void _ScrollViewer_ScrollChanged1(object sender, ScrollChangedEventArgs e)
-        //{
-        //    if (e.VerticalChange != 0)
-        //        _DynamicTooltipCanvas.MinHeight = 20 + e.VerticalOffset;
-        //}
     }
 }
