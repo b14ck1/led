@@ -14,17 +14,18 @@ namespace Led.UserControls.Timeline.Layer
 
     class MouseTooltip : Canvas
     {
-        private TimelineTimeTooltipUserControl _Tooltip;
+        private Items.TimelineTimeTooltip _Tooltip;
         private Rectangle _TooltipLine;
 
         public MouseTooltip()
         {
             _TooltipLine = new Rectangle();
-            _TooltipLine.Width = 2;            
+            _TooltipLine.Width = 2;
+            _TooltipLine.Height = 200;
             _TooltipLine.Fill = Brushes.Red;
             Children.Add(_TooltipLine);
 
-            _Tooltip = new TimelineTimeTooltipUserControl(TimeSpan.FromMilliseconds(0));
+            _Tooltip = new Items.TimelineTimeTooltip(TimeSpan.FromMilliseconds(0));
             Children.Add(_Tooltip);
 
             Visibility = Visibility.Hidden;
@@ -32,12 +33,23 @@ namespace Led.UserControls.Timeline.Layer
 
         public void Update(double xPosition, TimeSpan timeToShow)
         {
-            _Tooltip.Time = timeToShow;
-            _Tooltip.UpdateLayout();
-            _Tooltip.XOffset = xPosition - _Tooltip.ActualWidth / 2;
+            if (_Tooltip.Time != timeToShow)
+            {
+                _Tooltip.Time = timeToShow;
+                _Tooltip.UpdateLayout();
+            }
 
-            _TooltipLine.Height = ActualHeight - 18;
-            SetLeft(_TooltipLine, xPosition - _TooltipLine.ActualWidth / 2);
-        }        
+            if (_Tooltip.XOffset != xPosition - _Tooltip.ActualWidth / 2)
+            {
+                _Tooltip.XOffset = xPosition - _Tooltip.ActualWidth / 2;
+                SetLeft(_TooltipLine, xPosition - _TooltipLine.ActualWidth / 2);
+            }
+        }
+
+        public void UpdateScrolling(double offset)
+        {
+            SetTop(_Tooltip, offset);
+            _TooltipLine.Height = ActualHeight;
+        }
     }
 }

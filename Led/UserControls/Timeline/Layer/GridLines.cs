@@ -192,16 +192,19 @@ namespace Led.UserControls.Timeline.Layer
         public double LineSpacing { get; private set; }
         public double ModuloBoldLines { get; private set; }
         public long MillisecondsBetweenLines { get; private set; }
+        public double PixelsPerMillisecond { get; private set; }
 
         public void Update(int moduloBoldLines, long millisecondsBetweenLines, TimeSpan length, double availableWidth)
         {
             ModuloBoldLines = moduloBoldLines;
-            MillisecondsBetweenLines = millisecondsBetweenLines;
+            MillisecondsBetweenLines = millisecondsBetweenLines;            
 
             //Total number of lines we need to draw, the "0"-Line is not included here
             NumLines = (int)(length.TotalMilliseconds / MillisecondsBetweenLines);
 
             LineSpacing = MillisecondsBetweenLines / length.TotalMilliseconds * availableWidth;
+
+            PixelsPerMillisecond = LineSpacing / millisecondsBetweenLines;
 
             //Add one more line so the "Zero-Line" can be drawn
             NumLines++;

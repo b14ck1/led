@@ -42,7 +42,7 @@
                 <RowDefinition Height="0.65*" />
             </Grid.RowDefinitions>
 
-            <uc:TimelineUserControl Grid.Row="2" Grid.Column="1" Background="DarkGray"/>
+            <uc:Timeline Grid.Row="2" Grid.Column="1" Background="DarkGray"/>
             </Grid>        
     </DockPanel>
 </Window>

@@ -109,12 +109,15 @@
     <Compile Include="Services\lib\UdpSocket.cs" />
     <Compile Include="Services\MediatorService.cs" />
     <Compile Include="Services\ProjectService.cs" />
-    <Compile Include="UserControls\Timeline\GridLineShape.cs" />
+    <Compile Include="UserControls\Timeline\Items\Interior\Blink.cs" />
+    <Compile Include="UserControls\Timeline\Items\Interior\Fade.cs" />
+    <Compile Include="UserControls\Timeline\Items\Interior\SetColor.cs" />
+    <Compile Include="UserControls\Timeline\ITimelineObject.cs" />
     <Compile Include="UserControls\Timeline\Layer\GridLineTooltips.cs" />
     <Compile Include="UserControls\Timeline\Layer\GridLines.cs" />
     <Compile Include="UserControls\Timeline\Layer\MouseTooltip.cs" />
-    <Compile Include="UserControls\Timeline\TimelineLanes.cs" />
-    <Compile Include="UserControls\Timeline\TimelineTimeTooltipUserControl.cs" />
+    <Compile Include="UserControls\Timeline\Layer\ObjectLanes.cs" />
+    <Compile Include="UserControls\Timeline\Items\TimelineTimeTooltip.cs" />
     <Compile Include="Utility\AccurateTimer.cs" />
     <Compile Include="Utility\AudioPlayer.cs" />
     <Compile Include="Controllers\TimeController.cs" />
@@ -123,6 +126,7 @@
     <Compile Include="Services\IOService.cs" />
     <Compile Include="Services\WindowService.cs" />
     <Compile Include="Behaviours\DataPiping.cs" />
+    <Compile Include="Utility\Converter\UshortTimeSpanConverter.cs" />
     <Compile Include="Utility\EffectCache.cs" />
     <Compile Include="Utility\EffectLogic.cs" />
     <Compile Include="Utility\ImageUtil.cs" />
@@ -147,8 +151,8 @@
     <Compile Include="Utility\SaveLoad.cs" />
     <Compile Include="Utility\Timeline\TimeLineControl.cs" />
     <Compile Include="Utility\Timeline\TimeLineItemControl.cs" />
-    <Compile Include="UserControls\Timeline\TimelineItemUserControl.cs" />
-    <Compile Include="UserControls\Timeline\TimelineUserControl.cs" />
+    <Compile Include="UserControls\Timeline\Items\TimelineItem.cs" />
+    <Compile Include="UserControls\Timeline\Timeline.cs" />
     <Compile Include="Utility\Timeline\UshortDateConverter.cs" />
     <Compile Include="Utility\TimeSpanHelper.cs" />
     <Compile Include="ViewModels\AudioUserControlVM.cs" />

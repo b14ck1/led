@@ -8,7 +8,7 @@ using System.Windows.Data;
 
 namespace Led.ViewModels
 {
-    public class EffectBaseVM : INPC, Interfaces.IParticipant
+    public class EffectBaseVM : INPC, Interfaces.IParticipant, UserControls.Timeline.ITimelineItem
     {
         private Services.MediatorService _Mediator;
 
@@ -84,7 +84,10 @@ namespace Led.ViewModels
                     RaisePropertyChanged(nameof(Dauer));
                 }
             }
-        }
+        }        
+
+        public Binding StartTime { get; private set; }
+        public Binding EndTime { get; private set; }
 
         public EffectType EffectType
         {
@@ -180,8 +183,28 @@ namespace Led.ViewModels
             ClearCommand = new Command(OnClearCommand);
             DeleteCommand = new Command(OnDeleteCommand);
 
+            StartTime = new Binding(nameof(StartFrame))
+            {
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                Converter = new Utility.Converter.UshortTimeSpanConverter(),
+                Source = this
+            };
+            EndTime = new Binding(nameof(EndFrame))
+            {
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                Converter = new Utility.Converter.UshortTimeSpanConverter(),
+                Source = this
+            };
+
             _Mediator = App.Instance.MediatorService;
             _Mediator.Register(this);
+        }
+
+        public void OnSelected()
+        {
+            _SendMessage(MediatorMessages.TimeLineEffectSelected, new MediatorMessageData.TimeLineEffectSelectedData(this));
         }
 
         private void _ClearCollections()
@@ -259,7 +282,7 @@ namespace Led.ViewModels
 
         }
 
-        protected void _SendMessage(MediatorMessages message, object data)
+        private void _SendMessage(MediatorMessages message, object data)
         {
             _Mediator.BroadcastMessage(message, this, data);
         }

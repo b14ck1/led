@@ -23,7 +23,7 @@ namespace Led.UserControls.Timeline
         Frames
     }
 
-    class TimelineUserControl : Canvas, IParticipant
+    class Timeline : Canvas, IParticipant
     {
         private IMediator _Mediator;
 
@@ -44,6 +44,7 @@ namespace Led.UserControls.Timeline
         private Layer.GridLines _GridLineLayer;
         private Layer.GridLineTooltips _GridLineTooltipLayer;
         private Layer.MouseTooltip _MouseTooltipLayer;
+        private Layer.ObjectLanes _ObjectLanesLayer;
 
         /// <summary>
         /// ZoomSlider to zoom the timeline.
@@ -56,8 +57,7 @@ namespace Led.UserControls.Timeline
         /// <summary>
         /// Items to display.
         /// </summary>
-        private ObservableCollection<ViewModels.EffectBaseVM> _EffectBaseVMs;
-        private List<TimelineItemUserControl> _Items;
+        private ObservableCollection<ITimelineItem> _TimelineObjects;
 
         /// <summary>Gets or sets the total time of the timeline.</summary>
         /// <value>Time as TimeSpan this element should display.</value>
@@ -69,7 +69,7 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty TimelineLengthProperty =
-            DependencyProperty.Register(nameof(TimelineLength), typeof(TimeSpan), typeof(TimelineUserControl),
+            DependencyProperty.Register(nameof(TimelineLength), typeof(TimeSpan), typeof(Timeline),
                 new UIPropertyMetadata(TimeSpan.FromSeconds(120), new PropertyChangedCallback(_OnTimelineLengthChanged)));
         private static void _OnTimelineLengthChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
@@ -86,7 +86,7 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty BackgroundImageProperty =
-            DependencyProperty.Register(nameof(BackgroundImage), typeof(ImageSource), typeof(TimelineUserControl),
+            DependencyProperty.Register(nameof(BackgroundImage), typeof(ImageSource), typeof(Timeline),
                 new UIPropertyMetadata(null, new PropertyChangedCallback(_OnBackgroundImageChanged)));
         private static void _OnBackgroundImageChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
@@ -103,7 +103,7 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty GridlineColorProperty =
-            DependencyProperty.Register(nameof(GridlineColor), typeof(Brush), typeof(TimelineUserControl),
+            DependencyProperty.Register(nameof(GridlineColor), typeof(Brush), typeof(Timeline),
                 new UIPropertyMetadata(Brushes.LightGray, new PropertyChangedCallback(_OnGridlineColorChanged)));
         private static void _OnGridlineColorChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
@@ -120,26 +120,32 @@ namespace Led.UserControls.Timeline
         }
         /// <dpdoc />
         public static readonly DependencyProperty ZoomLockProperty =
-            DependencyProperty.Register("ZoomLock", typeof(bool), typeof(TimelineUserControl), new PropertyMetadata(true));
+            DependencyProperty.Register("ZoomLock", typeof(bool), typeof(Timeline), new PropertyMetadata(true));
 
-        public TimelineUserControl()
+        public Timeline()
         {
-            //_EffectBaseVMs.CollectionChanged += _OnCollectionChanged;
+            //TESTING
+            _TimelineObjects = new ObservableCollection<ITimelineItem>();
+            //TESTING
+
             _InitComponents();
 
+            _ZoomSlider.ValueChanged += _ZoomSlider_ValueChanged;
             _ZoomSlider.MouseWheel += _ZoomSlider_MouseWheel;
-            _GridLineLayer.MouseWheel += _GridLineLayer_MouseWheel;
-            _GridLineLayer.MouseMove += _GridLineLayer_MouseMove;
-            _GridLineLayer.MouseEnter += _GridLineLayer_MouseEnter;
-            _GridLineLayer.MouseLeave += _GridLineLayer_MouseLeave;
+
+            _ScrollViewerContentWrapper.MouseWheel += _ScrollViewer_MouseWheel;
+            _ScrollViewerContentWrapper.MouseMove += _ScrollViewer_MouseMove;
+            _ScrollViewerContentWrapper.MouseEnter += _ScrollViewer_MouseEnter;
+            _ScrollViewerContentWrapper.MouseLeave += _ScrollViewer_MouseLeave;
+
             _ScrollViewer.ScrollChanged += _ScrollViewer_ScrollChanged;
 
-            _Items = new List<TimelineItemUserControl>();
-            _Items.Add(new TimelineItemUserControl(null));
-            Children.Add(_Items[0]);
+            //TESTING
+            //_TimelineObjects.Add(new Layer.Dummy(1000, 1000));
+            //TESTING
         }
 
-        private void _GridLineLayer_MouseWheel(object sender, MouseWheelEventArgs e)
+        private void _ScrollViewer_MouseWheel(object sender, MouseWheelEventArgs e)
         {
             //Zoom relative to where our mouse is pointed
             _IsZoomWithMouseWheel_OnLineGrid = true;
@@ -151,31 +157,38 @@ namespace Led.UserControls.Timeline
             e.Handled = true;
         }
 
-        private void _GridLineLayer_MouseMove(object sender, MouseEventArgs e)
+        private void _ScrollViewer_MouseMove(object sender, MouseEventArgs e)
         {
             double _xPosition = e.GetPosition(sender as IInputElement).X;
             TimeSpan _mouseTooltipTime = TimeSpan.FromMilliseconds(_xPosition / _GridLineLayer.ActualWidth * TimelineLength.TotalMilliseconds);
-            _MouseTooltipLayer.Update(_xPosition - _ScrollViewer.HorizontalOffset, _mouseTooltipTime);
+            _MouseTooltipLayer.Update(_xPosition, _mouseTooltipTime);
         }
 
-        private void _GridLineLayer_MouseEnter(object sender, MouseEventArgs e)
+        private void _ScrollViewer_MouseEnter(object sender, MouseEventArgs e)
         {
-            _MouseTooltipLayer.Visibility = Visibility.Visible;
+            _MouseTooltipLayer.Visibility = Visibility.Visible;            
         }
 
-        private void _GridLineLayer_MouseLeave(object sender, MouseEventArgs e)
+        private void _ScrollViewer_MouseLeave(object sender, MouseEventArgs e)
         {
             _MouseTooltipLayer.Visibility = Visibility.Hidden;
         }
 
         private void _UpdateGridLineLayer()
         {
-            _GridLineLayer.Update(_ZoomSlider.Value * (ActualWidth - _MainGrid.ColumnDefinitions[1].ActualWidth), ActualHeight);            
+            _GridLineLayer.Update(_ZoomSlider.Value * (ActualWidth - _MainGrid.ColumnDefinitions[1].ActualWidth), ActualHeight);
+            _UpdateGridLineTooltipLayer();
+            _UpdateObjectLanesLayer();
         }
 
         private void _UpdateGridLineTooltipLayer()
         {
             _GridLineTooltipLayer.Update();
+        }
+
+        private void _UpdateObjectLanesLayer()
+        {
+            _ObjectLanesLayer.Update(_GridLineLayer.GridLineParameters);
         }
 
         private void _UpdateZoom()
@@ -216,7 +229,10 @@ namespace Led.UserControls.Timeline
         private void _ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.VerticalChange != 0)
+            {
                 _GridLineTooltipLayer.UpdateScrolling(e.VerticalOffset);
+                _MouseTooltipLayer.UpdateScrolling(e.VerticalOffset);
+            }
         }
         
         /// <summary>
@@ -269,8 +285,7 @@ namespace Led.UserControls.Timeline
             _MainGrid.MaxWidth = ((Canvas)_MainGrid.Parent).ActualWidth;
             _MainGrid.MaxHeight = ((Canvas)_MainGrid.Parent).ActualHeight;
 
-            _UpdateGridLineLayer();
-            _UpdateGridLineTooltipLayer();
+            _UpdateGridLineLayer();            
         }
 
         private void _SendMessage(MediatorMessages message, object data)
@@ -294,15 +309,16 @@ namespace Led.UserControls.Timeline
 
             _GridLineTooltipLayer = new Layer.GridLineTooltips(_GridLineLayer.GridLineParameters);
 
-            _MouseTooltipLayer = new Layer.MouseTooltip();            
+            _MouseTooltipLayer = new Layer.MouseTooltip();
 
-            TimelineLanes _TimelineLanes = new TimelineLanes();
-            _TimelineLanes.Add();
+            _ObjectLanesLayer = new Layer.ObjectLanes(30, 20);
 
             //Wrapper
             _ScrollViewerContentWrapper = new Grid();
             _ScrollViewerContentWrapper.Children.Add(_GridLineLayer);
+            _ScrollViewerContentWrapper.Children.Add(_ObjectLanesLayer);
             _ScrollViewerContentWrapper.Children.Add(_GridLineTooltipLayer);
+            _ScrollViewerContentWrapper.Children.Add(_MouseTooltipLayer);
 
             //ScrollViewer
             _ScrollViewer = new ScrollViewer
@@ -320,8 +336,7 @@ namespace Led.UserControls.Timeline
                 Minimum = 1,
                 Maximum = 10,
                 TickFrequency = 0.5
-            };
-            _ZoomSlider.ValueChanged += _ZoomSlider_ValueChanged;
+            };            
             Grid.SetColumn(_ZoomSlider, 1);
 
             //MainGrid with 2 columns
@@ -332,7 +347,7 @@ namespace Led.UserControls.Timeline
             _MainGrid.ColumnDefinitions.Add(c2);
 
             _MainGrid.Children.Add(_ScrollViewer);
-            _MainGrid.Children.Add(_MouseTooltipLayer);
+            //_MainGrid.Children.Add(_MouseTooltipLayer);
             _MainGrid.Children.Add(_ZoomSlider);
 
             Children.Add(_MainGrid);

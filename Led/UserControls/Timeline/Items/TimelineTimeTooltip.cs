@@ -7,18 +7,21 @@ using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Led.UserControls.Timeline
+namespace Led.UserControls.Timeline.Items
 {
-    class TimelineTimeTooltipUserControl : Grid
+    class TimelineTimeTooltip : Grid
     {
         public TimeSpan Time
         {
+            get => _Time;
             set
             {
+                _Time = value;
                 string res = value.Minutes.ToString().PadLeft(2, '0') + ":" + value.Seconds.ToString().PadLeft(2, '0') + ":" + value.Milliseconds.ToString().PadLeft(3, '0');
                 _Label.Content = res;
             }
         }
+        private TimeSpan _Time;
 
         public double XOffset
         {
@@ -28,7 +31,7 @@ namespace Led.UserControls.Timeline
 
         private Label _Label;
 
-        public TimelineTimeTooltipUserControl(TimeSpan time)
+        public TimelineTimeTooltip(TimeSpan time)
         {
             RenderTransform = new TranslateTransform();
             Background = Brushes.White;

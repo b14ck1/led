@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Led.UserControls.Timeline.Items;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,14 +31,14 @@ namespace Led.UserControls.Timeline.Layer
             {
                 if (Children.Count < i + 1)
                 {
-                    Children.Add(new TimelineTimeTooltipUserControl(TimeSpan.FromSeconds(0)));
-                    ((TimelineTimeTooltipUserControl)Children[i]).MaxHeight = 20;
-                    SetBottom(((TimelineTimeTooltipUserControl)Children[i]), 0);
+                    Children.Add(new TimelineTimeTooltip(TimeSpan.FromSeconds(0)));
+                    ((TimelineTimeTooltip)Children[i]).MaxHeight = 20;
+                    SetBottom(((TimelineTimeTooltip)Children[i]), 0);
                 }
 
-                ((TimelineTimeTooltipUserControl)Children[i]).Time = TimeSpan.FromMilliseconds(GridLineParameters.ModuloBoldLines * i * GridLineParameters.MillisecondsBetweenLines);
-                ((TimelineTimeTooltipUserControl)Children[i]).UpdateLayout();
-                ((TimelineTimeTooltipUserControl)Children[i]).XOffset = GridLineParameters.ModuloBoldLines * i * GridLineParameters.LineSpacing - ((TimelineTimeTooltipUserControl)Children[i]).ActualWidth / 2;
+                ((TimelineTimeTooltip)Children[i]).Time = TimeSpan.FromMilliseconds(GridLineParameters.ModuloBoldLines * i * GridLineParameters.MillisecondsBetweenLines);
+                ((TimelineTimeTooltip)Children[i]).UpdateLayout();
+                ((TimelineTimeTooltip)Children[i]).XOffset = GridLineParameters.ModuloBoldLines * i * GridLineParameters.LineSpacing - ((TimelineTimeTooltip)Children[i]).ActualWidth / 2;
             }
 
             if (Children.Count > _numTooltips)
