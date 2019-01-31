@@ -14,6 +14,8 @@ namespace Led.UserControls.Timeline.Items
     {
         public Layer.GridLineParameters GridLineParameters;
 
+        public event EventHandler OnPositionChanged;
+
         /// <summary>
         /// Minimal width of the whole item in pixels
         /// </summary>
@@ -49,7 +51,9 @@ namespace Led.UserControls.Timeline.Items
         {            
             TimelineItem item = (sender as TimelineItem);
             SetLeft(item, item.StartTime.TotalMilliseconds * item.GridLineParameters.PixelsPerMillisecond);
-            Console.WriteLine("Changed Start Time to: " + item.StartTime);
+            //Console.WriteLine("Changed Start Time to: " + item.StartTime);
+
+            item.OnPositionChanged?.Invoke(item, null);
         }
 
         public TimeSpan EndTime
@@ -64,6 +68,8 @@ namespace Led.UserControls.Timeline.Items
         {
             TimelineItem item = (sender as TimelineItem);
             item.Width = (item.EndTime.TotalMilliseconds - item.StartTime.TotalMilliseconds) * item.GridLineParameters.PixelsPerMillisecond;
+
+            item.OnPositionChanged?.Invoke(item, null);
         }
 
         public TimelineItem(ITimelineItem timelineItem)
