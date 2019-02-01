@@ -72,9 +72,10 @@ namespace Led.UserControls.Timeline.Items
             item.OnPositionChanged?.Invoke(item, null);
         }
 
-        public TimelineItem(ITimelineItem timelineItem)
+        public TimelineItem(ITimelineItem timelineItem, Layer.GridLineParameters gridLineParameters)
         {
             _TimelineItem = timelineItem;
+            GridLineParameters = gridLineParameters;
             
             SetBinding(StartTimeProperty, timelineItem.StartTime);
             SetBinding(EndTimeProperty, timelineItem.EndTime);
