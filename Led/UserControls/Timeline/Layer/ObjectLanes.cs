@@ -56,28 +56,32 @@ namespace Led.UserControls.Timeline.Layer
             {
                 //In each lane look for overlapping TimelineItems
                 Canvas _lane = Children[i] as Canvas;
-                for (int j = 1; j < _lane.Children.Count; j++)
+                for (int j = 0; j < _lane.Children.Count; j++)
                 {
-                    TimelineItem _first = _lane.Children[j - 1] as TimelineItem;
-                    TimelineItem _second = _lane.Children[j] as TimelineItem;
-
-                    //If something is overlapping
-                    if (_DoItemsOverlap(_first, _second))
+                    TimelineItem _first = _lane.Children[j] as TimelineItem;
+                    
+                    for(int k = j + 1; k < _lane.Children.Count; k++)
                     {
-                        //Create a new lane if necessary
-                        if (i + 1 >= Children.Count)
-                            _AddLane();
+                        TimelineItem _second = _lane.Children[k] as TimelineItem;
 
-                        //Always move the item which is more to the end of the timeline
-                        TimelineItem _itemToMove;
-                        if (_second.StartTime < _first.StartTime)
-                            _itemToMove = _first;
-                        else
-                            _itemToMove = _second;
+                        //If something is overlapping
+                        if (_DoItemsOverlap(_first, _second))
+                        {
+                            //Create a new lane if necessary
+                            if (i + 1 >= Children.Count)
+                                _AddLane();
 
-                        _lane.Children.Remove(_itemToMove);
-                        (Children[i + 1] as Canvas).Children.Add(_itemToMove);
-                    }
+                            //Always move the item which is more to the end of the timeline
+                            TimelineItem _itemToMove;
+                            if (_second.StartTime < _first.StartTime)
+                                _itemToMove = _first;
+                            else
+                                _itemToMove = _second;
+
+                            _lane.Children.Remove(_itemToMove);
+                            (Children[i + 1] as Canvas).Children.Add(_itemToMove);
+                        }
+                    }                    
                 }
 
                 //Also look for free space in the lanes above our current lane
@@ -166,7 +170,7 @@ namespace Led.UserControls.Timeline.Layer
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach (var o in e.NewItems)
                     {
-                        _TimelineItems.Add(o as ITimelineItem, new Items.TimelineItem(o as ITimelineItem));
+                        _TimelineItems.Add(o as ITimelineItem, new Items.TimelineItem(o as ITimelineItem, _GridLineParameters));
                         _TimelineItems[o as ITimelineItem].GridLineParameters = _GridLineParameters;
                         _TimelineItems[o as ITimelineItem].OnPositionChanged += ObjectLanes_OnPositionChanged;
                         ((Canvas)Children[0]).Children.Add(_TimelineItems[o as ITimelineItem]);
@@ -199,8 +203,9 @@ namespace Led.UserControls.Timeline.Layer
                     //_TimelineLanes.Clear();
                     
                     _TimelineObjects = (data as MediatorMessageData.TimeLineCollectionChangedData).Effects;
-
-                    foreach (ITimelineItem o in _TimelineObjects) { _TimelineItems.Add(o, new Items.TimelineItem(o as ITimelineItem)); }
+                    _TimelineItems.Clear();
+                    //@TODO: Add EventHandling here for PositionUpdated on TimelineItem
+                    foreach (ITimelineItem o in _TimelineObjects) { _TimelineItems.Add(o, new Items.TimelineItem(o as ITimelineItem, _GridLineParameters)); }
                     _TimelineObjects.CollectionChanged += _TimelineObjects_CollectionChanged;
                     _UpdateLanes();
                     break;
