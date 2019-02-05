@@ -310,6 +310,7 @@ namespace Led.UserControls.Timeline
             _GridLineTooltipLayer = new Layer.GridLineTooltips(_GridLineLayer.GridLineParameters);
 
             _MouseTooltipLayer = new Layer.MouseTooltip();
+            _MouseTooltipLayer.IsHitTestVisible = false;
 
             _ObjectLanesLayer = new Layer.ObjectLanes(30, 20);
 

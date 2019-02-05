@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -149,7 +150,7 @@ namespace Led.UserControls.Timeline.Layer
             RowDefinition r1 = new RowDefinition { Height = new System.Windows.GridLength(LaneHeight) };
             RowDefinitions.Add(r1);
 
-            Canvas c = new Canvas { Height = LaneHeight, Background = Brushes.Red };
+            Canvas c = new Canvas { Height = LaneHeight, /*Background = Brushes.Red*/ };
             SetRow(c, RowDefinitions.Count - 1);
             Children.Add(c);
         }
@@ -170,10 +171,13 @@ namespace Led.UserControls.Timeline.Layer
                 case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
                     foreach (var o in e.NewItems)
                     {
+                        //TODO: Check for element existing here
                         _TimelineItems.Add(o as ITimelineItem, new Items.TimelineItem(o as ITimelineItem, _GridLineParameters));
                         _TimelineItems[o as ITimelineItem].GridLineParameters = _GridLineParameters;
                         _TimelineItems[o as ITimelineItem].OnPositionChanged += ObjectLanes_OnPositionChanged;
                         ((Canvas)Children[0]).Children.Add(_TimelineItems[o as ITimelineItem]);
+
+                        //AdornerLayer.GetAdornerLayer(_TimelineItems[o as ITimelineItem]).Add(new ResizeAdorner(_TimelineItems[o as ITimelineItem]));
                         _UpdateLanes();
                     }
                     break;

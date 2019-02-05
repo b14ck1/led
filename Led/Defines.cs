@@ -399,6 +399,7 @@ namespace Led
         public static int MainWindowHeight = 900;
 
         public static byte FramesPerSecond = 40;
+        public static int MillisecondsPerFrame = 25;
 
         public const int ServerPort = 31313;
         public const string UdpBroadcastMessage = "I bims, eins LED!";

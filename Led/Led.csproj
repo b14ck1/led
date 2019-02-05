@@ -112,7 +112,8 @@
     <Compile Include="UserControls\Timeline\Items\Interior\Blink.cs" />
     <Compile Include="UserControls\Timeline\Items\Interior\Fade.cs" />
     <Compile Include="UserControls\Timeline\Items\Interior\SetColor.cs" />
-    <Compile Include="UserControls\Timeline\ITimelineObject.cs" />
+    <Compile Include="UserControls\Timeline\Items\ResizeAdorner.cs" />
+    <Compile Include="UserControls\Timeline\ITimelineItem.cs" />
     <Compile Include="UserControls\Timeline\Layer\GridLineTooltips.cs" />
     <Compile Include="UserControls\Timeline\Layer\GridLines.cs" />
     <Compile Include="UserControls\Timeline\Layer\MouseTooltip.cs" />
